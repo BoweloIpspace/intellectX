@@ -15,6 +15,7 @@ import {
 } from "@/lib/authenticated-learner-local-data";
 import { CLERK_LOGIN_REDIRECT_URL, CLERK_SIGNUP_REDIRECT_URL } from "@/lib/auth-redirects";
 import { COURSE_SELECTION_KEY, saveCourseSelection } from "@/lib/course-selection";
+import { getAuthEnvironmentStatus } from "@/lib/auth-env";
 import { resolveConvexLearnerIdentity } from "@/lib/convex-learner-identity";
 import { createLearnerSession, getLearnerSession, LEARNER_SESSION_KEY } from "@/lib/learner-session";
 import { LESSON_PROGRESS_HISTORY_KEY, writeLessonProgressHistory } from "@/lib/lesson-progress-history";
@@ -163,7 +164,7 @@ describe("auth/data-flow safety guards", () => {
     expect(hasPendingLocalLearnerMigrationSource()).toBe(true);
 
     const markerKey = getLocalLearnerMigrationMarkerKey(
-      "local-fallback",
+      getAuthEnvironmentStatus().mode,
       "learner:local@example.com",
     );
     localStorage.setItem(markerKey, "succeeded");

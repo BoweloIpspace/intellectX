@@ -58,23 +58,38 @@ test("completed selected-course progress stays at 100% across refresh", async ({
   await seedProgressProfileState(page);
   await page.goto("/progress");
 
-  await expect(page.getByText("AI Study Systems")).toBeVisible();
+  await expect(page.getByText("AI Study Systems", { exact: true })).toBeVisible();
   await expect(page.getByText("100%", { exact: true })).toBeVisible();
 
   await page.reload();
 
-  await expect(page.getByText("AI Study Systems")).toBeVisible();
+  await expect(page.getByText("AI Study Systems", { exact: true })).toBeVisible();
   await expect(page.getByText("100%", { exact: true })).toBeVisible();
 });
 
 test("Profile removes previous private learning activity after local learner data is cleared", async ({ page }) => {
-  await seedProgressProfileState(page);
+  // Seed only the learner session via init script (it runs on every load). The
+  // study data is seeded in-page so the clear + reload below is not re-seeded.
+  await page.addInitScript(({ learnerSession }) => {
+    window.localStorage.setItem("intellectx:learner-session", JSON.stringify(learnerSession));
+  }, { learnerSession });
+
   await page.goto("/profile");
+  await page.evaluate(
+    ({ studyProfile, courseSelection, completedLessonHistory, quizHistory }) => {
+      window.localStorage.setItem("intellectx:academic-profile", JSON.stringify(studyProfile));
+      window.localStorage.setItem("intellectx:course-selection", JSON.stringify(courseSelection));
+      window.localStorage.setItem("intellectx:lesson-progress-history", JSON.stringify(completedLessonHistory));
+      window.localStorage.setItem("intellectx:quiz-attempt-history", JSON.stringify(quizHistory));
+    },
+    { studyProfile, courseSelection, completedLessonHistory, quizHistory },
+  );
+  await page.reload();
 
   const completedLessonsStat = page.getByText("Completed lessons", { exact: true }).locator("..");
   const averageScoreStat = page.getByText("Average score", { exact: true }).locator("..");
 
-  await expect(page.getByText("AI Study Systems")).toBeVisible();
+  await expect(page.getByText("AI Study Systems", { exact: true })).toBeVisible();
   await expect(completedLessonsStat.getByText("3", { exact: true })).toBeVisible();
   await expect(averageScoreStat.getByText("80%", { exact: true })).toBeVisible();
   await expect(page.getByText("Selected courses: 1", { exact: true })).toBeVisible();
@@ -95,8 +110,8 @@ test("Profile removes previous private learning activity after local learner dat
 
   await expect(page.getByText("No selected courses on this profile")).toBeVisible();
   await expect(page.getByText("No completed lessons yet")).toBeVisible();
-  await expect(page.getByText("No attempts yet")).toBeVisible();
+  await expect(page.getByText("No attempts yet", { exact: true })).toBeVisible();
   await expect(page.getByText("Selected courses: None yet", { exact: true })).toBeVisible();
-  await expect(page.getByText("AI Study Systems")).toHaveCount(0);
+  await expect(page.getByText("AI Study Systems", { exact: true })).toHaveCount(0);
   await expect(page.getByText("80%", { exact: true })).toHaveCount(0);
 });

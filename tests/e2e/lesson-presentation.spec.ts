@@ -21,7 +21,7 @@ test("lesson notes stay on the page canvas and unavailable video controls are ho
   await expect(videoPreview).toBeVisible();
   await expect(videoPreview.locator("..")).toHaveClass(/bg-blue-600/);
 
-  await expect(page.getByRole("button", { name: "Play" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Play", exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Captions unavailable" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Picture in picture unavailable" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Playback settings" })).toBeDisabled();

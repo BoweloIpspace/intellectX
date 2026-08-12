@@ -103,10 +103,28 @@ export function buildLearnerCatalog(input?: {
   };
 }
 
+type ConvexCatalogQuery = Parameters<typeof useQuery>[0];
+
+/**
+ * Subscribes to a Convex query only when Convex is configured. In local-fallback
+ * mode there is no ConvexProvider in the tree, so calling useQuery directly would
+ * throw "Could not find Convex client". convexEnv.isConfigured is a build-time
+ * constant (NEXT_PUBLIC_* is inlined), so this conditional hook is stable for
+ * the lifetime of the component.
+ */
+function useOptionalConvexQuery(query: ConvexCatalogQuery) {
+  if (!convexEnv.isConfigured) {
+    return undefined;
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- guard above is a build-time constant
+  return useQuery(query, {});
+}
+
 export function useLearnerCatalog() {
-  const convexCourses = useQuery(convexApi.courses.listCourses, convexEnv.isConfigured ? {} : "skip");
-  const convexLessons = useQuery(convexApi.lessons.listLessons, convexEnv.isConfigured ? {} : "skip");
-  const convexQuizzes = useQuery(convexApi.quizzes.listQuizzes, convexEnv.isConfigured ? {} : "skip");
+  const convexCourses = useOptionalConvexQuery(convexApi.courses.listCourses);
+  const convexLessons = useOptionalConvexQuery(convexApi.lessons.listLessons);
+  const convexQuizzes = useOptionalConvexQuery(convexApi.quizzes.listQuizzes);
 
   return useMemo(() => {
     if (!convexEnv.isConfigured) {

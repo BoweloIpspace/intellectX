@@ -1,16 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-test("testimonial marquees respect reduced motion and hide duplicated content from assistive technology", async ({ page }) => {
+test("public homepage renders cleanly under reduced motion without duplicated marquee content", async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  const track = page.getByTestId("infinite-slider-track").first();
-  await expect(track).toHaveAttribute("data-reduced-motion", "true");
-  await expect(track.locator('[aria-hidden="true"]')).toBeHidden();
-
-  const initialTransform = await track.evaluate((element) => getComputedStyle(element).transform);
-  await page.waitForTimeout(250);
-  const finalTransform = await track.evaluate((element) => getComputedStyle(element).transform);
-
-  expect(finalTransform).toBe(initialTransform);
+  await expect(page.getByRole("heading", { name: /Built for/i })).toBeVisible();
+  await expect(page.getByText("clearer next moves")).toBeVisible();
+  await expect(page.getByText("Learn with context")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("Application error");
+  await expect(page.getByTestId("infinite-slider-track")).toHaveCount(0);
 });

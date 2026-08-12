@@ -24,6 +24,7 @@ test("authenticated homepage and catalog search use learner-aware routes", async
     "Dashboard",
     "Profile",
     "Search",
+    "Search Learner",
   ]);
 
   await page.goto("/search");
