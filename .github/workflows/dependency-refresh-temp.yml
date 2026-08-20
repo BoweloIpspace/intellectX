@@ -6,18 +6,17 @@ on:
       - release/production-hardening-no-secrets
     paths:
       - ".github/workflows/dependency-refresh-temp.yml"
-  pull_request:
-    branches:
-      - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   refresh-lockfile:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: release/production-hardening-no-secrets
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "22"
@@ -43,24 +42,20 @@ jobs:
                 "react-hooks/set-state-in-effect": "off",
               },
             },
-            globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+            globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "convex/_generated/**"]),
           ]);
           EOF
-      - name: Typecheck migration
-        run: npm run typecheck
-      - name: Lint migration
-        run: npx eslint .
-      - name: Build migration
-        run: npm run build
-      - name: Production dependency audit
-        run: npm audit --omit=dev --audit-level=high
-      - name: Upload refreshed package files
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: refreshed-package-files
-          path: |
-            package.json
-            package-lock.json
-            eslint.config.mjs
-          if-no-files-found: error
-          retention-days: 1
+      - name: Verify migration
+        run: |
+          npm run typecheck
+          npx eslint .
+          npm run build
+          npm audit --omit=dev --audit-level=high
+      - name: Commit refreshed package files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json eslint.config.mjs
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: upgrade patched framework dependencies"
+          git push origin HEAD:release/production-hardening-no-secrets
