@@ -9,8 +9,10 @@ const webItems = [
 ];
 
 const nativeItems = [
+  { label: "Home", href: "/mobile-study" },
   { label: "Quizzes", href: "/mobile-quizzes" },
-  { label: "Flashcards", href: "/mobile-flashcards" },
+  { label: "Progress", href: "/mobile-progress" },
+  { label: "Profile", href: "/mobile-profile" },
 ];
 
 describe("mobile navigation surface routing", () => {
@@ -21,7 +23,7 @@ describe("mobile navigation surface routing", () => {
         webItems,
         webLogoHref: "/courses",
         nativeItems,
-        nativeLogoHref: "/mobile-quizzes",
+        nativeLogoHref: "/mobile-study",
       }),
     ).toEqual({
       items: webItems,
@@ -29,18 +31,18 @@ describe("mobile navigation surface routing", () => {
     });
   });
 
-  it("uses dedicated mobile-app routes only on a native Capacitor surface", () => {
+  it("uses the quiz-only four-tab navigation on a native Capacitor surface", () => {
     expect(
       resolveMobileNavigationSurface({
         nativeAppSurface: true,
         webItems,
         webLogoHref: "/courses",
         nativeItems,
-        nativeLogoHref: "/mobile-quizzes",
+        nativeLogoHref: "/mobile-study",
       }),
     ).toEqual({
       items: nativeItems,
-      logoHref: "/mobile-quizzes",
+      logoHref: "/mobile-study",
     });
   });
 });

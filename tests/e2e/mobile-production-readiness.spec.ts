@@ -27,17 +27,21 @@ async function seedLocalLearner(page: import("@playwright/test").Page) {
   });
 }
 
-test("mobile study keeps quizzes first, flashcards second, and notes out of scope", async ({ page }) => {
+test("native mobile home is quiz-only with Home, Quizzes, Progress, and Profile navigation", async ({ page }) => {
+  await simulateNativeAndroid(page);
   await page.goto("/mobile-study");
 
-  await expect(page.locator("main h2")).toHaveText(["Quizzes", "Flashcards"]);
-  await expect(page.getByRole("heading", { name: "Notes" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Free quiz practice" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Quiz library" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Flashcards" })).toHaveCount(0);
 
   const mobileNav = page.getByRole("navigation", { name: "Mobile study navigation" });
-  await expect(mobileNav.getByRole("link")).toHaveText(["Quizzes", "Flashcards"]);
+  await expect(mobileNav.getByRole("link")).toHaveText(["Home", "Quizzes", "Progress", "Profile"]);
+  await expect(mobileNav.getByRole("link", { name: "Flashcards" })).toHaveCount(0);
 });
 
-test("mobile quiz detail stays inside the mobile shell", async ({ page }) => {
+test("mobile quiz detail stays inside the quiz-only native shell", async ({ page }) => {
+  await simulateNativeAndroid(page);
   await seedLocalLearner(page);
   await page.goto("/mobile-quizzes");
 
@@ -47,28 +51,45 @@ test("mobile quiz detail stays inside the mobile shell", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/quiz\/.+\?from=mobile$/);
   await expect(page.getByText("Free mobile")).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Mobile study navigation" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Quizzes", exact: true })).toHaveAttribute("aria-current", "page");
+  const mobileNav = page.getByRole("navigation", { name: "Mobile study navigation" });
+  await expect(mobileNav).toBeVisible();
+  await expect(mobileNav.getByRole("link", { name: "Quizzes", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(mobileNav.getByRole("link", { name: "Flashcards" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Courses", exact: true })).toHaveCount(0);
   await expect(page.locator("footer")).toHaveCount(0);
 });
 
-test("native direct quiz deep links resolve to the mobile shell", async ({ page }) => {
+test("native direct quiz deep links resolve to the quiz-only mobile shell", async ({ page }) => {
   await simulateNativeAndroid(page);
   await seedLocalLearner(page);
   await page.goto("/quiz/ai-study-systems-check", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByText("Free mobile")).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Mobile study navigation" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Quizzes", exact: true })).toHaveAttribute("aria-current", "page");
+  const mobileNav = page.getByRole("navigation", { name: "Mobile study navigation" });
+  await expect(mobileNav).toBeVisible();
+  await expect(mobileNav.getByRole("link", { name: "Quizzes", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(mobileNav.getByRole("link", { name: "Flashcards" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Courses", exact: true })).toHaveCount(0);
   await expect(page.locator("footer")).toHaveCount(0);
 });
 
-test("native app redirects web-only routes back to the mobile quiz home", async ({ page }) => {
+test("native app redirects flashcards and other web-only routes back to mobile Home", async ({ page }) => {
   await simulateNativeAndroid(page);
-  await page.goto("/mobile-notes", { waitUntil: "domcontentloaded" });
+  await page.goto("/mobile-flashcards", { waitUntil: "domcontentloaded" });
 
-  await expect(page).toHaveURL(/\/mobile-quizzes$/);
-  await expect(page.getByRole("heading", { name: "Practice with focused quizzes" })).toBeVisible();
+  await expect(page).toHaveURL(/\/mobile-study$/);
+  await expect(page.getByRole("heading", { name: "Free quiz practice" })).toBeVisible();
+});
+
+test("native progress and profile routes remain inside the quiz product", async ({ page }) => {
+  await simulateNativeAndroid(page);
+  await seedLocalLearner(page);
+
+  await page.goto("/mobile-progress");
+  await expect(page.getByRole("heading", { name: "Quiz progress" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Mobile study navigation" }).getByRole("link", { name: "Progress" })).toHaveAttribute("aria-current", "page");
+
+  await page.goto("/mobile-profile");
+  await expect(page.getByRole("heading", { name: "Quiz learner profile" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Mobile study navigation" }).getByRole("link", { name: "Profile" })).toHaveAttribute("aria-current", "page");
 });

@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   server: {
     url: "https://intellect-x-coral.vercel.app",
     cleartext: false,
-    appStartPath: "/mobile-quizzes",
+    appStartPath: "/mobile-study",
     errorPath: "mobile-error.html",
   },
 };

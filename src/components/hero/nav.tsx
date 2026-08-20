@@ -12,56 +12,25 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const publicNavItems = [
-  {
-    label: "Features",
-    href: "/#features",
-  },
-  {
-    label: "How it works",
-    href: "/#how-it-works",
-  },
-  {
-    label: "Pricing",
-    href: "/pricing",
-  },
+  { label: "Features", href: "/#features" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Pricing", href: "/pricing" },
 ];
 
 const appNavItems = [
-  {
-    label: "Courses",
-    href: "/courses",
-  },
-  {
-    label: "Quizzes",
-    href: "/quizzes",
-  },
-  {
-    label: "Progress",
-    href: "/progress",
-  },
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-  },
-  {
-    label: "Profile",
-    href: "/profile",
-  },
-  {
-    label: "Search",
-    href: "/search",
-  },
+  { label: "Courses", href: "/courses" },
+  { label: "Quizzes", href: "/quizzes" },
+  { label: "Progress", href: "/progress" },
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Profile", href: "/profile" },
+  { label: "Search", href: "/search" },
 ];
 
 const mobileFreeNavItems = [
-  {
-    label: "Quizzes",
-    href: "/mobile-quizzes",
-  },
-  {
-    label: "Flashcards",
-    href: "/mobile-flashcards",
-  },
+  { label: "Home", href: "/mobile-study" },
+  { label: "Quizzes", href: "/mobile-quizzes" },
+  { label: "Progress", href: "/mobile-progress" },
+  { label: "Profile", href: "/mobile-profile" },
 ];
 
 type SessionState = LearnerSession | null | undefined;
@@ -97,7 +66,7 @@ function ClerkNav() {
     webItems: navItems,
     webLogoHref: logoHref,
     nativeItems: mobileFreeNavItems,
-    nativeLogoHref: "/mobile-quizzes",
+    nativeLogoHref: "/mobile-study",
   });
 
   return (
@@ -154,7 +123,7 @@ function LocalSessionNav() {
     webItems: navItems,
     webLogoHref: logoHref,
     nativeItems: mobileFreeNavItems,
-    nativeLogoHref: "/mobile-quizzes",
+    nativeLogoHref: "/mobile-study",
   });
 
   return (
