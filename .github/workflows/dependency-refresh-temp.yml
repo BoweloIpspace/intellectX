@@ -6,6 +6,9 @@ on:
       - release/production-hardening-no-secrets
     paths:
       - ".github/workflows/dependency-refresh-temp.yml"
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
