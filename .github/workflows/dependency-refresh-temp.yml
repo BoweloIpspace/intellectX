@@ -26,6 +26,8 @@ jobs:
         run: |
           npm install --save-exact next@16.3.1 react@19.2.8 react-dom@19.2.8
           npm install --save-dev --save-exact eslint-config-next@16.3.1
+          npm audit fix --package-lock-only
+          npm ci
           cat > eslint.config.mjs <<'EOF'
           import { defineConfig, globalIgnores } from "eslint/config";
           import nextVitals from "eslint-config-next/core-web-vitals";
@@ -51,7 +53,6 @@ jobs:
       - name: Build migration
         run: npm run build
       - name: Production dependency audit
-        continue-on-error: true
         run: npm audit --omit=dev --audit-level=high
       - name: Upload refreshed package files
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
