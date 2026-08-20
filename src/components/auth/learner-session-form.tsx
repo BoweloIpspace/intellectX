@@ -215,6 +215,7 @@ function AuthField({ label, name, value, onChange, ...props }: AuthFieldProps) {
         name={name}
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onInput={(event) => onChange(event.currentTarget.value)}
         className={cn(
           "border-input bg-background/80 h-11 rounded-lg border px-4 text-sm outline-none transition-all",
           "placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-ring/40 focus:ring-[3px]",
