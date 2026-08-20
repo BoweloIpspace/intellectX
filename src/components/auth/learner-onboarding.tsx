@@ -8,12 +8,15 @@ import {
   isAcademicProfileComplete,
   loadAcademicProfile,
 } from "@/lib/academic-profile";
+import { getSafeMobileReturnTo } from "@/lib/auth-return-route";
 import { getLearnerHomeRouteForCurrentRuntime, isMobileAppRuntime } from "@/lib/feature-scope";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export function LearnerOnboarding() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = getSafeMobileReturnTo(searchParams.get("returnTo"));
   const { mode, userId } = useLearnerAuthRuntime();
   const [nativeMobile, setNativeMobile] = useState(false);
   const [profileCheckComplete, setProfileCheckComplete] = useState(false);
@@ -24,12 +27,16 @@ export function LearnerOnboarding() {
   }, []);
 
   useEffect(() => {
+    function destination() {
+      return returnTo ?? getLearnerHomeRouteForCurrentRuntime();
+    }
+
     function continueIfProfileComplete() {
       if (!isAcademicProfileComplete(loadAcademicProfile())) {
         return false;
       }
 
-      router.replace(getLearnerHomeRouteForCurrentRuntime());
+      router.replace(destination());
       return true;
     }
 
@@ -46,10 +53,10 @@ export function LearnerOnboarding() {
     return () => {
       window.removeEventListener(ACADEMIC_PROFILE_CHANGE_EVENT, handleProfileChange);
     };
-  }, [router, userId]);
+  }, [returnTo, router, userId]);
 
   function continueAfterProfile() {
-    router.replace(getLearnerHomeRouteForCurrentRuntime());
+    router.replace(returnTo ?? getLearnerHomeRouteForCurrentRuntime());
   }
 
   if (!profileCheckComplete) {
@@ -67,13 +74,13 @@ export function LearnerOnboarding() {
       <Card className="rounded-lg border-dashed">
         <CardContent className="text-muted-foreground py-5 text-sm leading-6">
           {nativeMobile
-            ? "Complete your Study Profile first. Then continue directly to the free mobile quiz experience."
+            ? "Complete your Study Profile first. Then continue directly to the quiz you selected."
             : "Complete your Study Profile first. Next, continue to course selection, where the 5-course limit, 7-day grace period, and selection lock remain authoritative."}
         </CardContent>
       </Card>
       <StudyProfileCard
         showReset={false}
-        submitLabel={nativeMobile ? "Continue to mobile quizzes" : "Continue to course selection"}
+        submitLabel={nativeMobile && returnTo ? "Continue to quiz" : nativeMobile ? "Continue to mobile quizzes" : "Continue to course selection"}
         draftScope={draftScope}
         onSaved={continueAfterProfile}
       />

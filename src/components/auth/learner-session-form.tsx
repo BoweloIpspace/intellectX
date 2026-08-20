@@ -4,12 +4,13 @@ import { StudyProfileCard } from "@/components/education/study-profile-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { isAcademicProfileComplete, loadAcademicProfile } from "@/lib/academic-profile";
+import { getSafeMobileReturnTo, withMobileReturnTo } from "@/lib/auth-return-route";
 import { getLearnerHomeRouteForCurrentRuntime } from "@/lib/feature-scope";
 import { createLearnerSession, getLearnerSession, type LearnerSession } from "@/lib/learner-session";
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon, MailIcon, SparklesIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, type InputHTMLAttributes, useEffect, useState } from "react";
 
 type LearnerSessionMode = "login" | "signup" | "forgot-password";
@@ -41,6 +42,8 @@ const contentByMode = {
 
 export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = getSafeMobileReturnTo(searchParams.get("returnTo"));
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,6 +52,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
   const isSignup = mode === "signup";
   const isForgotPassword = mode === "forgot-password";
   const isProfileSetup = isSignup && pendingSession;
+  const destination = returnTo ?? getLearnerHomeRouteForCurrentRuntime();
 
   useEffect(() => {
     if (!isSignup) return;
@@ -63,7 +67,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     event.preventDefault();
 
     if (isForgotPassword) {
-      router.push("/login");
+      router.push(withMobileReturnTo("/login", returnTo));
       return;
     }
 
@@ -79,14 +83,14 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     }
 
     createLearnerSession(nextSession);
-    window.location.assign(getLearnerHomeRouteForCurrentRuntime());
+    window.location.assign(destination);
   }
 
   function completeSignup() {
     if (!pendingSession) return;
 
     createLearnerSession(pendingSession);
-    window.location.assign(getLearnerHomeRouteForCurrentRuntime());
+    window.location.assign(destination);
   }
 
   return (
@@ -107,7 +111,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
         {isProfileSetup ? (
           <div className="grid gap-5">
             <div className="border-primary/25 bg-primary/5 text-muted-foreground rounded-lg border border-dashed px-4 py-3 text-sm leading-6">
-              Complete your study profile to unlock your IntellectX study experience.
+              Complete your study profile to continue to your quiz.
             </div>
             <StudyProfileCard
               loadSavedProfile={false}
@@ -119,14 +123,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
         ) : (
           <form className="grid gap-4" onSubmit={handleSubmit}>
             {isSignup ? (
-              <AuthField
-                label="Name"
-                name="name"
-                placeholder="Your name"
-                autoComplete="name"
-                value={name}
-                onChange={setName}
-              />
+              <AuthField label="Name" name="name" placeholder="Your name" autoComplete="name" value={name} onChange={setName} />
             ) : null}
             <AuthField
               label="Email"
@@ -157,7 +154,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
             </Button>
           </form>
         )}
-        {!isProfileSetup ? <AuthFooter mode={mode} /> : null}
+        {!isProfileSetup ? <AuthFooter mode={mode} returnTo={returnTo} /> : null}
       </CardContent>
     </Card>
   );
@@ -189,16 +186,16 @@ function AuthField({ label, name, value, onChange, ...props }: AuthFieldProps) {
   );
 }
 
-function AuthFooter({ mode }: { mode: LearnerSessionMode }) {
+function AuthFooter({ mode, returnTo }: { mode: LearnerSessionMode; returnTo: string | null }) {
   if (mode === "login") {
     return (
       <div className="text-muted-foreground mt-6 flex flex-col gap-2 text-center text-sm sm:flex-row sm:justify-between">
-        <Link href="/forgot-password" className="underline underline-offset-4">
+        <Link href={withMobileReturnTo("/forgot-password", returnTo)} className="underline underline-offset-4">
           Forgot password?
         </Link>
         <span>
           New here?{" "}
-          <Link href="/signup" className="text-foreground font-medium underline underline-offset-4">
+          <Link href={withMobileReturnTo("/signup", returnTo)} className="text-foreground font-medium underline underline-offset-4">
             Sign up
           </Link>
         </span>
@@ -209,10 +206,10 @@ function AuthFooter({ mode }: { mode: LearnerSessionMode }) {
   if (mode === "signup") {
     return (
       <div className="text-muted-foreground mt-6 grid gap-2 text-center text-sm">
-        <p>After signup, complete your study profile to prioritize relevant learning content.</p>
+        <p>After signup, complete your study profile to continue.</p>
         <p>
           Already have a learner session?{" "}
-          <Link href="/login" className="text-foreground font-medium underline underline-offset-4">
+          <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
             Log in
           </Link>
         </p>
@@ -223,7 +220,7 @@ function AuthFooter({ mode }: { mode: LearnerSessionMode }) {
   return (
     <p className="text-muted-foreground mt-6 text-center text-sm">
       Remembered it?{" "}
-      <Link href="/login" className="text-foreground font-medium underline underline-offset-4">
+      <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
         Back to login
       </Link>
     </p>

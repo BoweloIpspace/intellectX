@@ -1,12 +1,14 @@
 "use client";
 
-import { SignIn, SignUp, useAuth } from "@clerk/nextjs";
-import { CLERK_LOGIN_REDIRECT_URL, CLERK_SIGNUP_REDIRECT_URL } from "@/lib/auth-redirects";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { SparklesIcon } from "lucide-react";
-import { useEffect } from "react";
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
+import { CLERK_LOGIN_REDIRECT_URL, CLERK_SIGNUP_REDIRECT_URL } from "@/lib/auth-redirects";
+import { getSafeMobileReturnTo, withMobileReturnTo } from "@/lib/auth-return-route";
 import { resolvePostLoginRouteFromClaims } from "@/lib/post-login-route";
+import { SignIn, SignUp, useAuth } from "@clerk/nextjs";
+import { SparklesIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 type ClerkAuthPanelProps = {
   mode: "login" | "signup";
@@ -22,7 +24,7 @@ const contentByMode = {
   signup: {
     eyebrow: "Learner account",
     title: "Create your learner account",
-    description: "Sign up, complete your study profile, then choose courses from the existing IntellectX course-selection flow.",
+    description: "Sign up, complete your study profile, then continue to your IntellectX learning experience.",
   },
 } satisfies Record<ClerkAuthPanelProps["mode"], { eyebrow: string; title: string; description: string }>;
 
@@ -49,13 +51,26 @@ const clerkAppearance = {
 
 export function ClerkAuthPanel({ mode }: ClerkAuthPanelProps) {
   const content = contentByMode[mode];
+  const searchParams = useSearchParams();
+  const returnTo = getSafeMobileReturnTo(searchParams.get("returnTo"));
+  const loginRedirectUrl = withMobileReturnTo(CLERK_LOGIN_REDIRECT_URL, returnTo);
+  const signupRedirectUrl = withMobileReturnTo(CLERK_SIGNUP_REDIRECT_URL, returnTo);
+  const loginUrl = withMobileReturnTo("/login", returnTo);
+  const signupUrl = withMobileReturnTo("/signup", returnTo);
   const { isLoaded, isSignedIn, sessionClaims } = useAuth();
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      window.location.replace(resolvePostLoginRouteFromClaims(sessionClaims));
+    if (!isLoaded || !isSignedIn) {
+      return;
     }
-  }, [isLoaded, isSignedIn, sessionClaims]);
+
+    if (mode === "signup") {
+      window.location.replace(signupRedirectUrl);
+      return;
+    }
+
+    window.location.replace(returnTo ?? resolvePostLoginRouteFromClaims(sessionClaims));
+  }, [isLoaded, isSignedIn, mode, returnTo, sessionClaims, signupRedirectUrl]);
 
   return (
     <Card className="border-white/70 bg-white/85 shadow-3xl backdrop-blur dark:border-white/10 dark:bg-card/85">
@@ -79,16 +94,16 @@ export function ClerkAuthPanel({ mode }: ClerkAuthPanelProps) {
         ) : mode === "signup" ? (
           <SignUp
             appearance={clerkAppearance}
-            forceRedirectUrl={CLERK_SIGNUP_REDIRECT_URL}
-            fallbackRedirectUrl={CLERK_SIGNUP_REDIRECT_URL}
-            signInUrl="/login"
+            forceRedirectUrl={signupRedirectUrl}
+            fallbackRedirectUrl={signupRedirectUrl}
+            signInUrl={loginUrl}
           />
         ) : (
           <SignIn
             appearance={clerkAppearance}
-            forceRedirectUrl={CLERK_LOGIN_REDIRECT_URL}
-            fallbackRedirectUrl={CLERK_LOGIN_REDIRECT_URL}
-            signUpUrl="/signup"
+            forceRedirectUrl={loginRedirectUrl}
+            fallbackRedirectUrl={loginRedirectUrl}
+            signUpUrl={signupUrl}
           />
         )}
       </CardContent>
