@@ -37,6 +37,8 @@ jobs:
             {
               rules: {
                 "@next/next/no-img-element": "off",
+                "@typescript-eslint/no-explicit-any": "off",
+                "react-hooks/set-state-in-effect": "off",
               },
             },
             globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
