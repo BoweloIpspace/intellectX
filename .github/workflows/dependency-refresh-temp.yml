@@ -1,0 +1,38 @@
+name: Temporary dependency refresh
+
+on:
+  push:
+    branches:
+      - release/production-hardening-no-secrets
+    paths:
+      - ".github/workflows/dependency-refresh-temp.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  refresh-lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+          cache: "npm"
+      - name: Refresh patched framework dependencies
+        run: |
+          npm install --save-exact next@15.5.21 react@19.2.8 react-dom@19.2.8
+          npm install --save-dev --save-exact eslint-config-next@15.5.21
+          npm audit fix --package-lock-only
+      - name: Production dependency audit
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
+      - name: Upload refreshed package files
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: refreshed-package-files
+          path: |
+            package.json
+            package-lock.json
+          if-no-files-found: error
+          retention-days: 1
