@@ -11,6 +11,7 @@ import { useConvex, useConvexAuth, useMutation } from "convex/react";
 import {
   AlertCircleIcon,
   ArchiveIcon,
+  ArchiveRestoreIcon,
   CheckCircle2Icon,
   ChevronRightIcon,
   Clock3Icon,
@@ -77,7 +78,7 @@ type AdminCourseReviewDetail = {
 };
 
 type QueueFilter = "all" | "submitted" | "changes" | "approved" | "published";
-type CourseAction = "approve" | "changes" | "publish" | "unpublish" | "archive";
+type CourseAction = "approve" | "changes" | "publish" | "unpublish" | "archive" | "unarchive";
 type DestructiveCourseAction = Extract<CourseAction, "unpublish" | "archive">;
 
 function formatDate(value?: number) {
@@ -128,6 +129,7 @@ function ConvexAdminCourseReviewWorkspace({ initialCourseStableId }: { initialCo
   const publishCourse = useMutation(convexApi.courses.publishCourse);
   const unpublishCourse = useMutation(convexApi.courses.unpublishCourse);
   const archiveCourse = useMutation(convexApi.courses.archiveCourse);
+  const unarchiveCourse = useMutation(convexApi.courses.unarchiveCourse);
   const [courses, setCourses] = useState<AdminCourseSummary[]>([]);
   const [selectedStableId, setSelectedStableId] = useState(initialCourseStableId ?? "");
   const [detail, setDetail] = useState<AdminCourseReviewDetail | null>(null);
@@ -247,6 +249,9 @@ function ConvexAdminCourseReviewWorkspace({ initialCourseStableId }: { initialCo
       } else if (action === "unpublish") {
         await unpublishCourse({ stableId });
         setNotice("Course unpublished and removed from learner visibility.");
+      } else if (action === "unarchive") {
+        await unarchiveCourse({ stableId });
+        setNotice("Course restored to its previous workflow state.");
       } else {
         await archiveCourse({ stableId, ...(reason.trim() ? { reason: reason.trim() } : {}) });
         setNotice("Course archived.");
@@ -616,6 +621,17 @@ function CourseReviewDetail({
               <ArchiveIcon className="size-4" />
               {busyAction === "archive" ? "Archiving…" : "Archive"}
             </Button>
+            {archived ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busyAction !== null}
+                onClick={() => onAction("unarchive")}
+              >
+                <ArchiveRestoreIcon className="size-4" />
+                {busyAction === "unarchive" ? "Restoring…" : "Restore"}
+              </Button>
+            ) : null}
           </div>
 
           {confirmingAction ? (

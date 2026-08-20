@@ -1,5 +1,7 @@
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
+import { StaffDemoEntry } from "@/components/auth/staff-demo-entry";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
+import { isStaffDemoModeEnabled } from "@/lib/staff-demo-access";
 import { resolvePostLoginRouteFromClaims } from "@/lib/post-login-route";
 import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
@@ -11,6 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default async function LoginPage() {
+  // Local-only demo entry into the staff UI. Only ever rendered when Clerk
+  // authentication is not configured and the app is not a production build.
+  const staffDemoEnabled = isStaffDemoModeEnabled();
+
   if (isClerkAuthEnabled()) {
     let authState: Awaited<ReturnType<typeof auth>> | null = null;
 
@@ -25,5 +31,5 @@ export default async function LoginPage() {
     }
   }
 
-  return <AuthPageShell mode="login" />;
+  return <AuthPageShell mode="login" demoEntry={staffDemoEnabled ? <StaffDemoEntry /> : null} />;
 }

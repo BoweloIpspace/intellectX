@@ -12,8 +12,10 @@ import {
   assertCanPublishCourse,
   assertCanRequestCourseChanges,
   assertCanSubmitCourseForReview,
+  assertCanUnarchiveCourse,
   assertCanUnpublishCourse,
   buildCourseWorkflowAuditLog,
+  resolveCourseRestoreState,
 } from "../../convex/lib/courseWorkflowMutations";
 import { filterLearnerVisibleCourseRecords, isLearnerVisibleCourseRecord } from "../../convex/lib/courseWorkflow";
 
@@ -52,6 +54,101 @@ describe("Convex course workflow transitions", () => {
 
     expect(filterLearnerVisibleCourseRecords(courses).map((course) => course.stableId)).toEqual(["visible"]);
     expect(isLearnerVisibleCourseRecord({ stableId: "hidden", reviewStatus: APPROVED })).toBe(false);
+  });
+});
+
+describe("Convex course restore (unarchive) transitions", () => {
+  it("allows restoring only courses whose workflow state is fully archived", () => {
+    expect(() =>
+      assertCanUnarchiveCourse({ reviewStatus: ARCHIVED, publicationStatus: ARCHIVED }),
+    ).not.toThrow();
+    expect(() => assertCanUnarchiveCourse({ reviewStatus: DRAFT })).toThrow(
+      "Only archived courses can be restored.",
+    );
+    expect(() => assertCanUnarchiveCourse({ reviewStatus: APPROVED })).toThrow(
+      "Only archived courses can be restored.",
+    );
+    expect(() => assertCanUnarchiveCourse({ reviewStatus: ARCHIVED })).toThrow(
+      "Only archived courses can be restored.",
+    );
+    expect(() => assertCanUnarchiveCourse({ reviewStatus: ARCHIVED, publicationStatus: PUBLISHED })).toThrow(
+      "Only archived courses can be restored.",
+    );
+  });
+
+  it("restores the exact pre-archive review and publication state from the archived audit event", () => {
+    expect(
+      resolveCourseRestoreState({
+        before: { reviewStatus: DRAFT, publicationStatus: UNPUBLISHED },
+      }),
+    ).toEqual({
+      reviewStatus: DRAFT,
+      publicationStatus: UNPUBLISHED,
+    });
+
+    expect(
+      resolveCourseRestoreState({
+        before: {
+          reviewStatus: CHANGES_REQUESTED,
+          publicationStatus: UNPUBLISHED,
+          reviewReason: "Needs citations",
+        },
+      }),
+    ).toEqual({
+      reviewStatus: CHANGES_REQUESTED,
+      publicationStatus: UNPUBLISHED,
+      reviewReason: "Needs citations",
+    });
+
+    expect(
+      resolveCourseRestoreState({
+        before: { reviewStatus: APPROVED, publicationStatus: PUBLISHED },
+      }),
+    ).toEqual({
+      reviewStatus: APPROVED,
+      publicationStatus: PUBLISHED,
+    });
+  });
+
+  it("rejects restore targets that are not valid pre-archive workflow states", () => {
+    expect(resolveCourseRestoreState({})).toBeNull();
+    expect(resolveCourseRestoreState({ before: null })).toBeNull();
+    expect(resolveCourseRestoreState({ before: {} })).toBeNull();
+    expect(resolveCourseRestoreState({ before: { reviewStatus: ARCHIVED } })).toBeNull();
+    expect(resolveCourseRestoreState({ before: { reviewStatus: "owner" } as never })).toBeNull();
+    expect(resolveCourseRestoreState({ before: { reviewStatus: PUBLISHED } })).toBeNull();
+  });
+
+  it("defaults a missing publication status to unpublished", () => {
+    expect(resolveCourseRestoreState({ before: { reviewStatus: APPROVED } })).toEqual({
+      reviewStatus: APPROVED,
+      publicationStatus: UNPUBLISHED,
+    });
+  });
+});
+
+describe("Convex course restore audit logs", () => {
+  it("builds an append-only course.unarchived audit payload with before and after state", () => {
+    expect(
+      buildCourseWorkflowAuditLog({
+        eventType: "course.unarchived",
+        actorUserId: "auth:admin_1",
+        actorRole: "admin",
+        targetId: "course-1",
+        createdAt: 999,
+        before: { stableId: "course-1", reviewStatus: ARCHIVED, publicationStatus: ARCHIVED },
+        after: { stableId: "course-1", reviewStatus: DRAFT, publicationStatus: UNPUBLISHED },
+      }),
+    ).toEqual({
+      eventType: "course.unarchived",
+      actorUserId: "auth:admin_1",
+      actorRole: "admin",
+      targetType: "course",
+      targetId: "course-1",
+      createdAt: 999,
+      before: { stableId: "course-1", reviewStatus: ARCHIVED, publicationStatus: ARCHIVED },
+      after: { stableId: "course-1", reviewStatus: DRAFT, publicationStatus: UNPUBLISHED },
+    });
   });
 });
 

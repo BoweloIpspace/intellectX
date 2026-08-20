@@ -6,13 +6,30 @@ import {
 } from "@/components/providers/learner-auth-runtime-provider";
 import { getAuthEnvironmentStatus } from "@/lib/auth-env";
 import { ClerkProvider, useAuth } from "@clerk/nextjs";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { useMemo } from "react";
 
 type ConvexClientProviderProps = {
   children: React.ReactNode;
 };
+
+/**
+ * Local-fallback Convex auth adapter. There is no Clerk identity in
+ * local-fallback mode, so Convex must never receive an access token. This
+ * keeps `useConvexAuth` consumers (staff workspaces) behaving like a signed-out
+ * client and failing closed instead of crashing on a missing auth provider.
+ */
+function useLocalConvexAuth() {
+  return useMemo(
+    () => ({
+      isLoading: false,
+      isAuthenticated: false,
+      fetchAccessToken: async () => null,
+    }),
+    [],
+  );
+}
 
 export function ConvexClientProvider({ children }: ConvexClientProviderProps) {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
@@ -34,9 +51,9 @@ export function ConvexClientProvider({ children }: ConvexClientProviderProps) {
 
   if (!authEnvironment.clerkPublishableKeyPresent || !clerkPublishableKey) {
     return (
-      <ConvexProvider client={client}>
+      <ConvexProviderWithAuth client={client} useAuth={useLocalConvexAuth}>
         <LocalLearnerAuthRuntimeProvider>{children}</LocalLearnerAuthRuntimeProvider>
-      </ConvexProvider>
+      </ConvexProviderWithAuth>
     );
   }
 

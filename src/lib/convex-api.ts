@@ -15,6 +15,7 @@ export const convexApi = {
     publishCourse: makeFunctionReference<"mutation">("courses:publishCourse"),
     unpublishCourse: makeFunctionReference<"mutation">("courses:unpublishCourse"),
     archiveCourse: makeFunctionReference<"mutation">("courses:archiveCourse"),
+    unarchiveCourse: makeFunctionReference<"mutation">("courses:unarchiveCourse"),
   },
   adminCourses: {
     listAdminCourses: makeFunctionReference<"query">("adminCourses:listAdminCourses"),

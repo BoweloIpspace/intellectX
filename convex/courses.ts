@@ -17,8 +17,10 @@ import {
   assertCanPublishCourse,
   assertCanRequestCourseChanges,
   assertCanSubmitCourseForReview,
+  assertCanUnarchiveCourse,
   assertCanUnpublishCourse,
   buildCourseWorkflowAuditLog,
+  resolveCourseRestoreState,
 } from "./lib/courseWorkflowMutations";
 import {
   assertCourseSubmissionReady,
@@ -677,6 +679,67 @@ export const archiveCourse = mutationGeneric({
       targetId: course.stableId,
       createdAt: archivedAt,
       ...(reason ? { reason } : {}),
+      before: course,
+      after: { ...course, ...patch },
+    });
+
+    return course._id;
+  },
+});
+
+export const unarchiveCourse = mutationGeneric({
+  args: { stableId: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    const actor = requireAdmin(identity);
+    const course = await getCourseByStableIdOrThrow(ctx, args.stableId);
+
+    assertCanUnarchiveCourse(course);
+
+    // The pre-archive state is recovered from the `before` snapshot stored on
+    // the most recent `course.archived` audit event. Newer archived events are
+    // tried first so double-archive edge cases resolve to the last valid state.
+    const archivedEvents = (
+      await ctx.db
+        .query("auditLogs")
+        .withIndex("by_target", (q: any) => q.eq("targetType", "course").eq("targetId", course.stableId))
+        .collect()
+    )
+      .filter((event: any) => event.eventType === "course.archived")
+      .sort((left: any, right: any) => right.createdAt - left.createdAt);
+
+    let restoreState = null;
+
+    for (const event of archivedEvents) {
+      const resolved = resolveCourseRestoreState(event);
+
+      if (resolved) {
+        restoreState = resolved;
+        break;
+      }
+    }
+
+    if (!restoreState) {
+      throw new Error("Unable to determine the previous workflow state for this archived course.");
+    }
+
+    const restoredAt = Date.now();
+    const patch = {
+      reviewStatus: restoreState.reviewStatus,
+      publicationStatus: restoreState.publicationStatus,
+      // Restore the original review reason (or clear the archive note); the
+      // archive reason itself remains preserved in the archived audit event.
+      reviewReason: restoreState.reviewReason ?? "",
+      updatedAt: restoredAt,
+    };
+
+    await ctx.db.patch(course._id, patch);
+    await writeCourseAuditLog(ctx, {
+      eventType: "course.unarchived",
+      actorUserId: actor.actorUserId,
+      actorRole: actor.role,
+      targetId: course.stableId,
+      createdAt: restoredAt,
       before: course,
       after: { ...course, ...patch },
     });

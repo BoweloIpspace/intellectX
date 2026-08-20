@@ -7,9 +7,10 @@ import { isClerkAuthEnabled } from "@/lib/auth-mode";
 
 type AuthPageShellProps = {
   mode: "login" | "signup" | "forgot-password";
+  demoEntry?: React.ReactNode;
 };
 
-export function AuthPageShell({ mode }: AuthPageShellProps) {
+export function AuthPageShell({ mode, demoEntry }: AuthPageShellProps) {
   const clerkAuthEnabled = isClerkAuthEnabled();
   const authPanel =
     clerkAuthEnabled && mode !== "forgot-password" ? (
@@ -48,7 +49,10 @@ export function AuthPageShell({ mode }: AuthPageShellProps) {
               {shellCopy.description}
             </p>
           </section>
-          {authPanel}
+          <div className="flex flex-col gap-4">
+            {demoEntry}
+            {authPanel}
+          </div>
         </main>
       </div>
       <Footer />

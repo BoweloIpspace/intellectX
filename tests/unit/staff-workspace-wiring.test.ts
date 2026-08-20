@@ -44,6 +44,26 @@ describe("staff workspace production wiring", () => {
     expect(source).toContain("(correct)");
   });
 
+  it("wires the admin course restore mutation and action into the review workspace", () => {
+    const source = read("src/components/admin/admin-course-review-workspace.tsx");
+
+    expect(source).toContain("convexApi.courses.unarchiveCourse");
+    expect(source).toContain('onClick={() => onAction("unarchive")}');
+    expect(source).toContain("Restore");
+    expect(source).toContain("archived ?");
+  });
+
+  it("guards the course restore mutation with admin RBAC and an append-only audit event", () => {
+    const coursesSource = read("convex/courses.ts");
+    const unarchiveSection = coursesSource.slice(coursesSource.indexOf("export const unarchiveCourse"));
+
+    expect(unarchiveSection).toContain("requireAdmin(identity)");
+    expect(unarchiveSection).toContain('eventType: "course.unarchived"');
+    expect(unarchiveSection).toContain("before: course");
+    expect(unarchiveSection).toContain("after: { ...course, ...patch }");
+    expect(unarchiveSection).toContain("assertCanUnarchiveCourse(course)");
+  });
+
   it("keeps read-only course views from showing upload controls", () => {
     const list = read("src/components/instructor/instructor-course-list.tsx");
     const page = read("src/app/instructor/courses/new/page.tsx");
