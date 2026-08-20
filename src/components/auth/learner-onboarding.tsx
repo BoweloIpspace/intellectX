@@ -67,7 +67,7 @@ export function LearnerOnboarding() {
       <Card className="rounded-lg border-dashed">
         <CardContent className="text-muted-foreground py-5 text-sm leading-6">
           {nativeMobile
-            ? "Complete your Study Profile first. Then continue directly to the free mobile quiz and flashcard experience."
+            ? "Complete your Study Profile first. Then continue directly to the free mobile quiz experience."
             : "Complete your Study Profile first. Next, continue to course selection, where the 5-course limit, 7-day grace period, and selection lock remain authoritative."}
         </CardContent>
       </Card>

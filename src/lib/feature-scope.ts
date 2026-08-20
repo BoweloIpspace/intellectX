@@ -2,12 +2,16 @@ export type AppSurface = "web" | "mobile";
 
 export type StudyFeature = "quizzes" | "flashcards" | "notes";
 
-const mobileStudyFeatures = ["quizzes", "flashcards"] as const satisfies readonly StudyFeature[];
+// The native IntellectX app is a free quiz product. Flashcards and notes remain
+// available to the broader web application but are intentionally excluded from
+// the native mobile surface.
+const mobileStudyFeatures = ["quizzes"] as const satisfies readonly StudyFeature[];
 
 const mobileAllowedRoutePrefixes = [
   "/mobile-study",
   "/mobile-quizzes",
-  "/mobile-flashcards",
+  "/mobile-progress",
+  "/mobile-profile",
   "/quiz",
   "/login",
   "/signup",
@@ -47,6 +51,8 @@ export function isMobileAppRuntime() {
 }
 
 export function getLearnerHomeRouteForCurrentRuntime() {
+  // Auth/onboarding completion continues directly into the quiz library. The
+  // native application itself starts on /mobile-study, which acts as Home.
   return isMobileAppRuntime() ? "/mobile-quizzes" : "/courses";
 }
 
