@@ -102,11 +102,14 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
       return;
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const formData = new FormData(event.currentTarget);
+    const submittedEmail = String(formData.get("email") ?? email);
+    const submittedName = String(formData.get("name") ?? name);
+    const normalizedEmail = submittedEmail.trim().toLowerCase();
     if (!normalizedEmail) return;
 
     const nextSession: LearnerSession = {
-      name: isSignup ? name.trim() || "Learner" : normalizedEmail.split("@")[0] || "Learner",
+      name: isSignup ? submittedName.trim() || "Learner" : normalizedEmail.split("@")[0] || "Learner",
       email: normalizedEmail,
       role: "student",
     };
@@ -215,7 +218,6 @@ function AuthField({ label, name, value, onChange, ...props }: AuthFieldProps) {
         name={name}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        onInput={(event) => onChange(event.currentTarget.value)}
         className={cn(
           "border-input bg-background/80 h-11 rounded-lg border px-4 text-sm outline-none transition-all",
           "placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-ring/40 focus:ring-[3px]",
