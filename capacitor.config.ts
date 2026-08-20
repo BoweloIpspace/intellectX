@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: "IntellectX",
   webDir: "public",
   server: {
-    url: "https://intellect-x-coral.vercel.app",
+    url: "https://intellectx-lovat.vercel.app",
     cleartext: false,
     appStartPath: "/mobile-study",
     errorPath: "mobile-error.html",
