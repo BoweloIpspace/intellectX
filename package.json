@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "prebuild": "npm run check:mobile-prod-env:strict",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "verify": "npm run typecheck && npm run lint && npm run test:unit && npm run build && npm run test:e2e",
@@ -15,7 +16,8 @@
     "convex:codegen": "convex codegen",
     "test:unit": "vitest run",
     "check:prod-env": "node scripts/check-production-env.mjs",
-    "check:prod-env:strict": "node scripts/check-production-env.mjs --strict"
+    "check:prod-env:strict": "node scripts/check-production-env.mjs --strict",
+    "check:mobile-prod-env:strict": "node scripts/check-production-env.mjs --mobile-local --strict"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
@@ -40,7 +42,7 @@
     "next": "16.3.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-use-measure": "^2.1.7",
+    "react-use-measure": "^8.6.0",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.0",
     "vaul": "^1.1.2"
