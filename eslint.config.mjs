@@ -8,6 +8,8 @@ export default defineConfig([
   {
     rules: {
       "@next/next/no-img-element": "off",
+      // Preserve the existing lint baseline while framework/backend typing is
+      // migrated incrementally. TypeScript still runs as a required CI gate.
       "@typescript-eslint/no-explicit-any": "off",
       "react-hooks/set-state-in-effect": "off",
     },

@@ -9,14 +9,28 @@ import {
 } from "../../../../convex/lib/quizIntegrity";
 import { getSeedQuizAnswer } from "../../../../convex/seedQuizAnswers";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const MAX_GRADING_BODY_BYTES = 32 * 1024;
+
+function jsonResponse(body: unknown, status = 200) {
+  return Response.json(body, {
+    status,
+    headers: {
+      "Cache-Control": "no-store, max-age=0",
+    },
+  });
+}
+
 function unavailableResponse() {
-  return Response.json({ error: "Local quiz grading fallback is unavailable." }, { status: 404 });
+  return jsonResponse({ error: "Local quiz grading fallback is unavailable while Convex is configured." }, 404);
 }
 
 function errorResponse(error: unknown, status = 400) {
-  return Response.json(
+  return jsonResponse(
     { error: error instanceof Error ? error.message : "Unable to grade this quiz request." },
-    { status },
+    status,
   );
 }
 
@@ -44,11 +58,21 @@ function getAuthoritativeFallbackQuiz(quizId: string) {
 }
 
 export async function POST(request: Request) {
-  // This route exists only so local development and CI can exercise the same
-  // server-authoritative quiz UX without restoring answer keys to browser data.
-  // Production and configured Convex environments fail closed to Convex only.
-  if (process.env.NODE_ENV === "production" || process.env.NEXT_PUBLIC_CONVEX_URL) {
+  // When Convex is configured it remains the single authoritative grading path.
+  // Without Convex, this Node-only route provides the production-safe fallback:
+  // answer keys stay server-only and never return in learner catalog payloads.
+  if (process.env.NEXT_PUBLIC_CONVEX_URL) {
     return unavailableResponse();
+  }
+
+  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.includes("application/json")) {
+    return errorResponse(new Error("Quiz grading requests must use application/json."), 415);
+  }
+
+  const contentLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_GRADING_BODY_BYTES) {
+    return errorResponse(new Error("Quiz grading request is too large."), 413);
   }
 
   let body: unknown;
@@ -93,7 +117,7 @@ export async function POST(request: Request) {
         throw new Error("A question check requires a selected answer.");
       }
 
-      return Response.json({
+      return jsonResponse({
         questionId: question.stableId,
         answerIndex: question.answerIndex,
         explanation: question.explanation,
@@ -113,7 +137,7 @@ export async function POST(request: Request) {
       const submissionId = normalizeQuizSubmissionId(payload.submissionId);
       const grading = gradeQuizAnswers(authoritative.questions, payload.answers as number[]);
 
-      return Response.json({
+      return jsonResponse({
         attemptId: `local:${submissionId}`,
         quizId: authoritative.quiz.id,
         quizTitle: authoritative.quiz.title,

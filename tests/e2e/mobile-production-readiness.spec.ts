@@ -59,7 +59,7 @@ test("mobile quiz detail stays inside the quiz-only native shell", async ({ page
   await expect(page.locator("footer")).toHaveCount(0);
 });
 
-test("signed-out native learner returns to the selected quiz after login", async ({ page }) => {
+test("signed-out native learner returns to the selected quiz after local-profile continue", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/mobile-quizzes");
 
@@ -69,11 +69,13 @@ test("signed-out native learner returns to the selected quiz after login", async
   await startQuiz.click();
 
   await expect(page).toHaveURL(/\/login\?returnTo=%2Fquiz%2F.+%3Ffrom%3Dmobile$/);
+  await expect(page.getByLabel("Password")).toHaveCount(0);
   await page.getByLabel("Email").fill("mobile.return@intellectx.local");
-  await page.getByLabel("Password").fill("test-password");
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  const continueButton = page.getByRole("button", { name: "Continue", exact: true });
+  await expect(continueButton).toBeEnabled();
+  await continueButton.click();
 
-  await expect(page).toHaveURL(new RegExp(`${quizHref!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`));
+  await expect(page).toHaveURL(new RegExp(`${quizHref!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), { timeout: 10_000 });
   await expect(page.getByText("Free mobile")).toBeVisible();
 });
 

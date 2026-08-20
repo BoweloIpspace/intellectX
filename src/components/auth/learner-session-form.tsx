@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { isAcademicProfileComplete, loadAcademicProfile } from "@/lib/academic-profile";
 import { getSafeMobileReturnTo, withMobileReturnTo } from "@/lib/auth-return-route";
-import { getLearnerHomeRouteForCurrentRuntime } from "@/lib/feature-scope";
+import { getLearnerHomeRouteForCurrentRuntime, isMobileAppRuntime } from "@/lib/feature-scope";
 import { createLearnerSession, getLearnerSession, type LearnerSession } from "@/lib/learner-session";
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon, MailIcon, SparklesIcon } from "lucide-react";
@@ -19,11 +19,11 @@ type LearnerSessionFormProps = {
   mode: LearnerSessionMode;
 };
 
-const contentByMode = {
+const webContentByMode = {
   login: {
     eyebrow: "Learner access",
     title: "Welcome back",
-    description: "Use your learner email and password to continue on this device.",
+    description: "Use your learner email to continue on this device.",
     submitLabel: "Continue",
   },
   signup: {
@@ -33,10 +33,34 @@ const contentByMode = {
     submitLabel: "Continue to study profile",
   },
   "forgot-password": {
-    eyebrow: "Account recovery",
-    title: "Return to learner access",
-    description: "Password recovery is not available for device-backed fallback sessions yet. Return to login to continue.",
+    eyebrow: "Local learner profile",
+    title: "No password recovery is needed",
+    description: "The current fallback profile is device-backed and does not verify passwords. Return to learner access to continue.",
     submitLabel: "Return to login",
+  },
+} satisfies Record<LearnerSessionMode, { eyebrow: string; title: string; description: string; submitLabel: string }>;
+
+const nativeContentByMode = {
+  login: {
+    eyebrow: "Local learner profile",
+    title: "Continue on this device",
+    description:
+      "Enter your learner email to continue with the profile stored on this device. The mobile local mode does not create an online account or use a password.",
+    submitLabel: "Continue",
+  },
+  signup: {
+    eyebrow: "Local learner profile",
+    title: "Create a local learner profile",
+    description:
+      "Add your learner details, then complete your study profile. This profile and quiz progress stay on this device unless cloud services are configured later.",
+    submitLabel: "Continue to study profile",
+  },
+  "forgot-password": {
+    eyebrow: "Local learner profile",
+    title: "No password is required",
+    description:
+      "The mobile app currently uses a device-local learner profile, so there is no password to recover. Return to learner access to continue.",
+    submitLabel: "Return to local profile",
   },
 } satisfies Record<LearnerSessionMode, { eyebrow: string; title: string; description: string; submitLabel: string }>;
 
@@ -44,15 +68,22 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = getSafeMobileReturnTo(searchParams.get("returnTo"));
+  const [hydrated, setHydrated] = useState(false);
+  const [nativeMobile, setNativeMobile] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pendingSession, setPendingSession] = useState<LearnerSession | null>(null);
-  const content = contentByMode[mode];
+  const content = nativeMobile ? nativeContentByMode[mode] : webContentByMode[mode];
   const isSignup = mode === "signup";
   const isForgotPassword = mode === "forgot-password";
   const isProfileSetup = isSignup && pendingSession;
   const destination = returnTo ?? getLearnerHomeRouteForCurrentRuntime();
+
+  useEffect(() => {
+    setNativeMobile(isMobileAppRuntime());
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (!isSignup) return;
@@ -67,13 +98,16 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     event.preventDefault();
 
     if (isForgotPassword) {
-      router.push(withMobileReturnTo("/login", returnTo));
+      router.replace(withMobileReturnTo("/login", returnTo));
       return;
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return;
+
     const nextSession: LearnerSession = {
-      name: isSignup ? name.trim() || "Learner" : email.split("@")[0] || "Learner",
-      email: email.trim() || "learner@intellectx.local",
+      name: isSignup ? name.trim() || "Learner" : normalizedEmail.split("@")[0] || "Learner",
+      email: normalizedEmail,
       role: "student",
     };
 
@@ -83,14 +117,14 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     }
 
     createLearnerSession(nextSession);
-    window.location.assign(destination);
+    window.location.replace(destination);
   }
 
   function completeSignup() {
     if (!pendingSession) return;
 
     createLearnerSession(pendingSession);
-    window.location.assign(destination);
+    window.location.replace(destination);
   }
 
   return (
@@ -116,7 +150,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
             <StudyProfileCard
               loadSavedProfile={false}
               showReset={false}
-              submitLabel="Complete signup"
+              submitLabel={nativeMobile ? "Complete profile" : "Complete signup"}
               onSaved={completeSignup}
             />
           </div>
@@ -125,36 +159,41 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
             {isSignup ? (
               <AuthField label="Name" name="name" placeholder="Your name" autoComplete="name" value={name} onChange={setName} />
             ) : null}
-            <AuthField
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="learner@intellectx.local"
-              autoComplete="email"
-              value={email}
-              onChange={setEmail}
-            />
             {!isForgotPassword ? (
+              <AuthField
+                label="Email"
+                name="email"
+                type="email"
+                placeholder={nativeMobile ? "learner@example.com" : "learner@intellectx.local"}
+                autoComplete="email"
+                required
+                value={email}
+                onChange={setEmail}
+              />
+            ) : null}
+            {!isForgotPassword && !nativeMobile ? (
               <AuthField
                 label="Password"
                 name="password"
                 type="password"
-                placeholder="Anything works here"
+                placeholder="Local fallback does not verify this value"
                 autoComplete={isSignup ? "new-password" : "current-password"}
                 value={password}
                 onChange={setPassword}
               />
             ) : null}
             <div className="border-primary/25 bg-primary/5 text-muted-foreground rounded-lg border border-dashed px-4 py-3 text-sm leading-6">
-              Device-backed fallback session: learner details stay on this device until logout or local storage is cleared.
+              {nativeMobile
+                ? "Local-only profile: no password is collected. Learner details and quiz history remain in this app's local storage until you log out, clear local data, or uninstall the app."
+                : "Device-backed fallback session: learner details stay on this device. The compatibility password field is not verified or stored; production cloud authentication requires Clerk configuration."}
             </div>
-            <Button type="submit" size="lg" className="mt-2 w-full">
+            <Button type="submit" size="lg" className="mt-2 w-full" disabled={!hydrated}>
               {content.submitLabel}
               <ArrowRightIcon className="size-4" />
             </Button>
           </form>
         )}
-        {!isProfileSetup ? <AuthFooter mode={mode} returnTo={returnTo} /> : null}
+        {!isProfileSetup ? <AuthFooter mode={mode} returnTo={returnTo} nativeMobile={nativeMobile} /> : null}
       </CardContent>
     </Card>
   );
@@ -186,8 +225,27 @@ function AuthField({ label, name, value, onChange, ...props }: AuthFieldProps) {
   );
 }
 
-function AuthFooter({ mode, returnTo }: { mode: LearnerSessionMode; returnTo: string | null }) {
+function AuthFooter({
+  mode,
+  returnTo,
+  nativeMobile,
+}: {
+  mode: LearnerSessionMode;
+  returnTo: string | null;
+  nativeMobile: boolean;
+}) {
   if (mode === "login") {
+    if (nativeMobile) {
+      return (
+        <p className="text-muted-foreground mt-6 text-center text-sm">
+          Need a new local profile?{" "}
+          <Link href={withMobileReturnTo("/signup", returnTo)} className="text-foreground font-medium underline underline-offset-4">
+            Create one
+          </Link>
+        </p>
+      );
+    }
+
     return (
       <div className="text-muted-foreground mt-6 flex flex-col gap-2 text-center text-sm sm:flex-row sm:justify-between">
         <Link href={withMobileReturnTo("/forgot-password", returnTo)} className="underline underline-offset-4">
@@ -206,11 +264,11 @@ function AuthFooter({ mode, returnTo }: { mode: LearnerSessionMode; returnTo: st
   if (mode === "signup") {
     return (
       <div className="text-muted-foreground mt-6 grid gap-2 text-center text-sm">
-        <p>After signup, complete your study profile to continue.</p>
+        <p>{nativeMobile ? "After creating the local profile, complete your study profile to continue." : "After signup, complete your study profile to continue."}</p>
         <p>
-          Already have a learner session?{" "}
+          {nativeMobile ? "Already have a local learner profile?" : "Already have a learner session?"}{" "}
           <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
-            Log in
+            {nativeMobile ? "Continue" : "Log in"}
           </Link>
         </p>
       </div>
@@ -219,9 +277,8 @@ function AuthFooter({ mode, returnTo }: { mode: LearnerSessionMode; returnTo: st
 
   return (
     <p className="text-muted-foreground mt-6 text-center text-sm">
-      Remembered it?{" "}
       <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
-        Back to login
+        {nativeMobile ? "Back to local learner profile" : "Back to login"}
       </Link>
     </p>
   );
