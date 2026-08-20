@@ -117,7 +117,7 @@ describe("quiz server authority", () => {
     expect(playerSource).not.toContain("question.answerIndex");
   });
 
-  it("keeps local and CI quiz functionality server-authoritative without enabling the fallback in production", () => {
+  it("keeps the local production fallback server-authoritative and fails closed when Convex is configured", () => {
     const routeSource = readFileSync(path.resolve(process.cwd(), "src/app/api/quiz-grading/route.ts"), "utf8");
     const playerSource = readFileSync(
       path.resolve(process.cwd(), "src/components/education/secure-quiz-player.tsx"),
@@ -125,10 +125,11 @@ describe("quiz server authority", () => {
     );
 
     expect(routeSource).toContain('import "server-only"');
-    expect(routeSource).toContain('process.env.NODE_ENV === "production"');
-    expect(routeSource).toContain("process.env.NEXT_PUBLIC_CONVEX_URL");
+    expect(routeSource).toContain('export const runtime = "nodejs"');
+    expect(routeSource).toContain("if (process.env.NEXT_PUBLIC_CONVEX_URL)");
     expect(routeSource).toContain("getSeedQuizAnswer");
     expect(routeSource).toContain("gradeQuizAnswers");
+    expect(routeSource).toContain('"Cache-Control": "no-store, max-age=0"');
     expect(playerSource).toContain('fetch("/api/quiz-grading"');
   });
 });
