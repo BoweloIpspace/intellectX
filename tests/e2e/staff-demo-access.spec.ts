@@ -1,10 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-// The staff demo flow only exists in local-fallback mode (no Clerk keys).
+// The staff demo flow only exists in local-fallback development mode (no Clerk keys).
 const clerkConfigured = Boolean(
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_SECRET_KEY,
 );
 test.skip(clerkConfigured, "Staff demo access requires local-fallback mode without Clerk keys.");
+test.skip(
+  process.env.PLAYWRIGHT_SERVER_MODE === "production",
+  "Staff demo shortcuts are intentionally disabled in production builds.",
+);
 
 test("login page shows staff demo entry buttons in local-fallback mode", async ({ page }) => {
   await page.goto("/login");
