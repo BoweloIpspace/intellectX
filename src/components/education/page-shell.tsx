@@ -20,10 +20,11 @@ import {
 } from "@/lib/authenticated-learner-local-data";
 import { getAuthEnvironmentStatus } from "@/lib/auth-env";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
+import { withMobileReturnTo } from "@/lib/auth-return-route";
 import { isMobileAppRuntime, isRouteWebOnly } from "@/lib/feature-scope";
 import { getLearnerSession } from "@/lib/learner-session";
 import { isAuthenticatedAppPath, isLearnerAppPath } from "@/lib/learner-routes";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type PageShellSurface = "web" | "mobile";
@@ -51,6 +52,7 @@ export function PageShell({ children, surface = "web" }: PageShellProps) {
 
 function ClerkPageShell({ children, surface }: ResolvedPageShellProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const guarded = isLearnerAppPath(pathname);
   const authenticatedAppPath = isAuthenticatedAppPath(pathname);
   const { isLoaded, isSignedIn, userId, primaryEmailAddress } = useLearnerAuthRuntime();
@@ -97,9 +99,12 @@ function ClerkPageShell({ children, surface }: ResolvedPageShellProps) {
     }
 
     if (guarded && isLoaded && !isSignedIn) {
-      window.location.replace("/login");
+      const query = searchParams.toString();
+      const currentRoute = `${pathname}${query ? `?${query}` : ""}`;
+      const loginRoute = isMobileAppRuntime() ? withMobileReturnTo("/login", currentRoute) : "/login";
+      window.location.replace(loginRoute);
     }
-  }, [guarded, isLoaded, isSignedIn, pathname]);
+  }, [guarded, isLoaded, isSignedIn, pathname, searchParams]);
 
   return (
     <>
@@ -120,6 +125,7 @@ function ClerkPageShell({ children, surface }: ResolvedPageShellProps) {
 
 function LocalPageShell({ children, surface }: ResolvedPageShellProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const guarded = isLearnerAppPath(pathname);
   const [canShowApp, setCanShowApp] = useState(!guarded);
 
@@ -138,7 +144,10 @@ function LocalPageShell({ children, surface }: ResolvedPageShellProps) {
       const session = getLearnerSession();
 
       if (!session) {
-        window.location.replace("/login");
+        const query = searchParams.toString();
+        const currentRoute = `${pathname}${query ? `?${query}` : ""}`;
+        const loginRoute = isMobileAppRuntime() ? withMobileReturnTo("/login", currentRoute) : "/login";
+        window.location.replace(loginRoute);
         return;
       }
 
@@ -161,7 +170,7 @@ function LocalPageShell({ children, surface }: ResolvedPageShellProps) {
       window.removeEventListener("pageshow", enforceAccess);
       document.removeEventListener("visibilitychange", enforceAccessWhenVisible);
     };
-  }, [guarded, pathname]);
+  }, [guarded, pathname, searchParams]);
 
   return (
     <PageShellFrame canShowApp={canShowApp} surface={surface}>
