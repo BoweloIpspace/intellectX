@@ -26,6 +26,22 @@ jobs:
         run: |
           npm install --save-exact next@16.3.1 react@19.2.8 react-dom@19.2.8
           npm install --save-dev --save-exact eslint-config-next@16.3.1
+          cat > eslint.config.mjs <<'EOF'
+          import { defineConfig, globalIgnores } from "eslint/config";
+          import nextVitals from "eslint-config-next/core-web-vitals";
+          import nextTs from "eslint-config-next/typescript";
+
+          export default defineConfig([
+            ...nextVitals,
+            ...nextTs,
+            {
+              rules: {
+                "@next/next/no-img-element": "off",
+              },
+            },
+            globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+          ]);
+          EOF
       - name: Typecheck migration
         run: npm run typecheck
       - name: Lint migration
@@ -42,5 +58,6 @@ jobs:
           path: |
             package.json
             package-lock.json
+            eslint.config.mjs
           if-no-files-found: error
           retention-days: 1
