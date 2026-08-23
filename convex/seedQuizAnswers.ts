@@ -25,6 +25,18 @@ export const seedQuizAnswers: SeedQuizAnswer[] = [
     explanation: "Weekly reviews become useful when they produce a specific next study decision.",
   },
   {
+    quizId: "memory-systems-check",
+    questionId: "q1",
+    answerIndex: 0,
+    explanation: "AI can generate practice, but source-grounded correction keeps learning accurate.",
+  },
+  {
+    quizId: "weekly-review-check",
+    questionId: "q1",
+    answerIndex: 1,
+    explanation: "Weekly reviews become useful when they produce a specific next study decision.",
+  },
+  {
     quizId: "critical-thinking-check",
     questionId: "q1",
     answerIndex: 1,
@@ -43,6 +55,18 @@ export const seedQuizAnswers: SeedQuizAnswer[] = [
     explanation: "Counterexamples stress-test the scope of an idea and improve precision.",
   },
   {
+    quizId: "source-quality-check",
+    questionId: "q1",
+    answerIndex: 1,
+    explanation: "Primary sources and recency reduce the risk of relying on stale or distorted claims.",
+  },
+  {
+    quizId: "counterexamples-check",
+    questionId: "q1",
+    answerIndex: 0,
+    explanation: "Counterexamples stress-test the scope of an idea and improve precision.",
+  },
+  {
     quizId: "exam-accelerator-check",
     questionId: "q1",
     answerIndex: 0,
@@ -57,6 +81,18 @@ export const seedQuizAnswers: SeedQuizAnswer[] = [
   {
     quizId: "exam-accelerator-check",
     questionId: "q3",
+    answerIndex: 1,
+    explanation: "Timed practice improves when you inspect both the answer and the decision process.",
+  },
+  {
+    quizId: "active-recall-check",
+    questionId: "q1",
+    answerIndex: 1,
+    explanation: "Producing an answer exposes what memory can actually retrieve.",
+  },
+  {
+    quizId: "timed-practice-check",
+    questionId: "q1",
     answerIndex: 1,
     explanation: "Timed practice improves when you inspect both the answer and the decision process.",
   },

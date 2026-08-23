@@ -1,4 +1,4 @@
-﻿import { expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 
 async function seedLearnerAccess(
@@ -44,19 +44,6 @@ async function seedLearnerAccess(
       }
     },
     { subjectsOrModules, includeProfile, resetCourseSelection, learnerEmail },
-  );
-}
-
-async function fillInputWithNativeEvent(page: import("@playwright/test").Page, selector: string, value: string) {
-  await page.locator(selector).evaluate(
-    (element, nextValue) => {
-      const input = element as HTMLInputElement;
-      const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-
-      valueSetter?.call(input, nextValue);
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    },
-    value,
   );
 }
 
@@ -208,8 +195,8 @@ test("signed-out homepage shows only public nav links", async ({ page }) => {
 test("login establishes the app nav contract", async ({ page }) => {
   await page.goto("/login", { waitUntil: "domcontentloaded" });
 
-  await fillInputWithNativeEvent(page, 'input[name="email"]', "nav.learner@intellectx.local");
-  await fillInputWithNativeEvent(page, 'input[name="password"]', "anything");
+  await page.getByLabel("Email").fill("nav.learner@intellectx.local");
+  await page.getByLabel("Password").fill("anything");
   await page.getByRole("button", { name: "Continue" }).click();
 
   await expect(page).toHaveURL(/\/courses$/);
@@ -691,8 +678,8 @@ test("login does not force study profile setup", async ({ page }) => {
     window.localStorage.removeItem("intellectx:academic-profile");
   });
 
-  await fillInputWithNativeEvent(page, 'input[name="email"]', "returning.learner@intellectx.local");
-  await fillInputWithNativeEvent(page, 'input[name="password"]', "anything");
+  await page.getByLabel("Email").fill("returning.learner@intellectx.local");
+  await page.getByLabel("Password").fill("anything");
   await page.getByRole("button", { name: "Continue" }).click();
 
   await expect(page).toHaveURL(/\/courses$/);

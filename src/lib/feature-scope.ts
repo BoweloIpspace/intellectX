@@ -51,9 +51,7 @@ export function isMobileAppRuntime() {
 }
 
 export function getLearnerHomeRouteForCurrentRuntime() {
-  // Auth/onboarding completion continues directly into the quiz library. The
-  // native application itself starts on /mobile-study, which acts as Home.
-  return isMobileAppRuntime() ? "/mobile-quizzes" : "/courses";
+  return isMobileAppRuntime() ? "/mobile-study" : "/courses";
 }
 
 export function isFeatureAllowedOnSurface(feature: StudyFeature, surface: AppSurface) {

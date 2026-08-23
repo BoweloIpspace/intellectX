@@ -17,9 +17,10 @@ describe("learner onboarding flow", () => {
     expect(isLearnerAppPath("/onboarding")).toBe(true);
   });
 
-  it("keeps Study Profile completion as the onboarding responsibility", () => {
+  it("keeps Study Profile completion as the onboarding responsibility and preserves a safe mobile return route", () => {
     expect(onboardingSource).toContain("<StudyProfileCard");
-    expect(onboardingSource).toContain("router.replace(getLearnerHomeRouteForCurrentRuntime())");
+    expect(onboardingSource).toContain('const returnTo = getSafeMobileReturnTo(searchParams.get("returnTo"))');
+    expect(onboardingSource).toContain("router.replace(returnTo ?? getLearnerHomeRouteForCurrentRuntime())");
   });
 
   it("continues returning learners when a complete Study Profile is already available or hydrates later", () => {
