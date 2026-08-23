@@ -2,9 +2,11 @@
 
 import { courses as staticCourses, getCourse, type Course } from "@/data/courses";
 import { getLesson, lessons as staticLessons, type Lesson } from "@/data/lessons";
+import { mobileTopicQuizzes } from "@/data/mobile-topic-quizzes";
 import { getQuiz, quizzes as staticQuizzes, type Quiz } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
+import { isMobileAppRuntime } from "@/lib/feature-scope";
 import {
   normalizeLearnerCourse,
   normalizeLearnerLesson,
@@ -47,7 +49,15 @@ export function buildLearnerCatalog(input?: {
         }),
       )
       .filter(Boolean) ?? staticQuizzes;
-  const quizzes = normalizedQuizzes as Quiz[];
+  const baseQuizzes = normalizedQuizzes as Quiz[];
+  const quizzes = isMobileAppRuntime()
+    ? [
+        ...baseQuizzes,
+        ...mobileTopicQuizzes.filter(
+          (quiz) => initialCourseById.has(quiz.courseId) && !baseQuizzes.some((item) => item.id === quiz.id),
+        ),
+      ]
+    : baseQuizzes;
   const quizzesByCourseId = new Map<string, ConvexQuizRecord[]>();
 
   for (const quiz of input?.convexQuizzes ?? []) {
