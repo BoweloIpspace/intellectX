@@ -67,6 +67,7 @@ function NativeCourseFirstQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   const [selection, setSelection] = useState<CourseSelection | null>(null);
   const [profile, setProfile] = useState<AcademicProfile | null>(null);
   const [selectionError, setSelectionError] = useState<string | null>(null);
+  const [selectingCourses, setSelectingCourses] = useState(setupRequested);
 
   useEffect(() => {
     function syncSelection() {
@@ -110,12 +111,19 @@ function NativeCourseFirstQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   }
 
   const selectedCourses = quizCourses.filter((course) => selection.selectedCourseIds.includes(course.id));
-  const needsCourseSelection = setupRequested || selectedCourses.length === 0;
+  const needsCourseSelection = selectingCourses || setupRequested || selectedCourses.length === 0;
 
   function toggleCourse(courseId: string) {
+    setSelectingCourses(true);
     const update = toggleSelectedCourse(courseId, selection ?? undefined);
     setSelection(update.selection);
     setSelectionError(update.error ?? null);
+  }
+
+  function continueWithCourses() {
+    setSelectingCourses(false);
+    setSelectionError(null);
+    router.replace("/mobile-quizzes");
   }
 
   if (needsCourseSelection) {
@@ -126,7 +134,7 @@ function NativeCourseFirstQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
         selection={selection}
         error={selectionError}
         onToggle={toggleCourse}
-        onContinue={() => router.replace("/mobile-quizzes")}
+        onContinue={continueWithCourses}
       />
     );
   }
