@@ -3,9 +3,14 @@ import { getLesson, getLessonsByCourse, lessons } from "@/data/lessons";
 import { getQuiz, getQuizzesByCourse, quizzes } from "@/data/quizzes";
 import { userProgress } from "@/data/user-progress";
 
+// Preview-only bridge for the recovered IntellectX development deployment.
+// Production still requires NEXT_PUBLIC_CONVEX_URL to be configured explicitly.
+const previewConvexUrl = process.env.VERCEL_ENV === "preview" ? "https://wary-meerkat-937.convex.cloud" : undefined;
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL ?? previewConvexUrl;
+
 export const convexEnv = {
-  url: process.env.NEXT_PUBLIC_CONVEX_URL,
-  isConfigured: Boolean(process.env.NEXT_PUBLIC_CONVEX_URL),
+  url: convexUrl,
+  isConfigured: Boolean(convexUrl),
 };
 
 export const educationData = {
