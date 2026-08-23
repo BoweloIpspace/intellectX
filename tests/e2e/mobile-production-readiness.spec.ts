@@ -46,76 +46,69 @@ async function seedCourseSelection(
   }, selectedCourseIds);
 }
 
-async function openSelectedCourse(page: import("@playwright/test").Page, courseName = "AI Study Systems") {
-  await page.goto("/mobile-quizzes");
-  await page.getByRole("link", { name: new RegExp(courseName, "i") }).click();
-  await expect(page).toHaveURL(/\/mobile-quizzes\?course=/);
+async function openPromptingTopic(page: import("@playwright/test").Page) {
+  await page.goto("/mobile-study");
+  await page.getByRole("link", { name: /AI Study Systems/i }).click();
+  await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems$/);
+  await page.getByRole("link", { name: /Prompting for Learning/i }).click();
+  await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems&topic=prompting-for-learning$/);
 }
 
-test("native mobile home keeps the existing nav and presents courses before quizzes", async ({ page }) => {
+test("fresh native launch starts at learner login with signup available", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/mobile-study");
 
-  await expect(page.getByRole("heading", { name: "Free quiz practice" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Open courses/i })).toHaveAttribute("href", "/mobile-quizzes");
-  await expect(page.getByRole("heading", { name: "Flashcards" })).toHaveCount(0);
-
-  const mobileNav = page.getByRole("navigation", { name: "Mobile study navigation" });
-  await expect(mobileNav.getByRole("link")).toHaveText(["Home", "Quizzes", "Progress", "Profile"]);
-  await expect(mobileNav.getByRole("link", { name: "Flashcards" })).toHaveCount(0);
-  await expect(mobileNav.getByRole("link", { name: "Courses", exact: true })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByText("Continue on this device")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Create one" })).toHaveAttribute("href", "/signup");
 });
 
-test("native learner chooses courses first and each course shows only its own quizzes", async ({ page }) => {
-  await simulateNativeAndroid(page);
-  await page.goto("/mobile-quizzes");
-
-  await expect(page.getByRole("heading", { name: "Choose your courses" })).toBeVisible();
-  await page.getByRole("button", { name: /AI Study Systems/i }).click();
-  await expect(page.getByText("1 / 5 selected")).toBeVisible();
-  await page.getByRole("button", { name: /Continue with selected courses/i }).click();
-
-  await expect(page).toHaveURL(/\/mobile-quizzes$/);
-  await expect(page.getByRole("heading", { name: "Choose a course" })).toBeVisible();
-  const selectedCourse = page.getByRole("link", { name: /AI Study Systems/i });
-  await expect(selectedCourse).toBeVisible();
-  await selectedCourse.click();
-
-  await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems$/);
-  await expect(page.getByRole("heading", { name: "AI Study Systems", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "AI Study Systems Check" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Critical Thinking Check" })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Exam Accelerator Check" })).toHaveCount(0);
-});
-
-test("new native local signup goes from Study Profile directly to course selection", async ({ page }) => {
+test("new native signup chooses courses then lands on Home with those courses", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/signup");
 
   await page.getByLabel("Name").fill("New Mobile Learner");
   await page.getByLabel("Email").fill("new.mobile.learner@intellectx.local");
-  await page.getByRole("button", { name: "Continue to study profile" }).click();
-
-  await expect(page.getByText("Study profile", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "AI Productivity" }).click();
-  await page.getByRole("button", { name: "Continue to course selection" }).click();
+  await page.getByRole("button", { name: "Choose courses" }).click();
 
   await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
   await expect(page.getByRole("heading", { name: "Choose your courses" })).toBeVisible();
   await page.getByRole("button", { name: /AI Study Systems/i }).click();
-  await page.getByRole("button", { name: /Continue with selected courses/i }).click();
+  await expect(page.getByText("1 / 5 selected")).toBeVisible();
+  await page.getByRole("button", { name: "Continue to Home" }).click();
 
-  await expect(page).toHaveURL(/\/mobile-quizzes$/);
-  await expect(page.getByRole("heading", { name: "Choose a course" })).toBeVisible();
+  await expect(page).toHaveURL(/\/mobile-study$/);
+  await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
   await expect(page.getByRole("link", { name: /AI Study Systems/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Critical Thinking Lab/i })).toHaveCount(0);
 });
 
-test("mobile quiz detail stays inside the quiz-only native shell", async ({ page }) => {
+test("selected course opens topics and each topic opens its quiz list", async ({ page }) => {
   await simulateNativeAndroid(page);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
-  await openSelectedCourse(page);
+
+  await page.goto("/mobile-study");
+  await page.getByRole("link", { name: /AI Study Systems/i }).click();
+
+  await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems$/);
+  await expect(page.getByRole("heading", { name: "AI Study Systems", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Prompting for Learning/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Memory Systems/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Weekly Review/i })).toBeVisible();
+
+  await page.getByRole("link", { name: /Memory Systems/i }).click();
+  await expect(page).toHaveURL(/topic=memory-systems$/);
+  await expect(page.getByRole("heading", { name: "Memory Systems" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Memory Systems Check" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Weekly Review Check" })).toHaveCount(0);
+});
+
+test("mobile quiz detail stays inside the native quiz shell", async ({ page }) => {
+  await simulateNativeAndroid(page);
+  await seedLocalLearner(page);
+  await seedCourseSelection(page);
+  await openPromptingTopic(page);
 
   const startQuiz = page.getByRole("link", { name: /Start quiz/i }).first();
   await expect(startQuiz).toHaveAttribute("href", /\/quiz\/.+\?from=mobile$/);
@@ -131,28 +124,23 @@ test("mobile quiz detail stays inside the quiz-only native shell", async ({ page
   await expect(page.locator("footer")).toHaveCount(0);
 });
 
-test("signed-out native learner returns to the selected quiz after local-profile continue", async ({ page }) => {
+test("signed-out native course access returns to login before course selection", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/mobile-quizzes");
 
-  await page.getByRole("button", { name: /AI Study Systems/i }).click();
-  await page.getByRole("button", { name: /Continue with selected courses/i }).click();
-  await page.getByRole("link", { name: /AI Study Systems/i }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole("heading", { name: "Choose your courses" })).toHaveCount(0);
+});
 
-  const startQuiz = page.getByRole("link", { name: /Start quiz/i }).first();
-  const quizHref = await startQuiz.getAttribute("href");
-  expect(quizHref).toMatch(/^\/quiz\/.+\?from=mobile$/);
-  await startQuiz.click();
+test("native login with no course selection sends learner to course setup", async ({ page }) => {
+  await simulateNativeAndroid(page);
+  await page.goto("/login");
 
-  await expect(page).toHaveURL(/\/login\?returnTo=%2Fquiz%2F.+%3Ffrom%3Dmobile$/);
-  await expect(page.getByLabel("Password")).toHaveCount(0);
   await page.getByLabel("Email").fill("mobile.return@intellectx.local");
-  const continueButton = page.getByRole("button", { name: "Continue", exact: true });
-  await expect(continueButton).toBeEnabled();
-  await continueButton.click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
 
-  await expect(page).toHaveURL(new RegExp(`${quizHref!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), { timeout: 10_000 });
-  await expect(page.getByText("Free mobile")).toBeVisible();
+  await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
+  await expect(page.getByRole("heading", { name: "Choose your courses" })).toBeVisible();
 });
 
 test("native direct quiz deep links resolve to the quiz-only mobile shell", async ({ page }) => {
@@ -169,12 +157,14 @@ test("native direct quiz deep links resolve to the quiz-only mobile shell", asyn
   await expect(page.locator("footer")).toHaveCount(0);
 });
 
-test("native app redirects flashcards and other web-only routes back to mobile Home", async ({ page }) => {
+test("native app redirects flashcards and other web-only routes back through mobile Home", async ({ page }) => {
   await simulateNativeAndroid(page);
+  await seedLocalLearner(page);
+  await seedCourseSelection(page);
   await page.goto("/mobile-flashcards", { waitUntil: "domcontentloaded" });
 
   await expect(page).toHaveURL(/\/mobile-study$/);
-  await expect(page.getByRole("heading", { name: "Free quiz practice" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
 });
 
 test("native progress and profile routes remain inside the quiz product", async ({ page }) => {

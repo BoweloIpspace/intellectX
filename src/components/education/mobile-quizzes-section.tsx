@@ -1,5 +1,6 @@
 "use client";
 
+import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runtime-provider";
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import {
   courseMatchesAcademicProfile,
   loadAcademicProfile,
 } from "@/lib/academic-profile";
+import { isClerkAuthEnabled } from "@/lib/auth-mode";
 import {
   COURSE_SELECTION_CHANGE_EVENT,
   COURSE_SELECTION_LIMIT,
@@ -19,7 +21,15 @@ import {
 import { convexEnv } from "@/lib/education-data";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
 import { buildLearnerCatalog, type LearnerCatalog, useLearnerCatalog } from "@/lib/learner-catalog-client";
-import { ArrowLeftIcon, ArrowRightIcon, BookOpenCheckIcon, BookOpenIcon, CheckIcon } from "lucide-react";
+import { getLearnerSession } from "@/lib/learner-session";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  BookOpenCheckIcon,
+  BookOpenIcon,
+  CheckIcon,
+  ListChecksIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -56,20 +66,43 @@ function MobileQuizzesContent({ catalog }: { catalog: LearnerCatalog }) {
     return <FlatQuizLibrary catalog={catalog} />;
   }
 
-  return <NativeCourseFirstQuizFlow catalog={catalog} />;
+  return <NativeCourseTopicQuizFlow catalog={catalog} />;
 }
 
-function NativeCourseFirstQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
+function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const auth = useLearnerAuthRuntime();
   const requestedCourseId = searchParams.get("course");
+  const requestedTopicId = searchParams.get("topic");
   const setupRequested = searchParams.get("setup") === "1";
+  const [accessReady, setAccessReady] = useState(false);
   const [selection, setSelection] = useState<CourseSelection | null>(null);
   const [profile, setProfile] = useState<AcademicProfile | null>(null);
   const [selectionError, setSelectionError] = useState<string | null>(null);
   const [selectingCourses, setSelectingCourses] = useState(setupRequested);
 
   useEffect(() => {
+    if (isClerkAuthEnabled()) {
+      if (!auth.isLoaded) {
+        return;
+      }
+
+      if (!auth.isSignedIn) {
+        router.replace("/login");
+        return;
+      }
+    } else if (!getLearnerSession()) {
+      router.replace("/login");
+      return;
+    }
+
+    setAccessReady(true);
+  }, [auth.isLoaded, auth.isSignedIn, router]);
+
+  useEffect(() => {
+    if (!accessReady) return;
+
     function syncSelection() {
       setSelection(loadCourseSelection());
     }
@@ -89,11 +122,11 @@ function NativeCourseFirstQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
       window.removeEventListener(ACADEMIC_PROFILE_CHANGE_EVENT, syncProfile);
       window.removeEventListener("storage", syncSelection);
     };
-  }, []);
+  }, [accessReady]);
 
   const quizCourses = useMemo(
-    () => catalog.courses.filter((course) => catalog.quizzes.some((quiz) => quiz.courseId === course.id)),
-    [catalog.courses, catalog.quizzes],
+    () => catalog.courses.filter((course) => catalog.lessons.some((lesson) => lesson.courseId === course.id)),
+    [catalog.courses, catalog.lessons],
   );
 
   const selectableCourses = useMemo(() => {
@@ -102,7 +135,7 @@ function NativeCourseFirstQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
     return matchedCourses.length > 0 ? matchedCourses : quizCourses;
   }, [profile, quizCourses]);
 
-  if (!selection) {
+  if (!accessReady || !selection) {
     return (
       <div className="flex min-h-48 items-center justify-center">
         <AppLoadingSpinner label="Loading your courses" showLabel />
@@ -123,7 +156,7 @@ function NativeCourseFirstQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   function continueWithCourses() {
     setSelectingCourses(false);
     setSelectionError(null);
-    router.replace("/mobile-quizzes");
+    router.replace("/mobile-study");
   }
 
   if (needsCourseSelection) {
@@ -143,8 +176,12 @@ function NativeCourseFirstQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
     ? selectedCourses.find((course) => course.id === requestedCourseId) ?? null
     : null;
 
+  if (selectedCourse && requestedTopicId) {
+    return <TopicQuizList catalog={catalog} courseId={selectedCourse.id} topicId={requestedTopicId} />;
+  }
+
   if (selectedCourse) {
-    return <CourseQuizList catalog={catalog} courseId={selectedCourse.id} />;
+    return <CourseTopicList catalog={catalog} courseId={selectedCourse.id} />;
   }
 
   return <SelectedCourseList catalog={catalog} courses={selectedCourses} selection={selection} />;
@@ -173,7 +210,7 @@ function CourseSelectionStep({
         <BookOpenIcon className="mx-auto size-6" />
         <h2 className="mt-4 text-xl font-semibold tracking-tight">No quiz courses available yet</h2>
         <p className="text-muted-foreground mt-3 text-sm leading-6">
-          Courses will appear here as soon as they have learner quizzes available.
+          Courses will appear here as soon as they have learner topics and quizzes available.
         </p>
       </section>
     );
@@ -185,7 +222,7 @@ function CourseSelectionStep({
         <Badge variant="secondary">Course setup</Badge>
         <h2 className="mt-4 text-2xl font-semibold tracking-tight">Choose your courses</h2>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Pick the courses you want to practice. You can select up to {COURSE_SELECTION_LIMIT}; each course opens only its own quizzes.
+          Pick the courses you want on Home. You can select up to {COURSE_SELECTION_LIMIT} courses.
         </p>
         <p className="mt-3 text-sm font-medium">
           {selection.selectedCourseIds.length} / {COURSE_SELECTION_LIMIT} selected
@@ -195,7 +232,7 @@ function CourseSelectionStep({
       <div className="grid gap-3">
         {courses.map((course) => {
           const selected = selection.selectedCourseIds.includes(course.id);
-          const quizCount = catalog.quizzes.filter((quiz) => quiz.courseId === course.id).length;
+          const topicCount = catalog.lessons.filter((lesson) => lesson.courseId === course.id).length;
 
           return (
             <button
@@ -217,7 +254,7 @@ function CourseSelectionStep({
                 <span className="block font-semibold text-foreground">{course.title}</span>
                 <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
                 <span className="text-muted-foreground mt-2 block text-xs">
-                  {quizCount} {quizCount === 1 ? "quiz" : "quizzes"}
+                  {topicCount} {topicCount === 1 ? "topic" : "topics"}
                 </span>
               </span>
             </button>
@@ -237,7 +274,7 @@ function CourseSelectionStep({
       ) : null}
 
       <Button className="min-h-12 w-full" disabled={selectedAvailableCount === 0} onClick={onContinue}>
-        Continue with selected courses
+        Continue to Home
         <ArrowRightIcon className="size-4" />
       </Button>
     </section>
@@ -259,7 +296,7 @@ function SelectedCourseList({
         <div>
           <Badge variant="secondary">My courses</Badge>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight">Choose a course</h2>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">Tap a course to see only the quizzes inside it.</p>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">Tap a course to open its topics.</p>
         </div>
         {!selection.locked ? (
           <Button asChild size="sm" variant="outline">
@@ -270,7 +307,7 @@ function SelectedCourseList({
 
       <div className="grid gap-3">
         {courses.map((course) => {
-          const quizCount = catalog.quizzes.filter((quiz) => quiz.courseId === course.id).length;
+          const topicCount = catalog.lessons.filter((lesson) => lesson.courseId === course.id).length;
           return (
             <Link
               key={course.id}
@@ -284,6 +321,64 @@ function SelectedCourseList({
                 <span className="block text-lg font-semibold tracking-tight text-foreground">{course.title}</span>
                 <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
                 <span className="text-muted-foreground mt-2 block text-xs">
+                  {topicCount} {topicCount === 1 ? "topic" : "topics"}
+                </span>
+              </span>
+              <ArrowRightIcon className="size-5 shrink-0" />
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function CourseTopicList({ catalog, courseId }: { catalog: LearnerCatalog; courseId: string }) {
+  const course = catalog.courseById.get(courseId);
+  const topics = catalog.lessons.filter(
+    (lesson) =>
+      lesson.courseId === courseId &&
+      catalog.quizzes.some((quiz) => quiz.courseId === courseId && quiz.lessonId === lesson.id),
+  );
+
+  if (!course || topics.length === 0) {
+    return <SelectedCourseFallback />;
+  }
+
+  return (
+    <section className="space-y-4">
+      <Button asChild size="sm" variant="ghost" className="-ml-2">
+        <Link href="/mobile-study">
+          <ArrowLeftIcon className="size-4" />
+          Home
+        </Link>
+      </Button>
+
+      <div className="rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
+        <Badge variant="secondary">{course.subject}</Badge>
+        <h2 className="mt-4 text-2xl font-semibold tracking-tight">{course.title}</h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">Choose a topic to see its quizzes.</p>
+      </div>
+
+      <div className="grid gap-3">
+        {topics.map((topic) => {
+          const quizCount = catalog.quizzes.filter(
+            (quiz) => quiz.courseId === courseId && quiz.lessonId === topic.id,
+          ).length;
+
+          return (
+            <Link
+              key={topic.id}
+              href={`/mobile-quizzes?course=${encodeURIComponent(courseId)}&topic=${encodeURIComponent(topic.id)}`}
+              className="animate-widget flex min-h-28 items-center gap-4 rounded-lg border border-white/70 bg-white/60 p-4 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-card/60"
+            >
+              <span className="bg-secondary grid size-10 shrink-0 place-items-center rounded-full">
+                <ListChecksIcon className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-semibold text-foreground">{topic.title}</span>
+                <span className="text-muted-foreground mt-1 block text-xs">{topic.duration}</span>
+                <span className="text-muted-foreground mt-2 block text-xs">
                   {quizCount} {quizCount === 1 ? "quiz" : "quizzes"}
                 </span>
               </span>
@@ -296,27 +391,36 @@ function SelectedCourseList({
   );
 }
 
-function CourseQuizList({ catalog, courseId }: { catalog: LearnerCatalog; courseId: string }) {
+function TopicQuizList({
+  catalog,
+  courseId,
+  topicId,
+}: {
+  catalog: LearnerCatalog;
+  courseId: string;
+  topicId: string;
+}) {
   const course = catalog.courseById.get(courseId);
-  const quizzes = catalog.quizzes.filter((quiz) => quiz.courseId === courseId);
+  const topic = catalog.lessonById.get(topicId);
+  const quizzes = catalog.quizzes.filter((quiz) => quiz.courseId === courseId && quiz.lessonId === topicId);
 
-  if (!course || quizzes.length === 0) {
+  if (!course || !topic || topic.courseId !== courseId || quizzes.length === 0) {
     return <SelectedCourseFallback />;
   }
 
   return (
     <section className="space-y-4">
       <Button asChild size="sm" variant="ghost" className="-ml-2">
-        <Link href="/mobile-quizzes">
+        <Link href={`/mobile-quizzes?course=${encodeURIComponent(courseId)}`}>
           <ArrowLeftIcon className="size-4" />
-          My courses
+          Topics
         </Link>
       </Button>
 
       <div className="rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-        <Badge variant="secondary">{course.subject}</Badge>
-        <h2 className="mt-4 text-2xl font-semibold tracking-tight">{course.title}</h2>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">Choose a quiz from this course.</p>
+        <Badge variant="secondary">Topic</Badge>
+        <h2 className="mt-4 text-2xl font-semibold tracking-tight">{topic.title}</h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">{topic.summary}</p>
       </div>
 
       <QuizCards catalog={catalog} quizzes={quizzes} />
@@ -328,10 +432,10 @@ function SelectedCourseFallback() {
   return (
     <section className="animate-widget rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
       <BookOpenCheckIcon className="mx-auto size-6" />
-      <h2 className="mt-4 text-xl font-semibold tracking-tight">Course quizzes unavailable</h2>
-      <p className="text-muted-foreground mt-3 text-sm leading-6">Return to your courses and choose another course.</p>
+      <h2 className="mt-4 text-xl font-semibold tracking-tight">Course content unavailable</h2>
+      <p className="text-muted-foreground mt-3 text-sm leading-6">Return Home and choose another course.</p>
       <Button asChild className="mt-5">
-        <Link href="/mobile-quizzes">Back to my courses</Link>
+        <Link href="/mobile-study">Back to Home</Link>
       </Button>
     </section>
   );

@@ -19,12 +19,9 @@ function jsonResponse(body: unknown, status = 200) {
     status,
     headers: {
       "Cache-Control": "no-store, max-age=0",
+      "X-Content-Type-Options": "nosniff",
     },
   });
-}
-
-function unavailableResponse() {
-  return jsonResponse({ error: "Local quiz grading fallback is unavailable while Convex is configured." }, 404);
 }
 
 function errorResponse(error: unknown, status = 400) {
@@ -58,13 +55,12 @@ function getAuthoritativeFallbackQuiz(quizId: string) {
 }
 
 export async function POST(request: Request) {
-  // When Convex is configured it remains the single authoritative grading path.
-  // Without Convex, this Node-only route provides the production-safe fallback:
-  // answer keys stay server-only and never return in learner catalog payloads.
-  if (process.env.NEXT_PUBLIC_CONVEX_URL) {
-    return unavailableResponse();
-  }
-
+  // This route is an intentional resilience path for the bundled free quizzes.
+  // The browser chooses Convex when the Convex client is actually available;
+  // otherwise this server-only endpoint grades the same seed-backed questions.
+  // Keeping it available even when the server has a Convex URL prevents a
+  // build/runtime environment mismatch from making the installed mobile app
+  // unable to submit answers.
   const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
   if (!contentType.includes("application/json")) {
     return errorResponse(new Error("Quiz grading requests must use application/json."), 415);
