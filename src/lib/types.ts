@@ -31,6 +31,7 @@ export type SnakeCaseCheckoutQueryParams = {
   paddle_customer_id?: string;
   postal_code?: string;
   price_id?: string;
+  product_key?: string;
   theme?: string;
   transaction_id?: string;
   user_email?: string;

@@ -11,14 +11,15 @@ import {
 } from "@/components/ui/choicebox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type Price, usePaddlePrices } from "@/hooks/use-paddle-prices";
+import { scholarPriceIds } from "@/lib/billing-products";
 
 export const plans = [
   {
-    priceId: "pri_01jx2rwhdtm4b5f3aj1ds3b0s4",
+    priceId: scholarPriceIds[0],
     tag: "Save 17%",
   },
   {
-    priceId: "pri_01jx2rx1t30hxejpb5v0vav4nv",
+    priceId: scholarPriceIds[1],
   },
 ];
 

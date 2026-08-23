@@ -11,12 +11,6 @@ export type UsePaddleArgs = {
   environment: Environments;
 };
 
-/**
- * Builds an array of items for the checkout.
- * It splits the priceId by commas and creates an item for each priceId.
- * @param priceId - The priceId to create an item for.
- * @returns An array of items for the checkout.
- */
 function buildItems(priceId: string | undefined): CheckoutOpenLineItem[] {
   const allPriceIds = priceId?.split(",");
   return allPriceIds?.map((priceId) => ({ priceId: priceId.trim(), quantity: 1 })) || [];
@@ -26,7 +20,6 @@ export function usePaddle(args: UsePaddleArgs) {
   const router = useRouter();
   const [paddle, setPaddle] = useState<Paddle | null>(null);
   const [checkoutData, setCheckoutData] = useState<CheckoutEventsData | null>(null);
-
   const [customDataUpdated, setCustomDataUpdated] = useState(false);
 
   const { checkoutQueryParams, clientToken, environment, redirectUrl } = args;
@@ -35,6 +28,7 @@ export function usePaddle(args: UsePaddleArgs) {
     discountCode,
     discountId,
     priceId,
+    productKey,
     transactionId,
     userEmail,
     appUserId,
@@ -56,7 +50,6 @@ export function usePaddle(args: UsePaddleArgs) {
         environment,
         eventCallback: (event) => {
           if (event.name === "checkout.completed") {
-            // Get current URL parameters and merge with new ones
             const currentParams = new URLSearchParams(window.location.search);
             const searchParams = new URLSearchParams({
               ...Object.fromEntries(currentParams),
@@ -99,15 +92,11 @@ export function usePaddle(args: UsePaddleArgs) {
                 }),
               },
             }),
-
-            // override the customer above if we have a paddle customer id
             ...(paddleCustomerId && { customer: { id: paddleCustomerId } }),
-
-            // don't set the custom data here if there is a transaction id
-            ...(appUserId && !transactionId && { customData: { app_user_id: appUserId } }),
-
+            ...(appUserId && productKey && !transactionId && {
+              customData: { app_user_id: appUserId, product_key: productKey },
+            }),
             ...(transactionId ? { transactionId } : { items: buildItems(priceId) }),
-
             ...(discountCode ? { discountCode } : discountId ? { discountId } : {}),
           });
         }
@@ -121,6 +110,7 @@ export function usePaddle(args: UsePaddleArgs) {
     paddleCustomerId,
     postalCode,
     priceId,
+    productKey,
     redirectUrl,
     router,
     transactionId,
@@ -132,21 +122,27 @@ export function usePaddle(args: UsePaddleArgs) {
     discountId,
   ]);
 
-  // we need to update the custom data with the app user id
-  // this can't be called in the checkout.open call because any custom data that exists on the original transaction
-  // will be overridden by the passed in custom data
   useEffect(() => {
-    // if we have a transaction id, we need to update the custom data with the app user id here
-    // also make sure we haven't already updated the custom data
-    if (transactionId && !customDataUpdated && paddle?.Initialized && appUserId && checkoutData) {
+    if (
+      transactionId &&
+      !customDataUpdated &&
+      paddle?.Initialized &&
+      appUserId &&
+      productKey &&
+      checkoutData
+    ) {
       const { custom_data } = checkoutData;
 
       paddle.Checkout.updateCheckout({
-        customData: { ...custom_data, app_user_id: appUserId },
+        customData: {
+          ...custom_data,
+          app_user_id: appUserId,
+          product_key: productKey,
+        },
       });
       setCustomDataUpdated(true);
     }
-  }, [appUserId, checkoutData, customDataUpdated, paddle, transactionId]);
+  }, [appUserId, checkoutData, customDataUpdated, paddle, productKey, transactionId]);
 
   return {
     checkoutData,

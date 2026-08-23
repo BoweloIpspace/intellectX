@@ -232,6 +232,7 @@ export default defineSchema({
       "provider",
       "providerSubscriptionId",
     ])
+    .index("by_provider_subscription", ["provider", "providerSubscriptionId"])
     .index("by_provider_event", ["providerEventId"]),
   billingWebhookEvents: defineTable({
     provider: v.string(),
