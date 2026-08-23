@@ -10,7 +10,7 @@ const course = {
   duration: "Self-paced",
   accent: "from-emerald-500/15 via-teal-500/10 to-cyan-500/10",
   accessLevel: "free" as const,
-  reviewStatus: "published" as const,
+  reviewStatus: "approved" as const,
   publicationStatus: "published" as const,
   seedManaged: true,
 };
