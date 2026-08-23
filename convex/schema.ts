@@ -119,6 +119,35 @@ export default defineSchema({
   })
     .index("by_stable_id", ["stableId"])
     .index("by_quiz_stable_id", ["quizStableId"]),
+  pastPapers: defineTable({
+    stableId: v.string(),
+    courseStableId: v.string(),
+    title: v.string(),
+    year: v.number(),
+    paperCode: v.string(),
+    session: v.optional(v.string()),
+    description: v.optional(v.string()),
+    estimatedTime: v.optional(v.string()),
+    accessLevel: v.optional(v.union(v.literal("free"), v.literal("paid"))),
+    published: v.boolean(),
+    order: v.number(),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_stable_id", ["stableId"])
+    .index("by_course_stable_id", ["courseStableId"]),
+  pastPaperQuestions: defineTable({
+    stableId: v.string(),
+    paperStableId: v.string(),
+    questionNumber: v.string(),
+    prompt: v.string(),
+    marks: v.optional(v.number()),
+    modelAnswer: v.string(),
+    explanation: v.optional(v.string()),
+    order: v.number(),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_stable_id", ["stableId"])
+    .index("by_paper_stable_id", ["paperStableId"]),
   enrollments: defineTable({
     userId: v.id("users"),
     courseId: v.id("courses"),
