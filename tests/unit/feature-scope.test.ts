@@ -39,6 +39,7 @@ describe("native mobile feature scope", () => {
       "/progress",
       "/quizzes",
       "/flashcards",
+      "/past-papers/bgcse-biology-2019-paper-3",
       "/mobile-flashcards",
       "/mobile-notes",
     ]) {
