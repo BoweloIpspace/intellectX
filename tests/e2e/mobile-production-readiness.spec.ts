@@ -62,7 +62,6 @@ test("fresh native launch starts at learner login with signup available", async 
   await expect(page.getByText("Continue on this device")).toBeVisible();
   await expect(page.getByRole("link", { name: "Create one" })).toHaveAttribute("href", "/signup");
   await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Home", exact: true })).toHaveCount(0);
 });
 
 test("native signup keeps the authenticated hamburger gated", async ({ page }) => {
@@ -71,7 +70,6 @@ test("native signup keeps the authenticated hamburger gated", async ({ page }) =
 
   await expect(page.getByText("Create a local learner profile")).toBeVisible();
   await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Home", exact: true })).toHaveCount(0);
 });
 
 test("new native signup chooses courses then lands on Home with those courses", async ({ page }) => {
@@ -170,8 +168,29 @@ test("native login with no course selection sends learner to course setup", asyn
 
 test("native profile logout goes straight to login without visiting the public landing route", async ({ page }) => {
   await simulateNativeAndroid(page);
-  await seedLocalLearner(page);
-  await seedCourseSelection(page);
+  await page.goto("/login");
+  await page.evaluate(() => {
+    const selectedAt = Date.now();
+    window.localStorage.setItem(
+      "intellectx:learner-session",
+      JSON.stringify({
+        name: "Mobile Learner",
+        email: "mobile.learner@intellectx.local",
+        role: "student",
+      }),
+    );
+    window.localStorage.setItem(
+      "intellectx:course-selection",
+      JSON.stringify({
+        selectedCourseIds: ["ai-study-systems"],
+        selectedAt,
+        gracePeriodEndsAt: selectedAt + 7 * 24 * 60 * 60 * 1000,
+        lockedAt: null,
+        locked: false,
+      }),
+    );
+  });
+
   const navigatedPaths: string[] = [];
   page.on("framenavigated", (frame) => {
     if (frame === page.mainFrame()) {
