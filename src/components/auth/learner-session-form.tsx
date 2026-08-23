@@ -84,13 +84,16 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     setNativeMobile(native);
 
     const existingSession = getLearnerSession();
-    if (!isForgotPassword && existingSession) {
+    const shouldResumeInterruptedWebSignup =
+      Boolean(existingSession) && isSignup && !native && !isAcademicProfileComplete(loadAcademicProfile());
+
+    if (!isForgotPassword && existingSession && !shouldResumeInterruptedWebSignup) {
       window.location.replace(returnTo ?? (native ? "/mobile-study" : getLearnerHomeRouteForCurrentRuntime()));
       return;
     }
 
     setHydrated(true);
-  }, [isForgotPassword, returnTo]);
+  }, [isForgotPassword, isSignup, returnTo]);
 
   useEffect(() => {
     if (!isSignup || !hydrated || nativeMobile) return;
@@ -147,7 +150,9 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     return (
       <Card className="border-white/70 bg-white/85 shadow-3xl backdrop-blur dark:border-white/10 dark:bg-card/85">
         <CardContent className="flex min-h-48 items-center justify-center py-6">
-          <p className="text-muted-foreground text-sm" role="status">Checking your learner session...</p>
+          <p className="text-muted-foreground text-sm" role="status">
+            Checking your learner session...
+          </p>
         </CardContent>
       </Card>
     );
