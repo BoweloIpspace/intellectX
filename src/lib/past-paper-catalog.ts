@@ -39,9 +39,15 @@ export async function getLearnerPastPapersByCourse(courseStableId: string): Prom
     return [];
   }
 
-  return (await client.query(convexApi.pastPapers.getPastPapersByCourse, {
-    courseStableId,
-  })) as LearnerPastPaperSummary[];
+  try {
+    return (await client.query(convexApi.pastPapers.getPastPapersByCourse, {
+      courseStableId,
+    })) as LearnerPastPaperSummary[];
+  } catch {
+    // A frontend preview may deploy moments before its matching Convex functions.
+    // Treat that rollout window as "no papers yet" instead of failing static generation.
+    return [];
+  }
 }
 
 export async function getLearnerPastPaper(paperId: string): Promise<LearnerPastPaper | null> {
@@ -51,5 +57,9 @@ export async function getLearnerPastPaper(paperId: string): Promise<LearnerPastP
     return null;
   }
 
-  return (await client.query(convexApi.pastPapers.getPastPaperById, { paperId })) as LearnerPastPaper | null;
+  try {
+    return (await client.query(convexApi.pastPapers.getPastPaperById, { paperId })) as LearnerPastPaper | null;
+  } catch {
+    return null;
+  }
 }
