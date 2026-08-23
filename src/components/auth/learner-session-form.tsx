@@ -51,9 +51,8 @@ const nativeContentByMode = {
   signup: {
     eyebrow: "Local learner profile",
     title: "Create a local learner profile",
-    description:
-      "Add your learner details, complete your study profile, then choose the courses you want to practice.",
-    submitLabel: "Continue to study profile",
+    description: "Add your learner details, then choose the courses you want to practice.",
+    submitLabel: "Choose courses",
   },
   "forgot-password": {
     eyebrow: "Local learner profile",
@@ -77,7 +76,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
   const content = nativeMobile ? nativeContentByMode[mode] : webContentByMode[mode];
   const isSignup = mode === "signup";
   const isForgotPassword = mode === "forgot-password";
-  const isProfileSetup = isSignup && pendingSession;
+  const isProfileSetup = isSignup && !nativeMobile && pendingSession;
   const destination = returnTo ?? getLearnerHomeRouteForCurrentRuntime();
 
   useEffect(() => {
@@ -86,13 +85,13 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
   }, []);
 
   useEffect(() => {
-    if (!isSignup) return;
+    if (!isSignup || !hydrated || nativeMobile) return;
 
     const existingSession = getLearnerSession();
     if (existingSession && !isAcademicProfileComplete(loadAcademicProfile())) {
       setPendingSession(existingSession);
     }
-  }, [isSignup]);
+  }, [hydrated, isSignup, nativeMobile]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -115,6 +114,12 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     };
 
     if (isSignup) {
+      if (nativeMobile) {
+        createLearnerSession(nextSession);
+        window.location.replace("/mobile-quizzes?setup=1");
+        return;
+      }
+
       setPendingSession(nextSession);
       return;
     }
@@ -123,11 +128,11 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     window.location.replace(destination);
   }
 
-  function completeSignup() {
+  function completeWebSignup() {
     if (!pendingSession) return;
 
     createLearnerSession(pendingSession);
-    window.location.replace(nativeMobile ? "/mobile-quizzes?setup=1" : destination);
+    window.location.replace(destination);
   }
 
   return (
@@ -148,15 +153,13 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
         {isProfileSetup ? (
           <div className="grid gap-5">
             <div className="border-primary/25 bg-primary/5 text-muted-foreground rounded-lg border border-dashed px-4 py-3 text-sm leading-6">
-              {nativeMobile
-                ? "Complete your study profile, then choose the courses you want to practice."
-                : "Complete your study profile to continue to your quiz."}
+              Complete your study profile to continue to your quiz.
             </div>
             <StudyProfileCard
               loadSavedProfile={false}
               showReset={false}
-              submitLabel={nativeMobile ? "Continue to course selection" : "Complete signup"}
-              onSaved={completeSignup}
+              submitLabel="Complete signup"
+              onSaved={completeWebSignup}
             />
           </div>
         ) : (
@@ -269,7 +272,7 @@ function AuthFooter({
   if (mode === "signup") {
     return (
       <div className="text-muted-foreground mt-6 grid gap-2 text-center text-sm">
-        <p>{nativeMobile ? "After creating the local profile, complete your study profile and choose your courses." : "After signup, complete your study profile to continue."}</p>
+        <p>{nativeMobile ? "After creating the local profile, choose your courses and start practicing." : "After signup, complete your study profile to continue."}</p>
         <p>
           {nativeMobile ? "Already have a local learner profile?" : "Already have a learner session?"}{" "}
           <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
