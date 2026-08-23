@@ -66,7 +66,7 @@ function ClerkNav() {
   const showAuthenticatedNav = isAppRoute || (isLoaded && isSignedIn);
   const navItems = !isLoaded && !isAppRoute ? [] : showAuthenticatedNav ? appNavItems : publicNavItems;
   const logoHref = showAuthenticatedNav ? "/courses" : "/";
-  const nativeAuthPath = nativeAppSurface === true && isAuthPath(pathname);
+  const nativeAuthPath = nativeAppSurface !== false && isAuthPath(pathname);
   const mobileNavigation = nativeAuthPath
     ? { items: [], logoHref: pathname }
     : resolveMobileNavigationSurface({
@@ -127,7 +127,7 @@ function LocalSessionNav() {
   const showAuthenticatedNav = isAppRoute || Boolean(session);
   const navItems = session === undefined && !isAppRoute ? [] : showAuthenticatedNav ? appNavItems : publicNavItems;
   const logoHref = showAuthenticatedNav ? "/courses" : "/";
-  const nativeAuthPath = nativeAppSurface === true && isAuthPath(pathname);
+  const nativeAuthPath = nativeAppSurface !== false && isAuthPath(pathname);
   const mobileNavigation = nativeAuthPath
     ? { items: [], logoHref: pathname }
     : resolveMobileNavigationSurface({
