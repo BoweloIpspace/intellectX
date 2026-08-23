@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mobile Quizzes - IntellectX",
-  description: "Practice IntellectX knowledge checks from a focused mobile quiz hub.",
+  title: "Mobile Courses & Quizzes - IntellectX",
+  description: "Choose your IntellectX courses, then practice the quizzes inside each course.",
 };
 
 export default function MobileQuizzesPage() {
@@ -17,7 +17,7 @@ export default function MobileQuizzesPage() {
         </Badge>
         <h1 className="text-3xl leading-[1.08] font-medium tracking-tight">Practice with focused quizzes</h1>
         <p className="text-muted-foreground text-base leading-7">
-          Choose a knowledge check, answer at your pace, and review explanations as you go.
+          Choose a course, open its quizzes, and review explanations as you practice.
         </p>
       </section>
 
