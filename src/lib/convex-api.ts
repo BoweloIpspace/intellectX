@@ -59,6 +59,10 @@ export const convexApi = {
     checkQuizAnswer: makeFunctionReference<"mutation">("quizzes:checkQuizAnswer"),
     submitQuizAttempt: makeFunctionReference<"mutation">("quizzes:submitQuizAttempt"),
   },
+  pastPapers: {
+    getPastPapersByCourse: makeFunctionReference<"query">("pastPapers:getPastPapersByCourse"),
+    getPastPaperById: makeFunctionReference<"query">("pastPapers:getPastPaperById"),
+  },
   notes: {
     getLessonNote: makeFunctionReference<"query">("notes:getLessonNote"),
     upsertLessonNote: makeFunctionReference<"mutation">("notes:upsertLessonNote"),
