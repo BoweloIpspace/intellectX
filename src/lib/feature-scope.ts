@@ -10,6 +10,7 @@ const mobileStudyFeatures = ["quizzes"] as const satisfies readonly StudyFeature
 const mobileAllowedRoutePrefixes = [
   "/mobile-study",
   "/mobile-quizzes",
+  "/mobile-past-papers",
   "/mobile-progress",
   "/mobile-profile",
   "/quiz",
