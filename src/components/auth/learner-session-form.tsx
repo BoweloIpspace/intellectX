@@ -80,9 +80,17 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
   const destination = returnTo ?? getLearnerHomeRouteForCurrentRuntime();
 
   useEffect(() => {
-    setNativeMobile(isMobileAppRuntime());
+    const native = isMobileAppRuntime();
+    setNativeMobile(native);
+
+    const existingSession = getLearnerSession();
+    if (!isForgotPassword && existingSession) {
+      window.location.replace(returnTo ?? (native ? "/mobile-study" : getLearnerHomeRouteForCurrentRuntime()));
+      return;
+    }
+
     setHydrated(true);
-  }, []);
+  }, [isForgotPassword, returnTo]);
 
   useEffect(() => {
     if (!isSignup || !hydrated || nativeMobile) return;
@@ -135,21 +143,31 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     window.location.replace(destination);
   }
 
+  if (!hydrated) {
+    return (
+      <Card className="border-white/70 bg-white/85 shadow-3xl backdrop-blur dark:border-white/10 dark:bg-card/85">
+        <CardContent className="flex min-h-48 items-center justify-center py-6">
+          <p className="text-muted-foreground text-sm" role="status">Checking your learner session...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="border-white/70 bg-white/85 shadow-3xl backdrop-blur dark:border-white/10 dark:bg-card/85">
-      <CardHeader className="gap-4">
-        <div className="bg-primary/10 text-primary grid size-11 place-items-center rounded-full">
+    <Card className="gap-4 border-white/70 bg-white/85 py-5 shadow-3xl backdrop-blur dark:border-white/10 dark:bg-card/85 sm:gap-6 sm:py-6">
+      <CardHeader className="gap-3 px-5 sm:gap-4 sm:px-6">
+        <div className="bg-primary/10 text-primary grid size-10 place-items-center rounded-full sm:size-11">
           {isForgotPassword ? <MailIcon className="size-5" /> : <SparklesIcon className="size-5" />}
         </div>
         <div>
-          <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-[0.18em] uppercase">
+          <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.18em] uppercase sm:mb-3">
             {content.eyebrow}
           </p>
-          <CardTitle className="text-3xl font-medium tracking-tight">{content.title}</CardTitle>
-          <CardDescription className="mt-3 leading-6">{content.description}</CardDescription>
+          <CardTitle className="text-2xl font-medium tracking-tight sm:text-3xl">{content.title}</CardTitle>
+          <CardDescription className="mt-2 leading-5 sm:mt-3 sm:leading-6">{content.description}</CardDescription>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-5 sm:px-6">
         {isProfileSetup ? (
           <div className="grid gap-5">
             <div className="border-primary/25 bg-primary/5 text-muted-foreground rounded-lg border border-dashed px-4 py-3 text-sm leading-6">
@@ -163,7 +181,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
             />
           </div>
         ) : (
-          <form className="grid gap-4" onSubmit={handleSubmit}>
+          <form className="grid gap-3 sm:gap-4" onSubmit={handleSubmit}>
             {isSignup ? (
               <AuthField label="Name" name="name" placeholder="Your name" autoComplete="name" value={name} onChange={setName} />
             ) : null}
@@ -190,12 +208,12 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
                 onChange={setPassword}
               />
             ) : null}
-            <div className="border-primary/25 bg-primary/5 text-muted-foreground rounded-lg border border-dashed px-4 py-3 text-sm leading-6">
+            <div className="border-primary/25 bg-primary/5 text-muted-foreground rounded-lg border border-dashed px-3 py-2.5 text-xs leading-5 sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
               {nativeMobile
                 ? "Local-only profile: no password is collected. Learner details and quiz history remain in this app's local storage until you log out, clear local data, or uninstall the app."
                 : "Device-backed fallback session: learner details stay on this device. The compatibility password field is not verified or stored; production cloud authentication requires Clerk configuration."}
             </div>
-            <Button type="submit" size="lg" className="mt-2 w-full" disabled={!hydrated}>
+            <Button type="submit" size="lg" className="mt-1 min-h-12 w-full sm:mt-2">
               {content.submitLabel}
               <ArrowRightIcon className="size-4" />
             </Button>
@@ -245,7 +263,7 @@ function AuthFooter({
   if (mode === "login") {
     if (nativeMobile) {
       return (
-        <p className="text-muted-foreground mt-6 text-center text-sm">
+        <p className="text-muted-foreground mt-4 text-center text-sm sm:mt-6">
           Need a new local profile?{" "}
           <Link href={withMobileReturnTo("/signup", returnTo)} className="text-foreground font-medium underline underline-offset-4">
             Create one
@@ -271,7 +289,7 @@ function AuthFooter({
 
   if (mode === "signup") {
     return (
-      <div className="text-muted-foreground mt-6 grid gap-2 text-center text-sm">
+      <div className="text-muted-foreground mt-4 grid gap-2 text-center text-sm sm:mt-6">
         <p>{nativeMobile ? "After creating the local profile, choose your courses and start practicing." : "After signup, complete your study profile to continue."}</p>
         <p>
           {nativeMobile ? "Already have a local learner profile?" : "Already have a learner session?"}{" "}
@@ -284,7 +302,7 @@ function AuthFooter({
   }
 
   return (
-    <p className="text-muted-foreground mt-6 text-center text-sm">
+    <p className="text-muted-foreground mt-4 text-center text-sm sm:mt-6">
       <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
         {nativeMobile ? "Back to local learner profile" : "Back to login"}
       </Link>
