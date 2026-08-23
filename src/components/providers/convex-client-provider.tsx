@@ -5,6 +5,7 @@ import {
   LocalLearnerAuthRuntimeProvider,
 } from "@/components/providers/learner-auth-runtime-provider";
 import { getAuthEnvironmentStatus } from "@/lib/auth-env";
+import { FEATURE_BRANCH_CONVEX_URL } from "@/lib/education-data";
 import { ClerkProvider, useAuth } from "@clerk/nextjs";
 import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
@@ -32,9 +33,12 @@ function useLocalConvexAuth() {
 }
 
 export function ConvexClientProvider({ children }: ConvexClientProviderProps) {
-  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL ?? FEATURE_BRANCH_CONVEX_URL;
   const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  const authEnvironment = getAuthEnvironmentStatus();
+  const authEnvironment = getAuthEnvironmentStatus({
+    NEXT_PUBLIC_CONVEX_URL: convexUrl,
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: clerkPublishableKey,
+  });
   const client = useMemo(() => (convexUrl ? new ConvexReactClient(convexUrl) : null), [convexUrl]);
 
   if (!client) {
