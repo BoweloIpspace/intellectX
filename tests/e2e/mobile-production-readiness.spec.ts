@@ -83,7 +83,7 @@ test("native learner chooses courses first and each course shows only its own qu
   await selectedCourse.click();
 
   await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems$/);
-  await expect(page.getByRole("heading", { name: "AI Study Systems" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AI Study Systems", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "AI Study Systems Check" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Critical Thinking Check" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Exam Accelerator Check" })).toHaveCount(0);
