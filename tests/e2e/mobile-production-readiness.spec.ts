@@ -97,7 +97,7 @@ test("new native local signup goes from Study Profile directly to course selecti
   await page.getByLabel("Email").fill("new.mobile.learner@intellectx.local");
   await page.getByRole("button", { name: "Continue to study profile" }).click();
 
-  await expect(page.getByRole("heading", { name: "Study profile" })).toBeVisible();
+  await expect(page.getByText("Study profile", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "AI Productivity" }).click();
   await page.getByRole("button", { name: "Continue to course selection" }).click();
 
