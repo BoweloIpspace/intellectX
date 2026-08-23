@@ -4,6 +4,8 @@ export const billingLifecycleEventTypes = [
   "checkout_completed",
   "subscription_created",
   "subscription_renewed",
+  "subscription_paused",
+  "subscription_resumed",
   "subscription_cancelled",
   "subscription_expired",
   "payment_failed",
@@ -21,9 +23,9 @@ export type VerifiedBillingEntitlementEvent = {
   provider: string;
   providerCustomerId: string;
   providerSubscriptionId: string;
-  providerEventId?: string | null;
+  providerEventId: string;
   currentPeriodEndsAt?: number | null;
-  occurredAt?: number | null;
+  occurredAt: number;
 };
 
 export type EntitlementWrite = {
@@ -33,11 +35,20 @@ export type EntitlementWrite = {
   provider: string;
   providerCustomerId: string;
   providerSubscriptionId: string;
-  providerEventId?: string;
+  providerEventId: string;
   lastBillingEventType: BillingLifecycleEventType;
   currentPeriodEndsAt?: number;
+  providerOccurredAt: number;
   updatedAt: number;
 };
+
+export type ExistingEntitlementVersion = {
+  providerEventId?: string | null;
+  providerOccurredAt?: number | null;
+  updatedAt?: number | null;
+} | null | undefined;
+
+export type BillingEventWriteDecision = "apply" | "duplicate" | "stale";
 
 export function getEntitlementStatusForBillingEvent(
   eventType: string | null | undefined,
@@ -46,7 +57,10 @@ export function getEntitlementStatusForBillingEvent(
     case "checkout_completed":
     case "subscription_created":
     case "subscription_renewed":
+    case "subscription_resumed":
       return "active";
+    case "subscription_paused":
+      return "paused";
     case "subscription_cancelled":
       return "cancelled";
     case "subscription_expired":
@@ -70,6 +84,39 @@ function requireNonEmpty(value: string | null | undefined, fieldName: string) {
   return trimmed;
 }
 
+function requireTimestamp(value: number | null | undefined, fieldName: string) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    throw new Error(`${fieldName} must be a positive finite timestamp.`);
+  }
+
+  return value;
+}
+
+export function decideBillingEventWrite(
+  existing: ExistingEntitlementVersion,
+  incoming: Pick<VerifiedBillingEntitlementEvent, "providerEventId" | "occurredAt">,
+): BillingEventWriteDecision {
+  const incomingEventId = requireNonEmpty(incoming.providerEventId, "providerEventId");
+  const incomingOccurredAt = requireTimestamp(incoming.occurredAt, "occurredAt");
+
+  if (existing?.providerEventId?.trim() === incomingEventId) {
+    return "duplicate";
+  }
+
+  const previousOccurredAt =
+    typeof existing?.providerOccurredAt === "number"
+      ? existing.providerOccurredAt
+      : typeof existing?.updatedAt === "number"
+        ? existing.updatedAt
+        : null;
+
+  if (typeof previousOccurredAt === "number" && incomingOccurredAt <= previousOccurredAt) {
+    return "stale";
+  }
+
+  return "apply";
+}
+
 export function prepareVerifiedEntitlementWrite(
   event: Partial<VerifiedBillingEntitlementEvent> | null | undefined,
   now = Date.now(),
@@ -84,6 +131,7 @@ export function prepareVerifiedEntitlementWrite(
     throw new Error("Unknown billing lifecycle event type cannot update entitlements.");
   }
 
+  const providerOccurredAt = requireTimestamp(event.occurredAt, "occurredAt");
   const write: EntitlementWrite = {
     userKey: requireNonEmpty(event.userKey, "userKey"),
     productKey: requireNonEmpty(event.productKey, "productKey"),
@@ -91,16 +139,13 @@ export function prepareVerifiedEntitlementWrite(
     provider: requireNonEmpty(event.provider, "provider"),
     providerCustomerId: requireNonEmpty(event.providerCustomerId, "providerCustomerId"),
     providerSubscriptionId: requireNonEmpty(event.providerSubscriptionId, "providerSubscriptionId"),
+    providerEventId: requireNonEmpty(event.providerEventId, "providerEventId"),
     lastBillingEventType: event.billingEventType,
-    updatedAt: event.occurredAt ?? now,
+    providerOccurredAt,
+    updatedAt: now,
   };
 
-  const providerEventId = event.providerEventId?.trim();
-  if (providerEventId) {
-    write.providerEventId = providerEventId;
-  }
-
-  if (typeof event.currentPeriodEndsAt === "number") {
+  if (typeof event.currentPeriodEndsAt === "number" && Number.isFinite(event.currentPeriodEndsAt)) {
     write.currentPeriodEndsAt = event.currentPeriodEndsAt;
   }
 

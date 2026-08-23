@@ -196,6 +196,7 @@ export default defineSchema({
     status: v.union(
       v.literal("none"),
       v.literal("active"),
+      v.literal("paused"),
       v.literal("expired"),
       v.literal("cancelled"),
       v.literal("refunded"),
@@ -206,11 +207,14 @@ export default defineSchema({
     providerCustomerId: v.optional(v.string()),
     providerSubscriptionId: v.optional(v.string()),
     providerEventId: v.optional(v.string()),
+    providerOccurredAt: v.optional(v.number()),
     lastBillingEventType: v.optional(
       v.union(
         v.literal("checkout_completed"),
         v.literal("subscription_created"),
         v.literal("subscription_renewed"),
+        v.literal("subscription_paused"),
+        v.literal("subscription_resumed"),
         v.literal("subscription_cancelled"),
         v.literal("subscription_expired"),
         v.literal("payment_failed"),
@@ -221,5 +225,40 @@ export default defineSchema({
   })
     .index("by_user", ["userKey"])
     .index("by_product", ["productKey"])
+    .index("by_user_product", ["userKey", "productKey"])
+    .index("by_user_product_provider_subscription", [
+      "userKey",
+      "productKey",
+      "provider",
+      "providerSubscriptionId",
+    ])
     .index("by_provider_event", ["providerEventId"]),
+  billingWebhookEvents: defineTable({
+    provider: v.string(),
+    providerEventId: v.string(),
+    providerEventType: v.string(),
+    providerNotificationId: v.optional(v.string()),
+    providerCustomerId: v.optional(v.string()),
+    providerSubscriptionId: v.optional(v.string()),
+    userKey: v.optional(v.string()),
+    productKey: v.optional(v.string()),
+    occurredAt: v.number(),
+    receivedAt: v.number(),
+    processedAt: v.number(),
+    processingStatus: v.union(v.literal("applied"), v.literal("duplicate"), v.literal("ignored_stale")),
+    entitlementId: v.optional(v.id("entitlements")),
+    entitlementStatus: v.optional(
+      v.union(
+        v.literal("active"),
+        v.literal("paused"),
+        v.literal("expired"),
+        v.literal("cancelled"),
+        v.literal("refunded"),
+        v.literal("payment_failed"),
+      ),
+    ),
+    rawPayloadHash: v.optional(v.string()),
+  })
+    .index("by_provider_event", ["provider", "providerEventId"])
+    .index("by_subscription_occurred", ["provider", "providerSubscriptionId", "occurredAt"]),
 });

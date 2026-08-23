@@ -41,7 +41,13 @@ describe("entitlement policy", () => {
   });
 
   it("rejects inactive entitlement statuses", () => {
-    const inactiveStatuses = ["expired", "cancelled", "refunded", "payment_failed"] as const satisfies EntitlementStatus[];
+    const inactiveStatuses = [
+      "paused",
+      "expired",
+      "cancelled",
+      "refunded",
+      "payment_failed",
+    ] as const satisfies EntitlementStatus[];
 
     for (const status of inactiveStatuses) {
       expect(entitlementStatusAllowsAccess(status)).toBe(false);

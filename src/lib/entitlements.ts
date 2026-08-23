@@ -1,6 +1,7 @@
 ﻿export const entitlementStatuses = [
   "none",
   "active",
+  "paused",
   "expired",
   "cancelled",
   "refunded",

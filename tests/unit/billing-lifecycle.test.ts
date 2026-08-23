@@ -1,6 +1,7 @@
 ﻿import { describe, expect, it } from "vitest";
 
 import {
+  decideBillingEventWrite,
   getEntitlementStatusForBillingEvent,
   prepareVerifiedEntitlementWrite,
   type BillingLifecycleEventType,
@@ -11,9 +12,11 @@ const activeEvents = [
   "checkout_completed",
   "subscription_created",
   "subscription_renewed",
+  "subscription_resumed",
 ] as const satisfies BillingLifecycleEventType[];
 
 const inactiveEventExpectations = [
+  ["subscription_paused", "paused"],
   ["subscription_cancelled", "cancelled"],
   ["subscription_expired", "expired"],
   ["payment_failed", "payment_failed"],
@@ -37,14 +40,14 @@ function verifiedEvent(overrides: Partial<VerifiedBillingEntitlementEvent> = {})
 }
 
 describe("billing lifecycle entitlement mapping", () => {
-  it("maps checkout and subscription start or renewal events to active entitlement", () => {
+  it("maps successful subscription events to active entitlement", () => {
     for (const eventType of activeEvents) {
       expect(getEntitlementStatusForBillingEvent(eventType)).toBe("active");
       expect(prepareVerifiedEntitlementWrite(verifiedEvent({ billingEventType: eventType })).status).toBe("active");
     }
   });
 
-  it("maps cancellation, expiry, failure, and refund events to inactive entitlement states", () => {
+  it("maps pause, cancellation, expiry, failure, and refund events to inactive states", () => {
     for (const [eventType, status] of inactiveEventExpectations) {
       expect(getEntitlementStatusForBillingEvent(eventType)).toBe(status);
       expect(prepareVerifiedEntitlementWrite(verifiedEvent({ billingEventType: eventType })).status).toBe(status);
@@ -67,7 +70,16 @@ describe("billing lifecycle entitlement mapping", () => {
     );
   });
 
-  it("normalizes provider metadata for idempotent entitlement upserts", () => {
+  it("requires durable event identity and provider occurrence time", () => {
+    expect(() => prepareVerifiedEntitlementWrite({ ...verifiedEvent(), providerEventId: "" })).toThrow(
+      "providerEventId is required",
+    );
+    expect(() => prepareVerifiedEntitlementWrite({ ...verifiedEvent(), occurredAt: 0 })).toThrow(
+      "occurredAt must be a positive finite timestamp",
+    );
+  });
+
+  it("normalizes provider metadata while separating provider time from processing time", () => {
     expect(
       prepareVerifiedEntitlementWrite(
         verifiedEvent({
@@ -78,6 +90,7 @@ describe("billing lifecycle entitlement mapping", () => {
           providerSubscriptionId: " sub_123 ",
           providerEventId: " evt_123 ",
         }),
+        3000,
       ),
     ).toEqual({
       userKey: "auth:https://clerk.example|user_123",
@@ -89,7 +102,8 @@ describe("billing lifecycle entitlement mapping", () => {
       providerEventId: "evt_123",
       lastBillingEventType: "subscription_created",
       currentPeriodEndsAt: 2000,
-      updatedAt: 1000,
+      providerOccurredAt: 1000,
+      updatedAt: 3000,
     });
   });
 
@@ -100,7 +114,44 @@ describe("billing lifecycle entitlement mapping", () => {
         billingEventType: "checkout_completed",
         userKey: "auth:https://clerk.example|user_123",
         productKey: "intellectx.scholar",
+        providerEventId: "evt_123",
+        occurredAt: 1000,
       }),
     ).toThrow("provider is required for a verified billing entitlement event.");
+  });
+});
+
+describe("billing event ordering", () => {
+  it("applies events newer than the stored provider occurrence time", () => {
+    expect(
+      decideBillingEventWrite(
+        { providerEventId: "evt_old", providerOccurredAt: 1000 },
+        { providerEventId: "evt_new", occurredAt: 1001 },
+      ),
+    ).toBe("apply");
+  });
+
+  it("treats the same provider event as a duplicate", () => {
+    expect(
+      decideBillingEventWrite(
+        { providerEventId: "evt_same", providerOccurredAt: 1000 },
+        { providerEventId: "evt_same", occurredAt: 1001 },
+      ),
+    ).toBe("duplicate");
+  });
+
+  it("rejects older or equal-time different events as stale", () => {
+    expect(
+      decideBillingEventWrite(
+        { providerEventId: "evt_current", providerOccurredAt: 1000 },
+        { providerEventId: "evt_old", occurredAt: 999 },
+      ),
+    ).toBe("stale");
+    expect(
+      decideBillingEventWrite(
+        { providerEventId: "evt_current", providerOccurredAt: 1000 },
+        { providerEventId: "evt_tie", occurredAt: 1000 },
+      ),
+    ).toBe("stale");
   });
 });
