@@ -3,9 +3,14 @@ import { getLesson, getLessonsByCourse, lessons } from "@/data/lessons";
 import { getQuiz, getQuizzesByCourse, quizzes } from "@/data/quizzes";
 import { userProgress } from "@/data/user-progress";
 
+// Device-test branch only: bind the Android test build to the seeded IntellectX
+// development deployment so Biology and its past paper are actually available.
+const deviceTestConvexUrl = "https://wary-meerkat-937.convex.cloud";
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL ?? deviceTestConvexUrl;
+
 export const convexEnv = {
-  url: process.env.NEXT_PUBLIC_CONVEX_URL,
-  isConfigured: Boolean(process.env.NEXT_PUBLIC_CONVEX_URL),
+  url: convexUrl,
+  isConfigured: Boolean(convexUrl),
 };
 
 export const educationData = {
