@@ -15,7 +15,7 @@ export default function MobileQuizzesPage() {
         <Badge variant="secondary" className="uppercase">
           Courses & quizzes
         </Badge>
-        <h1 className="text-2xl leading-[1.08] font-medium tracking-tight">Practice</h1>
+        <h1 className="text-2xl leading-[1.08] font-medium tracking-tight">Practice with focused quizzes</h1>
       </section>
 
       <div className="mobile-quizzes-flow">
