@@ -44,7 +44,9 @@ export function QuizPageContent({ quiz, courseId, mobileRequested }: QuizPageCon
             ? "Choose an answer, check the explanation, then continue."
             : "Select an answer, check your result, and use the feedback to close the learning loop. Completed attempts are saved so your scores and learning activity can appear across IntellectX."}
         </p>
-        <SecureQuizPlayer quiz={quiz} surface={mobileSurface ? "mobile" : "web"} />
+        <div className={mobileSurface ? "mobile-quiz-player" : undefined}>
+          <SecureQuizPlayer quiz={quiz} surface={mobileSurface ? "mobile" : "web"} />
+        </div>
         <Button className="mt-4 min-h-11" variant="ghost" asChild>
           <Link href={mobileSurface ? "/mobile-quizzes" : `/courses/${courseId}`}>
             {mobileSurface ? "Back to mobile quizzes" : "Back to course"}
