@@ -52,7 +52,7 @@ const nativeContentByMode = {
     eyebrow: "Local learner profile",
     title: "Create a local learner profile",
     description:
-      "Add your learner details, then complete your study profile. This profile and quiz progress stay on this device unless cloud services are configured later.",
+      "Add your learner details, complete your study profile, then choose the courses you want to practice.",
     submitLabel: "Continue to study profile",
   },
   "forgot-password": {
@@ -127,7 +127,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     if (!pendingSession) return;
 
     createLearnerSession(pendingSession);
-    window.location.replace(destination);
+    window.location.replace(nativeMobile ? "/mobile-quizzes?setup=1" : destination);
   }
 
   return (
@@ -148,12 +148,14 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
         {isProfileSetup ? (
           <div className="grid gap-5">
             <div className="border-primary/25 bg-primary/5 text-muted-foreground rounded-lg border border-dashed px-4 py-3 text-sm leading-6">
-              Complete your study profile to continue to your quiz.
+              {nativeMobile
+                ? "Complete your study profile, then choose the courses you want on your mobile quiz home."
+                : "Complete your study profile to continue."}
             </div>
             <StudyProfileCard
               loadSavedProfile={false}
               showReset={false}
-              submitLabel={nativeMobile ? "Complete profile" : "Complete signup"}
+              submitLabel={nativeMobile ? "Continue to course selection" : "Complete signup"}
               onSaved={completeSignup}
             />
           </div>
@@ -228,60 +230,48 @@ function AuthField({ label, name, value, onChange, ...props }: AuthFieldProps) {
   );
 }
 
-function AuthFooter({
-  mode,
-  returnTo,
-  nativeMobile,
-}: {
+type AuthFooterProps = {
   mode: LearnerSessionMode;
   returnTo: string | null;
   nativeMobile: boolean;
-}) {
+};
+
+function AuthFooter({ mode, returnTo, nativeMobile }: AuthFooterProps) {
   if (mode === "login") {
-    if (nativeMobile) {
-      return (
-        <p className="text-muted-foreground mt-6 text-center text-sm">
-          Need a new local profile?{" "}
-          <Link href={withMobileReturnTo("/signup", returnTo)} className="text-foreground font-medium underline underline-offset-4">
-            Create one
+    return (
+      <div className="mt-6 text-center text-sm text-muted-foreground">
+        <p>
+          New to IntellectX?{" "}
+          <Link className="font-medium text-foreground underline underline-offset-4" href={withMobileReturnTo("/signup", returnTo)}>
+            Create a learner profile
           </Link>
         </p>
-      );
-    }
-
-    return (
-      <div className="text-muted-foreground mt-6 flex flex-col gap-2 text-center text-sm sm:flex-row sm:justify-between">
-        <Link href={withMobileReturnTo("/forgot-password", returnTo)} className="underline underline-offset-4">
-          Forgot password?
-        </Link>
-        <span>
-          New here?{" "}
-          <Link href={withMobileReturnTo("/signup", returnTo)} className="text-foreground font-medium underline underline-offset-4">
-            Sign up
-          </Link>
-        </span>
+        {!nativeMobile ? (
+          <p className="mt-2">
+            <Link className="underline underline-offset-4" href={withMobileReturnTo("/forgot-password", returnTo)}>
+              Forgot password?
+            </Link>
+          </p>
+        ) : null}
       </div>
     );
   }
 
   if (mode === "signup") {
     return (
-      <div className="text-muted-foreground mt-6 grid gap-2 text-center text-sm">
-        <p>{nativeMobile ? "After creating the local profile, complete your study profile to continue." : "After signup, complete your study profile to continue."}</p>
-        <p>
-          {nativeMobile ? "Already have a local learner profile?" : "Already have a learner session?"}{" "}
-          <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
-            {nativeMobile ? "Continue" : "Log in"}
-          </Link>
-        </p>
-      </div>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Already have a learner profile?{" "}
+        <Link className="font-medium text-foreground underline underline-offset-4" href={withMobileReturnTo("/login", returnTo)}>
+          Continue instead
+        </Link>
+      </p>
     );
   }
 
   return (
-    <p className="text-muted-foreground mt-6 text-center text-sm">
-      <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
-        {nativeMobile ? "Back to local learner profile" : "Back to login"}
+    <p className="mt-6 text-center text-sm text-muted-foreground">
+      <Link className="font-medium text-foreground underline underline-offset-4" href={withMobileReturnTo("/login", returnTo)}>
+        Back to learner access
       </Link>
     </p>
   );
