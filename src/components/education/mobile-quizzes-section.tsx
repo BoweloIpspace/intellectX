@@ -113,7 +113,7 @@ function NativeCourseFirstQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   const needsCourseSelection = setupRequested || selectedCourses.length === 0;
 
   function toggleCourse(courseId: string) {
-    const update = toggleSelectedCourse(courseId, selection);
+    const update = toggleSelectedCourse(courseId, selection ?? undefined);
     setSelection(update.selection);
     setSelectionError(update.error ?? null);
   }
