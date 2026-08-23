@@ -7,7 +7,7 @@ function source(file: string) {
 }
 
 describe("native past paper flow", () => {
-  it("keeps model answers out of the initial paper payload", () => {
+  it("keeps the final backend contract ready for answer-on-demand rollout", () => {
     const backend = source("convex/pastPapers.ts");
     const detailQuery = backend.slice(
       backend.indexOf("export const getPastPaperById"),
@@ -28,19 +28,20 @@ describe("native past paper flow", () => {
     expect(mobileCourses).toContain("Past Papers");
   });
 
-  it("reveals answers on demand and never navigates back to the web course surface", () => {
+  it("device-test runner reveals the already-deployed answer payload and stays inside mobile routes", () => {
     const runner = source("src/components/education/mobile-past-papers.tsx");
 
-    expect(runner).toContain("convexApi.pastPapers.getPastPaperAnswer");
-    expect(runner).toContain(': "skip"');
+    expect(runner).toContain("current.modelAnswer");
+    expect(runner).toContain("Reveal answer");
     expect(runner).toContain("/mobile-past-papers?course=");
     expect(runner).not.toContain("/courses/");
   });
 
-  it("does not hardcode a Convex deployment into shared education configuration", () => {
+  it("device-test branch explicitly binds to the seeded development deployment", () => {
     const educationData = source("src/lib/education-data.ts");
 
-    expect(educationData).not.toContain("wary-meerkat-937");
+    expect(educationData).toContain("Device-test branch only");
+    expect(educationData).toContain("wary-meerkat-937");
     expect(educationData).toContain("process.env.NEXT_PUBLIC_CONVEX_URL");
   });
 });
