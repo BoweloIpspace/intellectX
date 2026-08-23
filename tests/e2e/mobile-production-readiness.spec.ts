@@ -99,9 +99,9 @@ test("selected course opens topics and each topic opens its quiz list", async ({
 
   await page.getByRole("link", { name: /Memory Systems/i }).click();
   await expect(page).toHaveURL(/topic=memory-systems$/);
-  await expect(page.getByRole("heading", { name: "Memory Systems" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Memory Systems Check" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Weekly Review Check" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Memory Systems", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Memory Systems Check", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Weekly Review Check", exact: true })).toHaveCount(0);
 });
 
 test("mobile quiz detail stays inside the native quiz shell", async ({ page }) => {
