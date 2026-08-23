@@ -1,0 +1,75 @@
+name: Backend production hardening
+
+on:
+  push:
+    branches:
+      - "backend/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      CI: true
+      NEXT_TELEMETRY_DISABLED: 1
+      NEXT_PUBLIC_PAYMENTS_ENABLED: "false"
+
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@df199fb7be9f65074067a9eb93f12bb4c5547cf2
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck app and Convex backend
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Production dependency audit
+        run: npm run audit:prod
+
+      - name: Production build
+        run: npm run build
+
+      - name: Production server smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- -p 3100 >/tmp/intellectx-next.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3100/api/health >/tmp/health.json; then
+              break
+            fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              cat /tmp/intellectx-next.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+          node -e 'const fs=require("fs"); const body=JSON.parse(fs.readFileSync("/tmp/health.json","utf8")); if(body.status!=="ok"||body.service!=="intellectx-web") process.exit(1)'
+          curl --fail --silent --show-error http://127.0.0.1:3100/checkout | grep -F "Premium checkout is not live yet" >/dev/null
