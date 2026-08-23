@@ -3,10 +3,10 @@ import { getLesson, getLessonsByCourse, lessons } from "@/data/lessons";
 import { getQuiz, getQuizzesByCourse, quizzes } from "@/data/quizzes";
 import { userProgress } from "@/data/user-progress";
 
-// Preview-only bridge for the recovered IntellectX development deployment.
-// Production still requires NEXT_PUBLIC_CONVEX_URL to be configured explicitly.
-const previewConvexUrl = process.env.VERCEL_ENV === "preview" ? "https://wary-meerkat-937.convex.cloud" : undefined;
-const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL ?? previewConvexUrl;
+// Temporary feature-branch bridge to the recovered IntellectX development deployment.
+// Remove this fallback before merging to main; production must use an explicit environment variable.
+export const FEATURE_BRANCH_CONVEX_URL = "https://wary-meerkat-937.convex.cloud";
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL ?? FEATURE_BRANCH_CONVEX_URL;
 
 export const convexEnv = {
   url: convexUrl,
