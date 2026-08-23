@@ -48,13 +48,13 @@ function ConvexMobileQuizzesSection() {
 }
 
 function MobileQuizzesContent({ catalog }: { catalog: LearnerCatalog }) {
-  const [nativeAppSurface, setNativeAppSurface] = useState(true);
+  const [nativeAppSurface, setNativeAppSurface] = useState<boolean | null>(null);
 
   useEffect(() => {
     setNativeAppSurface(isMobileAppRuntime());
   }, []);
 
-  if (catalog.isLoading) {
+  if (catalog.isLoading || nativeAppSurface === null) {
     return (
       <div className="flex min-h-48 items-center justify-center">
         <AppLoadingSpinner label="Loading mobile study catalog" showLabel />
