@@ -33,7 +33,7 @@ export function MobileStudyHome() {
         </Badge>
         <h1 className="text-3xl leading-[1.08] font-medium tracking-tight">Free quiz practice</h1>
         <p className="text-muted-foreground text-base leading-7">
-          IntellectX mobile is focused on one thing: helping you practice quizzes, review results, and improve over time.
+          Choose your courses, open a course, and practice the quizzes inside it. Review results and improve over time.
         </p>
       </section>
 
@@ -42,13 +42,13 @@ export function MobileStudyHome() {
           <span className="bg-primary text-primary-foreground grid size-11 place-items-center rounded-full">
             <BookOpenCheckIcon className="size-5" />
           </span>
-          <h2 className="mt-5 text-xl font-semibold tracking-tight">Quiz library</h2>
+          <h2 className="mt-5 text-xl font-semibold tracking-tight">Your courses</h2>
           <p className="text-muted-foreground mt-3 text-sm leading-6">
-            Pick a knowledge check, answer at your pace, and review explanations as you go.
+            Pick or manage your courses, then open one to see only the quizzes available for that course.
           </p>
           <Button className="mt-6 min-h-12 w-full" asChild>
             <Link href="/mobile-quizzes">
-              Browse quizzes
+              Open courses
               <ArrowRightIcon />
             </Link>
           </Button>
