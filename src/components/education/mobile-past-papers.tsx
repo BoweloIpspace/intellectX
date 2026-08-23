@@ -39,16 +39,13 @@ type PastPaperQuestion = {
   questionNumber: string;
   prompt: string;
   marks?: number;
+  modelAnswer?: string;
+  explanation?: string;
   order: number;
 };
 
 type PastPaperDetail = PastPaperSummary & {
   questions: PastPaperQuestion[];
-};
-
-type PastPaperAnswer = {
-  modelAnswer: string;
-  explanation?: string;
 };
 
 function MobilePastPaperUnavailable() {
@@ -181,10 +178,6 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
   const [finished, setFinished] = useState(false);
   const current = paper?.questions[currentIndex];
   const isRevealed = current ? revealed.has(current.stableId) : false;
-  const answer = useQuery(
-    convexApi.pastPapers.getPastPaperAnswer,
-    current && isRevealed ? { paperId, questionId: current.stableId } : "skip",
-  ) as PastPaperAnswer | null | undefined;
 
   const revealedCount = useMemo(
     () => paper?.questions.filter((question) => revealed.has(question.stableId)).length ?? 0,
@@ -293,21 +286,17 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
             <EyeIcon className="size-5" />
             Reveal answer
           </Button>
-        ) : answer === undefined ? (
-          <div className="mt-6 flex min-h-24 items-center justify-center rounded-lg border bg-secondary/30">
-            <AppLoadingSpinner label="Loading answer" showLabel />
-          </div>
-        ) : answer ? (
+        ) : current.modelAnswer ? (
           <div className="mt-6 space-y-3">
             <div className="rounded-lg border bg-secondary/40 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide">Model answer</p>
-              <div className="mt-2 whitespace-pre-wrap text-sm leading-6">{answer.modelAnswer}</div>
+              <div className="mt-2 whitespace-pre-wrap text-sm leading-6">{current.modelAnswer}</div>
             </div>
-            {answer.explanation ? (
+            {current.explanation ? (
               <div className="rounded-lg border p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide">Explanation</p>
                 <div className="text-muted-foreground mt-2 whitespace-pre-wrap text-sm leading-6">
-                  {answer.explanation}
+                  {current.explanation}
                 </div>
               </div>
             ) : null}
