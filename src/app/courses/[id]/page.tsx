@@ -1,12 +1,13 @@
 import { CourseContinueAction } from "@/components/education/course-continue-action";
 import { CourseProgressSummary } from "@/components/education/course-progress-summary";
-import { PageShell } from "@/components/education/page-shell";
 import { clickableGlassCardClassName, glassCardClassName } from "@/components/education/glass-card";
+import { PageShell } from "@/components/education/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { courses } from "@/data/courses";
 import { getLearnerCourseDetail } from "@/lib/learner-catalog";
-import { BookOpenIcon, ClockIcon, FileQuestionIcon } from "lucide-react";
+import { getLearnerPastPapersByCourse } from "@/lib/past-paper-catalog";
+import { BookOpenIcon, ClockIcon, FileQuestionIcon, FileTextIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -40,6 +41,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   }
 
   const { lessons, quizzes } = detail;
+  const pastPapers = await getLearnerPastPapersByCourse(course.id);
 
   return (
     <PageShell>
@@ -66,11 +68,49 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               <FileQuestionIcon className="size-4" />
               {quizzes.length} {quizzes.length === 1 ? "quiz" : "quizzes"}
             </span>
+            {pastPapers.length > 0 ? (
+              <span className="inline-flex items-center gap-2">
+                <FileTextIcon className="size-4" />
+                {pastPapers.length} {pastPapers.length === 1 ? "past paper" : "past papers"}
+              </span>
+            ) : null}
           </div>
           <CourseProgressSummary lessonIds={lessons.map((lesson) => lesson.id)} />
           <CourseContinueAction lessons={lessons} />
         </div>
       </section>
+
+      {pastPapers.length > 0 ? (
+        <section className="mb-5">
+          <Card className={`rounded-lg ${glassCardClassName}`}>
+            <CardHeader>
+              <CardTitle>Past papers</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3 md:grid-cols-2">
+              {pastPapers.map((paper) => (
+                <Link
+                  key={paper.stableId}
+                  href={`/past-papers/${paper.stableId}`}
+                  className={`bg-secondary/40 hover:bg-secondary rounded-lg p-4 ${clickableGlassCardClassName}`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-medium">{paper.title}</p>
+                      <p className="text-muted-foreground mt-1 text-sm">
+                        {paper.paperCode}
+                        {paper.estimatedTime ? ` · ${paper.estimatedTime}` : ""}
+                      </p>
+                    </div>
+                    <Badge variant="outline">{paper.year}</Badge>
+                  </div>
+                  <p className="text-muted-foreground mt-3 text-sm">Open paper and reveal model answers question by question.</p>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
       <section className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
         <Card className={`rounded-lg ${glassCardClassName}`}>
           <CardHeader>
