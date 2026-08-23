@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { getClerkDisplayName } from "@/lib/auth-identity";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
+import { isMobileAppRuntime } from "@/lib/feature-scope";
 import {
   clearLearnerSession,
   getLearnerSession,
@@ -39,7 +40,9 @@ function ClerkProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="text-muted-foreground grid gap-4 text-sm leading-6">
-        {isLoaded && isSignedIn && user ? (
+        {!isLoaded ? (
+          <p role="status">Checking your learner session...</p>
+        ) : isSignedIn && user ? (
           <>
             <div>
               <p className="text-foreground font-medium">{getClerkDisplayName(user)}</p>
@@ -64,7 +67,7 @@ function ClerkProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
 }
 
 function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
-  const [session, setSession] = useState<LearnerSession | null>(null);
+  const [session, setSession] = useState<LearnerSession | null | undefined>(undefined);
 
   useEffect(() => {
     function syncSession() {
@@ -83,7 +86,7 @@ function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
 
   function handleLogout() {
     clearLearnerSession();
-    window.location.assign("/");
+    window.location.replace(isMobileAppRuntime() ? "/login" : "/");
   }
 
   return (
@@ -95,7 +98,9 @@ function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="text-muted-foreground grid gap-4 text-sm leading-6">
-        {session ? (
+        {session === undefined ? (
+          <p role="status">Checking your learner session...</p>
+        ) : session ? (
           <>
             <div>
               <p className="text-foreground font-medium">{session.name}</p>
