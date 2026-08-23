@@ -179,6 +179,7 @@ export default defineSchema({
     body: v.string(),
     updatedAt: v.number(),
   })
+    .index("by_user", ["userKey"])
     .index("by_user_lesson", ["userKey", "lessonId"])
     .index("by_lesson", ["lessonId"]),
   academicProfiles: defineTable({
@@ -246,7 +247,12 @@ export default defineSchema({
     occurredAt: v.number(),
     receivedAt: v.number(),
     processedAt: v.number(),
-    processingStatus: v.union(v.literal("applied"), v.literal("duplicate"), v.literal("ignored_stale")),
+    processingStatus: v.union(
+      v.literal("applied"),
+      v.literal("duplicate"),
+      v.literal("ignored_stale"),
+      v.literal("ignored_deleted"),
+    ),
     entitlementId: v.optional(v.id("entitlements")),
     entitlementStatus: v.optional(
       v.union(
@@ -261,5 +267,36 @@ export default defineSchema({
     rawPayloadHash: v.optional(v.string()),
   })
     .index("by_provider_event", ["provider", "providerEventId"])
-    .index("by_subscription_occurred", ["provider", "providerSubscriptionId", "occurredAt"]),
+    .index("by_subscription_occurred", ["provider", "providerSubscriptionId", "occurredAt"])
+    .index("by_user", ["userKey"]),
+  billingSubscriptionTombstones: defineTable({
+    provider: v.string(),
+    providerSubscriptionId: v.string(),
+    deletedAt: v.number(),
+  }).index("by_provider_subscription", ["provider", "providerSubscriptionId"]),
+  accountDeletionReceipts: defineTable({
+    deletedAt: v.number(),
+    counts: v.object({
+      academicProfiles: v.number(),
+      courseSelections: v.number(),
+      lessonProgress: v.number(),
+      quizAttempts: v.number(),
+      studyStats: v.number(),
+      notes: v.number(),
+      entitlements: v.number(),
+      billingEventsScrubbed: v.number(),
+    }),
+  }).index("by_deleted_at", ["deletedAt"]),
+  rateLimits: defineTable({
+    key: v.string(),
+    windowStartedAt: v.number(),
+    count: v.number(),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
+  migrationLedger: defineTable({
+    migrationKey: v.string(),
+    checksum: v.string(),
+    appliedAt: v.number(),
+    note: v.optional(v.string()),
+  }).index("by_key", ["migrationKey"]),
 });

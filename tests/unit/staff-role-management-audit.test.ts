@@ -36,7 +36,7 @@ describe("staff role management audit metadata", () => {
     ).toBe("learner");
   });
 
-  it("builds bounded private audit entries for staff role grants and revocations", () => {
+  it("builds bounded private audit entries with a stable correlation ID", () => {
     const entry = buildStaffRoleAuditEntry({
       actorUserId: "admin_123",
       targetUserId: "user_456",
@@ -47,6 +47,7 @@ describe("staff role management audit metadata", () => {
 
     expect(entry).toEqual({
       eventType: "staff_role_changed",
+      changeId: "12345:admin_123:user_456:learner:instructor",
       actorUserId: "admin_123",
       targetUserId: "user_456",
       previousRole: "learner",

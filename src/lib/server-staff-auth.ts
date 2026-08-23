@@ -22,6 +22,7 @@ type ClerkPrivateMetadataUser = {
 
 export type StaffRoleAuditEntry = {
   eventType: "staff_role_changed";
+  changeId?: string;
   actorUserId: string;
   targetUserId: string;
   previousRole: StaffAssignableRole;
@@ -89,6 +90,7 @@ function readExistingRoleAudit(privateMetadata: Record<string, unknown> | undefi
 
     return (
       entry.eventType === "staff_role_changed" &&
+      (entry.changeId === undefined || typeof entry.changeId === "string") &&
       typeof entry.actorUserId === "string" &&
       typeof entry.targetUserId === "string" &&
       (entry.previousRole === "learner" || entry.previousRole === "instructor") &&
@@ -106,11 +108,15 @@ export function buildStaffRoleAuditEntry(args: {
   nextRole: StaffAssignableRole;
   changedAt: number;
 }): StaffRoleAuditEntry {
+  const previousRole = normalizeStaffAssignableRole(args.previousRole);
+  const changeId = [args.changedAt, args.actorUserId, args.targetUserId, previousRole, args.nextRole].join(":");
+
   return {
     eventType: "staff_role_changed",
+    changeId,
     actorUserId: args.actorUserId,
     targetUserId: args.targetUserId,
-    previousRole: normalizeStaffAssignableRole(args.previousRole),
+    previousRole,
     nextRole: args.nextRole,
     changedAt: args.changedAt,
   };

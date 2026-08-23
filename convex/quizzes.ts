@@ -1,6 +1,8 @@
-import { mutationGeneric, queryGeneric } from "convex/server";
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
+import { mutation, query, type DatabaseReader } from "./_generated/server";
 import { isLearnerVisibleCourseRecord, learnerCourseVisibilityOptions } from "./lib/courseWorkflow";
+import { resolveLearnerUserKey } from "./lib/identity";
 import {
   gradeQuizAnswers,
   normalizeQuizSubmissionId,
@@ -8,12 +10,22 @@ import {
   toLearnerQuizQuestionPayload,
   validateQuizAnswer,
 } from "./lib/quizIntegrity";
-import { resolveLearnerUserKey } from "./lib/identity";
+import { consumeFixedWindowRateLimit } from "./lib/rateLimit";
 
-async function getLearnerVisibleCourseByStableId(ctx: any, courseStableId: string) {
+type ReadContext = { db: DatabaseReader };
+type VisibleQuizAttempt = Doc<"quizAttempts"> & {
+  quizTitle: string;
+  courseStableId: string;
+  courseTitle: string;
+};
+
+const QUIZ_CHECK_RATE_LIMIT = { limit: 180, windowMs: 60_000 } as const;
+const QUIZ_SUBMIT_RATE_LIMIT = { limit: 30, windowMs: 60_000 } as const;
+
+async function getLearnerVisibleCourseByStableId(ctx: ReadContext, courseStableId: string) {
   const course = await ctx.db
     .query("courses")
-    .withIndex("by_stable_id", (q: any) => q.eq("stableId", courseStableId))
+    .withIndex("by_stable_id", (q) => q.eq("stableId", courseStableId))
     .first();
 
   if (!course || !isLearnerVisibleCourseRecord(course, learnerCourseVisibilityOptions)) {
@@ -23,23 +35,23 @@ async function getLearnerVisibleCourseByStableId(ctx: any, courseStableId: strin
   return course;
 }
 
-function hasFreeLearnerAccess(record: { accessLevel?: string }) {
+function hasFreeLearnerAccess(record: { accessLevel?: "free" | "paid" }) {
   return record.accessLevel !== "paid";
 }
 
-async function getQuestionRecordsByQuizStableId(ctx: any, quizStableId: string) {
+async function getQuestionRecordsByQuizStableId(ctx: ReadContext, quizStableId: string) {
   const questions = await ctx.db
     .query("questions")
-    .withIndex("by_quiz_stable_id", (q: any) => q.eq("quizStableId", quizStableId))
+    .withIndex("by_quiz_stable_id", (q) => q.eq("quizStableId", quizStableId))
     .collect();
 
-  return questions.sort((left: any, right: any) => left.order - right.order);
+  return questions.sort((left, right) => left.order - right.order);
 }
 
-async function getAccessibleQuiz(ctx: any, quizStableId: string) {
+async function getAccessibleQuiz(ctx: ReadContext, quizStableId: string) {
   const quiz = await ctx.db
     .query("quizzes")
-    .withIndex("by_stable_id", (q: any) => q.eq("stableId", quizStableId))
+    .withIndex("by_stable_id", (q) => q.eq("stableId", quizStableId))
     .first();
 
   if (!quiz || !hasFreeLearnerAccess(quiz)) {
@@ -55,7 +67,7 @@ async function getAccessibleQuiz(ctx: any, quizStableId: string) {
   return { quiz, course };
 }
 
-async function buildLearnerQuizPayload(ctx: any, quiz: any) {
+async function buildLearnerQuizPayload(ctx: ReadContext, quiz: Doc<"quizzes">) {
   const questions = await getQuestionRecordsByQuizStableId(ctx, quiz.stableId);
 
   return {
@@ -64,7 +76,11 @@ async function buildLearnerQuizPayload(ctx: any, quiz: any) {
   };
 }
 
-function buildQuizAttemptResult(attempt: any, quizTitle: string, questions: any[]) {
+function buildQuizAttemptResult(
+  attempt: Doc<"quizAttempts">,
+  quizTitle: string,
+  questions: Doc<"questions">[],
+) {
   const grading = gradeQuizAnswers(questions, attempt.answers);
 
   return {
@@ -80,11 +96,11 @@ function buildQuizAttemptResult(attempt: any, quizTitle: string, questions: any[
   };
 }
 
-export const listQuizzes = queryGeneric({
+export const listQuizzes = query({
   args: {},
   handler: async (ctx) => {
     const quizzes = await ctx.db.query("quizzes").collect();
-    const visibleQuizzes = [];
+    const visibleQuizzes: Array<Awaited<ReturnType<typeof buildLearnerQuizPayload>>> = [];
 
     for (const quiz of quizzes) {
       const course = await getLearnerVisibleCourseByStableId(ctx, quiz.courseStableId);
@@ -100,7 +116,7 @@ export const listQuizzes = queryGeneric({
   },
 });
 
-export const getQuizzesByCourse = queryGeneric({
+export const getQuizzesByCourse = query({
   args: { courseStableId: v.string() },
   handler: async (ctx, args) => {
     const course = await getLearnerVisibleCourseByStableId(ctx, args.courseStableId);
@@ -120,7 +136,7 @@ export const getQuizzesByCourse = queryGeneric({
   },
 });
 
-export const getQuizById = queryGeneric({
+export const getQuizById = query({
   args: { quizId: v.string() },
   handler: async (ctx, args) => {
     const accessible = await getAccessibleQuiz(ctx, args.quizId);
@@ -133,7 +149,7 @@ export const getQuizById = queryGeneric({
   },
 });
 
-export const checkQuizAnswer = mutationGeneric({
+export const checkQuizAnswer = mutation({
   args: {
     userKey: v.optional(v.string()),
     quizId: v.string(),
@@ -141,7 +157,12 @@ export const checkQuizAnswer = mutationGeneric({
     answer: v.number(),
   },
   handler: async (ctx, args) => {
-    await resolveLearnerUserKey(ctx, args);
+    const { userKey } = await resolveLearnerUserKey(ctx, args);
+    await consumeFixedWindowRateLimit(ctx, {
+      key: `quiz-check:${userKey}`,
+      policy: QUIZ_CHECK_RATE_LIMIT,
+    });
+
     const accessible = await getAccessibleQuiz(ctx, args.quizId);
 
     if (!accessible) {
@@ -149,7 +170,7 @@ export const checkQuizAnswer = mutationGeneric({
     }
 
     const questions = await getQuestionRecordsByQuizStableId(ctx, args.quizId);
-    const question = questions.find((item: any) => item.stableId === args.questionId);
+    const question = questions.find((item) => item.stableId === args.questionId);
 
     if (!question) {
       throw new Error("Quiz question does not exist.");
@@ -170,7 +191,7 @@ export const checkQuizAnswer = mutationGeneric({
   },
 });
 
-export const submitQuizAttempt = mutationGeneric({
+export const submitQuizAttempt = mutation({
   args: {
     userKey: v.optional(v.string()),
     quizId: v.string(),
@@ -179,6 +200,11 @@ export const submitQuizAttempt = mutationGeneric({
   },
   handler: async (ctx, args) => {
     const { userKey } = await resolveLearnerUserKey(ctx, args);
+    await consumeFixedWindowRateLimit(ctx, {
+      key: `quiz-submit:${userKey}`,
+      policy: QUIZ_SUBMIT_RATE_LIMIT,
+    });
+
     const accessible = await getAccessibleQuiz(ctx, args.quizId);
 
     if (!accessible) {
@@ -190,7 +216,7 @@ export const submitQuizAttempt = mutationGeneric({
     const grading = gradeQuizAnswers(questions, args.answers);
     const existingAttempt = await ctx.db
       .query("quizAttempts")
-      .withIndex("by_user_submission_id", (q: any) => q.eq("userKey", userKey).eq("submissionId", submissionId))
+      .withIndex("by_user_submission_id", (q) => q.eq("userKey", userKey).eq("submissionId", submissionId))
       .first();
 
     if (existingAttempt) {
@@ -228,7 +254,7 @@ export const submitQuizAttempt = mutationGeneric({
   },
 });
 
-export const getQuizAttempts = queryGeneric({
+export const getQuizAttempts = query({
   args: { userKey: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const { userKey } = await resolveLearnerUserKey(ctx, args);
@@ -236,7 +262,7 @@ export const getQuizAttempts = queryGeneric({
       .query("quizAttempts")
       .withIndex("by_user", (q) => q.eq("userKey", userKey))
       .collect();
-    const visibleAttempts = [];
+    const visibleAttempts: VisibleQuizAttempt[] = [];
 
     for (const attempt of attempts) {
       const quiz = await ctx.db
@@ -260,8 +286,6 @@ export const getQuizAttempts = queryGeneric({
       }
     }
 
-    // Hydration and streak calculation depend on complete visible history.
-    // Recent-attempt UI limits its own display independently.
     return visibleAttempts.sort((left, right) => right.completedAt - left.completedAt);
   },
 });

@@ -74,6 +74,9 @@ export const applyVerifiedBillingEntitlementEvent = internalMutation({
     if (!provider || !providerEventId || !providerSubscriptionId) {
       throw new Error("Provider, provider event ID, and provider subscription ID are required.");
     }
+    if (!Number.isFinite(args.occurredAt) || args.occurredAt <= 0) {
+      throw new Error("Provider occurrence time must be a positive finite timestamp.");
+    }
 
     const priorEvent = await ctx.db
       .query("billingWebhookEvents")
@@ -85,6 +88,34 @@ export const applyVerifiedBillingEntitlementEvent = internalMutation({
         action: "duplicate" as const,
         entitlementId: priorEvent.entitlementId ?? null,
         status: priorEvent.entitlementStatus ?? null,
+      };
+    }
+
+    const deletionTombstone = await ctx.db
+      .query("billingSubscriptionTombstones")
+      .withIndex("by_provider_subscription", (q) =>
+        q.eq("provider", provider).eq("providerSubscriptionId", providerSubscriptionId),
+      )
+      .first();
+
+    if (deletionTombstone) {
+      await ctx.db.insert("billingWebhookEvents", {
+        provider,
+        providerEventId,
+        providerEventType: args.providerEventType ?? args.billingEventType,
+        providerNotificationId: args.providerNotificationId,
+        providerSubscriptionId,
+        occurredAt: args.occurredAt,
+        receivedAt: processedAt,
+        processedAt,
+        processingStatus: "ignored_deleted",
+        rawPayloadHash: args.rawPayloadHash,
+      });
+
+      return {
+        action: "ignored_deleted" as const,
+        entitlementId: null,
+        status: null,
       };
     }
 

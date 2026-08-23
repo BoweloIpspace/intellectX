@@ -68,6 +68,9 @@ export const convexApi = {
       "learnerMigration:migrateLocalLearnerDataToAuthenticatedAccount",
     ),
   },
+  accountLifecycle: {
+    deleteMyLearnerData: makeFunctionReference<"mutation">("accountLifecycle:deleteMyLearnerData"),
+  },
   entitlements: {
     getPaidAccessDecision: makeFunctionReference<"query">("entitlements:getPaidAccessDecision"),
   },
