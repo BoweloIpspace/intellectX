@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getMobileTopicQuiz } from "@/data/mobile-topic-quizzes";
 import { getQuiz } from "@/data/quizzes";
 import {
   gradeQuizAnswers,
@@ -32,7 +33,7 @@ function errorResponse(error: unknown, status = 400) {
 }
 
 function getAuthoritativeFallbackQuiz(quizId: string) {
-  const quiz = getQuiz(quizId);
+  const quiz = getQuiz(quizId) ?? getMobileTopicQuiz(quizId);
 
   if (!quiz) {
     return null;
