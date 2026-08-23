@@ -149,8 +149,8 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
           <div className="grid gap-5">
             <div className="border-primary/25 bg-primary/5 text-muted-foreground rounded-lg border border-dashed px-4 py-3 text-sm leading-6">
               {nativeMobile
-                ? "Complete your study profile, then choose the courses you want on your mobile quiz home."
-                : "Complete your study profile to continue."}
+                ? "Complete your study profile, then choose the courses you want to practice."
+                : "Complete your study profile to continue to your quiz."}
             </div>
             <StudyProfileCard
               loadSavedProfile={false}
@@ -230,48 +230,60 @@ function AuthField({ label, name, value, onChange, ...props }: AuthFieldProps) {
   );
 }
 
-type AuthFooterProps = {
+function AuthFooter({
+  mode,
+  returnTo,
+  nativeMobile,
+}: {
   mode: LearnerSessionMode;
   returnTo: string | null;
   nativeMobile: boolean;
-};
-
-function AuthFooter({ mode, returnTo, nativeMobile }: AuthFooterProps) {
+}) {
   if (mode === "login") {
-    return (
-      <div className="mt-6 text-center text-sm text-muted-foreground">
-        <p>
-          New to IntellectX?{" "}
-          <Link className="font-medium text-foreground underline underline-offset-4" href={withMobileReturnTo("/signup", returnTo)}>
-            Create a learner profile
+    if (nativeMobile) {
+      return (
+        <p className="text-muted-foreground mt-6 text-center text-sm">
+          Need a new local profile?{" "}
+          <Link href={withMobileReturnTo("/signup", returnTo)} className="text-foreground font-medium underline underline-offset-4">
+            Create one
           </Link>
         </p>
-        {!nativeMobile ? (
-          <p className="mt-2">
-            <Link className="underline underline-offset-4" href={withMobileReturnTo("/forgot-password", returnTo)}>
-              Forgot password?
-            </Link>
-          </p>
-        ) : null}
+      );
+    }
+
+    return (
+      <div className="text-muted-foreground mt-6 flex flex-col gap-2 text-center text-sm sm:flex-row sm:justify-between">
+        <Link href={withMobileReturnTo("/forgot-password", returnTo)} className="underline underline-offset-4">
+          Forgot password?
+        </Link>
+        <span>
+          New here?{" "}
+          <Link href={withMobileReturnTo("/signup", returnTo)} className="text-foreground font-medium underline underline-offset-4">
+            Sign up
+          </Link>
+        </span>
       </div>
     );
   }
 
   if (mode === "signup") {
     return (
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        Already have a learner profile?{" "}
-        <Link className="font-medium text-foreground underline underline-offset-4" href={withMobileReturnTo("/login", returnTo)}>
-          Continue instead
-        </Link>
-      </p>
+      <div className="text-muted-foreground mt-6 grid gap-2 text-center text-sm">
+        <p>{nativeMobile ? "After creating the local profile, complete your study profile and choose your courses." : "After signup, complete your study profile to continue."}</p>
+        <p>
+          {nativeMobile ? "Already have a local learner profile?" : "Already have a learner session?"}{" "}
+          <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
+            {nativeMobile ? "Continue" : "Log in"}
+          </Link>
+        </p>
+      </div>
     );
   }
 
   return (
-    <p className="mt-6 text-center text-sm text-muted-foreground">
-      <Link className="font-medium text-foreground underline underline-offset-4" href={withMobileReturnTo("/login", returnTo)}>
-        Back to learner access
+    <p className="text-muted-foreground mt-6 text-center text-sm">
+      <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
+        {nativeMobile ? "Back to local learner profile" : "Back to login"}
       </Link>
     </p>
   );
