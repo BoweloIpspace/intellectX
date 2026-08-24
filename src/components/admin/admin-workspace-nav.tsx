@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { BookOpenCheckIcon, LayoutDashboardIcon, UsersIcon } from "lucide-react";
+import { BookOpenCheckIcon, FileTextIcon, LayoutDashboardIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 export function AdminWorkspaceNav() {
@@ -15,6 +15,12 @@ export function AdminWorkspaceNav() {
         <Link href="/admin/course-review">
           <BookOpenCheckIcon className="size-4" />
           Course review
+        </Link>
+      </Button>
+      <Button asChild variant="outline" size="sm">
+        <Link href="/admin/past-papers">
+          <FileTextIcon className="size-4" />
+          Past Papers
         </Link>
       </Button>
       <Button asChild variant="outline" size="sm">

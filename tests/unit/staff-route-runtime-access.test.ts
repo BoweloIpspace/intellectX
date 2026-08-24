@@ -53,7 +53,7 @@ describe("staff route runtime access", () => {
   });
 
   it("denies learner and unknown roles on staff routes", () => {
-    expect(resolveStaffRouteAccess("learner", "/admin")).toMatchObject({
+    expect(resolveStaffRouteAccess("learner", "/admin/past-papers")).toMatchObject({
       allowed: false,
       role: "learner",
       reason: "denied",
@@ -76,7 +76,7 @@ describe("staff route runtime access", () => {
       role: "instructor",
       reason: "allowed",
     });
-    expect(resolveStaffRouteAccess("instructor", "/admin")).toMatchObject({
+    expect(resolveStaffRouteAccess("instructor", "/admin/past-papers")).toMatchObject({
       allowed: false,
       role: "instructor",
       reason: "denied",
@@ -85,6 +85,11 @@ describe("staff route runtime access", () => {
 
   it("allows admins on admin and instructor routes", () => {
     expect(resolveStaffRouteAccess("admin", "/admin/course-review")).toMatchObject({
+      allowed: true,
+      role: "admin",
+      reason: "allowed",
+    });
+    expect(resolveStaffRouteAccess("admin", "/admin/past-papers")).toMatchObject({
       allowed: true,
       role: "admin",
       reason: "allowed",

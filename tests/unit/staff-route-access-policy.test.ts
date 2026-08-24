@@ -8,7 +8,7 @@ import {
 } from "@/lib/staff-route-access-policy";
 
 const instructorRoutes = ["/instructor", "/instructor/courses", "/instructor/courses/new"];
-const adminRoutes = ["/admin", "/admin/course-review", "/admin/instructors"];
+const adminRoutes = ["/admin", "/admin/course-review", "/admin/past-papers", "/admin/instructors"];
 const staffRoutes = [...instructorRoutes, ...adminRoutes];
 
 describe("staff route access policy", () => {
@@ -21,7 +21,7 @@ describe("staff route access policy", () => {
     expect(normalizeStaffRole(undefined)).toBeNull();
   });
 
-  it("defines route requirements for current placeholder staff routes", () => {
+  it("defines route requirements for current staff routes", () => {
     for (const route of instructorRoutes) {
       expect(getStaffRouteRequirement(route)).toMatchObject({
         area: "instructor",
