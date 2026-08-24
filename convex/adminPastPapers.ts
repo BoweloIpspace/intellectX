@@ -94,8 +94,18 @@ function normalizeQuestionInput(args: typeof questionInputArgs extends never ? n
   assertNonNegativeInteger(args.order, "Order");
 
   const stimulusAssetPath = cleanOptionalString(args.stimulusAssetPath);
-  if (stimulusAssetPath && !stimulusAssetPath.startsWith("/")) {
-    throw new Error("Stimulus asset path must be an app-relative path beginning with '/'.");
+  const stimulusAssetAlt = cleanOptionalString(args.stimulusAssetAlt);
+  if (
+    stimulusAssetPath &&
+    (!stimulusAssetPath.startsWith("/") ||
+      stimulusAssetPath.startsWith("//") ||
+      stimulusAssetPath.includes("\\") ||
+      stimulusAssetPath.split("/").includes(".."))
+  ) {
+    throw new Error("Stimulus asset path must be a safe app-relative path beginning with a single '/'.");
+  }
+  if (stimulusAssetPath && !stimulusAssetAlt) {
+    throw new Error("Stimulus asset accessibility description is required when an asset path is provided.");
   }
 
   return {
@@ -106,7 +116,7 @@ function normalizeQuestionInput(args: typeof questionInputArgs extends never ? n
     stimulusTitle: cleanOptionalString(args.stimulusTitle),
     stimulusText: cleanOptionalString(args.stimulusText),
     stimulusAssetPath,
-    stimulusAssetAlt: cleanOptionalString(args.stimulusAssetAlt),
+    stimulusAssetAlt,
     stimulusSourceStatus: args.stimulusSourceStatus as "source-text" | "reconstructed-visual" | undefined,
     modelAnswer: cleanRequiredString(args.modelAnswer, "Model answer"),
     explanation: cleanOptionalString(args.explanation),
@@ -325,7 +335,15 @@ export const deletePastPaper = mutationGeneric({
       .withIndex("by_paper_stable_id", (q: any) => q.eq("paperStableId", stableId))
       .collect();
 
-    for (const question of questions) await ctx.db.delete(question._id);
+    for (const question of questions) {
+      await writeAuditLog(ctx, actor, {
+        eventType: "past_paper_question.deleted",
+        targetType: "past-paper",
+        targetId: stableId,
+        before: questionSnapshot(question),
+      });
+      await ctx.db.delete(question._id);
+    }
     await ctx.db.delete(paper._id);
     await writeAuditLog(ctx, actor, {
       eventType: "past_paper.deleted",
