@@ -10,7 +10,8 @@ Past Paper content management is an authenticated **admin-only** operation.
 - Convex backend: `convex/adminPastPapers.ts`
 - Authorization: trusted `requireAdmin` identity on every management query and mutation
 - Admin actions create audit records for paper/question create, update, and delete operations
-- Deleting a paper cascades to its associated question records
+- Deleting a paper cascades to its associated question records, with question-deletion audit events recorded before the paper-deletion event
+- Stimulus asset paths must remain safe app-relative paths, and every stored visual asset reference requires an accessibility description
 
 The learner-facing `convex/pastPapers.ts` contract remains separate. Initial paper/question payloads do not expose `modelAnswer` or explanation fields; those remain available only through the learner's explicit answer-reveal query.
 
@@ -38,9 +39,11 @@ With `reset` omitted or false, reconciliation is non-destructive. With `reset: t
 - removes duplicate rows for each of the seven canonical question stable IDs;
 - removes stale seed-managed questions attached to the Biology 2019 paper;
 - removes legacy stale Biology 2019 question rows that use the repository's `bgcse-bio-2019-p3-` seed namespace;
-- leaves unrelated manual admin records untouched.
+- removes only seed-managed paper rows that match the Biology 2019 Paper 3 release identity/legacy namespace;
+- leaves unrelated manual admin records untouched;
+- leaves seed-managed Biology papers from other years or paper codes untouched.
 
-This makes a deliberate reset reproducible while avoiding broad deletion of staff-managed content.
+This makes a deliberate reset reproducible without turning a 2019 cleanup into a broad Biology-course delete operation.
 
 ## Production operation boundary
 
