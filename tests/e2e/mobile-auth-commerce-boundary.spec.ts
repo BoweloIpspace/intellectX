@@ -60,6 +60,22 @@ test("native learner session survives a full reload", async ({ page }) => {
   await expect(page.getByText("Continue on this device")).toHaveCount(0);
 });
 
+test("native logout clears the active learner session and returns to learner login", async ({ page }) => {
+  await simulateNativeAndroid(page);
+  await seedLearner(page);
+  await seedCourseSelection(page);
+  await page.goto("/mobile-profile");
+
+  await expect(page.getByText("boundary.learner@intellectx.local")).toBeVisible();
+  await page.getByRole("button", { name: "Logout" }).click();
+
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByText("Continue on this device")).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => window.localStorage.getItem("intellectx:learner-session")))
+    .toBeNull();
+});
+
 test("native auth never exposes staff demo routing", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/login");
@@ -75,7 +91,7 @@ test("native runtime redirects staff and commerce web routes back to mobile Home
   await seedLearner(page);
   await seedCourseSelection(page);
 
-  for (const pathname of ["/admin", "/pricing"]) {
+  for (const pathname of ["/admin", "/instructor", "/pricing", "/checkout", "/subscription", "/billing"]) {
     await page.goto(pathname, { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/\/mobile-study$/);
     await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
