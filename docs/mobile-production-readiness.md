@@ -25,6 +25,9 @@ The native IntellectX app is a **free learner practice experience** with Home, Q
 - Past-paper question position, revealed-answer state, and completion are saved per local learner profile. Completed papers are not presented as unfinished Home resume activity.
 - Mobile Progress now combines quiz results with completed and in-progress past-paper practice instead of reporting quizzes alone.
 - Mobile Profile now summarizes selected courses, quiz attempts, past-paper completion/in-progress state, study preferences, learner-session behavior, and Android build information.
+- BGCSE Biology 0572/03 October/November 2019 is represented as seven ordered questions totaling 70 marks, with its 1h15 duration and 8-page metadata recorded in the database contract.
+- Visual/source-dependent Biology 2019 questions now include accessible digital source material before **Reveal answer** rather than relying on missing examination figures.
+- Biology 2019 reconstructed artwork is explicitly labelled as an IntellectX study reconstruction; the app does not present reconstructed Q3/Q6 artwork or instructional model answers as an official examination facsimile/mark scheme.
 - Production environment validation supports intentional local-only, `mobile-local-convex`, or fully configured Clerk + Convex modes while rejecting partial Clerk configuration.
 - Payments must remain disabled for the free mobile product.
 - CI runs typecheck, lint, unit tests, a production dependency audit, a production build, and Playwright against `next start` rather than `next dev`.
@@ -58,6 +61,7 @@ All Clerk + Convex production variables are configured together. Partial configu
 - Replace or approve final launcher/splash/store branding assets.
 - Run real-device QA for Android back/predictive back, cold start, resume, process death, slow/offline networking, interrupted quiz submissions, safe areas, keyboard, and multiple Android versions/screen sizes.
 - Keep the current remote-WebView release architecture decision explicit. The APK currently loads the production Vercel app through Capacitor `server.url`; moving to a bundled frontend would be a separate architecture change.
+- If exact licensed/source-authenticated Biology 2019 Q3/Q6 examination artwork or an official marking scheme becomes available, replace the disclosed study adaptations through the past-paper content-management workflow rather than silently changing provenance.
 
 ## Release-candidate gate
 
