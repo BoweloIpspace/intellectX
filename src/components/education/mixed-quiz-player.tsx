@@ -5,6 +5,11 @@ import { ProgressBar } from "@/components/education/progress-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Quiz } from "@/data/quizzes";
+import {
+  clearMobileQuizProgress,
+  readMobileQuizProgress,
+  writeMobileQuizProgress,
+} from "@/lib/mobile-study-state";
 import { readQuizAttemptHistory, writeQuizAttemptHistory } from "@/lib/quiz-attempt-history";
 import { cn } from "@/lib/utils";
 import { CheckCircle2Icon, CircleIcon, RotateCcwIcon, XCircleIcon } from "lucide-react";
@@ -38,6 +43,7 @@ type QuizAttemptResult = {
   completedAt: number;
   answers: number[];
   questionResults: QuizQuestionFeedback[];
+  timedOut?: boolean;
 };
 
 const MAX_ATTEMPTS = 3;
@@ -106,6 +112,7 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [resumeHydrated, setResumeHydrated] = useState(false);
   const submissionIdRef = useRef(createSubmissionId());
   const deadlineRef = useRef(Date.now() + initialTime * 1000);
   const completionGuard = useRef(false);
@@ -113,6 +120,48 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
   const question = questions[currentIndex];
   const structured = question ? isStructuredQuestion(question) : false;
   const progress = questions.length > 0 ? ((currentIndex + (results ? 1 : 0)) / questions.length) * 100 : 0;
+
+  useEffect(() => {
+    setResumeHydrated(false);
+    setCurrentIndex(0);
+    setAnswers(questions.map(() => -1));
+    setSelectedIndex(null);
+    setFeedback(null);
+    setStructuredAnswer(null);
+    setResults(null);
+    setBusy(false);
+    setErrorMessage(null);
+    completionGuard.current = false;
+
+    const freshSubmissionId = createSubmissionId();
+    const freshDeadline = Date.now() + initialTime * 1000;
+    submissionIdRef.current = freshSubmissionId;
+    deadlineRef.current = freshDeadline;
+    setTimeLeft(initialTime);
+
+    const saved = readMobileQuizProgress(quiz.id);
+    if (saved && saved.currentIndex >= 0 && saved.currentIndex < questions.length) {
+      const savedQuestion = questions[saved.currentIndex];
+      const savedStructured = isStructuredQuestion(savedQuestion);
+      const validSelectedIndex =
+        !savedStructured &&
+        saved.selectedIndex !== null &&
+        saved.selectedIndex >= 0 &&
+        saved.selectedIndex < savedQuestion.choices.length
+          ? saved.selectedIndex
+          : null;
+
+      setCurrentIndex(saved.currentIndex);
+      setAnswers(questions.map((_, index) => saved.answers[index] ?? -1));
+      setSelectedIndex(validSelectedIndex);
+      setFeedback(!savedStructured && saved.submitted ? saved.feedback : null);
+      submissionIdRef.current = saved.submissionId;
+      deadlineRef.current = saved.deadlineAt;
+      setTimeLeft(Math.max(0, Math.ceil((saved.deadlineAt - Date.now()) / 1000)));
+    }
+
+    setResumeHydrated(true);
+  }, [initialTime, quiz.id, questions]);
 
   const finishQuiz = useCallback(
     async (timedOut = false) => {
@@ -139,8 +188,8 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
           },
           ...readQuizAttemptHistory(),
         ]);
-        setResults(result);
-        if (timedOut) setErrorMessage("Time expired. Your completed work was saved.");
+        clearMobileQuizProgress();
+        setResults({ ...result, timedOut });
       } catch (error) {
         completionGuard.current = false;
         setErrorMessage(error instanceof Error ? error.message : "Unable to save this quiz attempt.");
@@ -152,7 +201,7 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
   );
 
   useEffect(() => {
-    if (results) return;
+    if (!resumeHydrated || results) return;
     const timer = window.setInterval(() => {
       const remaining = Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000));
       setTimeLeft(remaining);
@@ -162,7 +211,23 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
       }
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [finishQuiz, results]);
+  }, [finishQuiz, results, resumeHydrated]);
+
+  useEffect(() => {
+    if (!resumeHydrated || results || !question) return;
+
+    writeMobileQuizProgress({
+      quizId: quiz.id,
+      currentIndex,
+      selectedIndex,
+      submitted: structured ? Boolean(structuredAnswer) : Boolean(feedback),
+      answers,
+      feedback: structured ? null : feedback,
+      deadlineAt: deadlineRef.current,
+      submissionId: submissionIdRef.current,
+      updatedAt: Date.now(),
+    });
+  }, [answers, currentIndex, feedback, question, quiz.id, results, resumeHydrated, selectedIndex, structured, structuredAnswer]);
 
   async function checkAnswer() {
     if (!question || structured || selectedIndex === null || busy) return;
@@ -220,6 +285,7 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
   }
 
   function restart() {
+    clearMobileQuizProgress();
     setCurrentIndex(0);
     setAnswers(questions.map(() => -1));
     setSelectedIndex(null);
@@ -254,15 +320,16 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <p className="text-sm leading-6 text-muted-foreground">
+            {results.timedOut ? "Time expired. " : ""}
             {hasMcq
               ? `You answered ${results.score} of ${results.totalQuestions} multiple-choice questions correctly. Structured questions are reviewed separately and are not auto-graded.`
               : "This quiz contained structured review questions only. Model answers are available on demand rather than auto-graded."}
           </p>
           <div className="grid gap-3">
-            {questions.map((item) => {
+            {questions.map((item, itemIndex) => {
               const itemStructured = isStructuredQuestion(item);
               const result = results.questionResults.find((entry) => entry.questionId === item.id);
-              const answer = results.answers[questions.findIndex((entry) => entry.id === item.id)];
+              const answer = results.answers[itemIndex];
               return (
                 <div key={item.id} className="rounded-lg bg-secondary/40 p-4 text-sm">
                   <p className="font-medium">{item.prompt}</p>
@@ -296,8 +363,12 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
       <CardHeader>
         <div className="mb-2 space-y-2">
           <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-            <span>Question {currentIndex + 1} of {questions.length}</span>
-            <span className={cn("font-medium", timeLeft <= 60 && "text-destructive")}>Time left: {formatQuizTime(timeLeft)}</span>
+            <span>
+              Question {currentIndex + 1} of {questions.length}
+            </span>
+            <span className={cn("font-medium", timeLeft <= 60 && "text-destructive")}>
+              Time left: {formatQuizTime(timeLeft)}
+            </span>
           </div>
           <ProgressBar value={progress} />
         </div>
@@ -347,7 +418,13 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
                     incorrect && "border-destructive bg-destructive/10",
                   )}
                 >
-                  {correct ? <CheckCircle2Icon className="size-5 shrink-0 text-success" /> : incorrect ? <XCircleIcon className="size-5 shrink-0 text-destructive" /> : <CircleIcon className="size-5 shrink-0 text-muted-foreground" />}
+                  {correct ? (
+                    <CheckCircle2Icon className="size-5 shrink-0 text-success" />
+                  ) : incorrect ? (
+                    <XCircleIcon className="size-5 shrink-0 text-destructive" />
+                  ) : (
+                    <CircleIcon className="size-5 shrink-0 text-muted-foreground" />
+                  )}
                   <span>{choice}</span>
                 </button>
               );
@@ -362,7 +439,11 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
           </div>
         ) : null}
 
-        {errorMessage ? <p className="text-sm text-destructive" role="alert">{errorMessage}</p> : null}
+        {errorMessage ? (
+          <p className="text-sm text-destructive" role="alert">
+            {errorMessage}
+          </p>
+        ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row">
           {structured && !structuredAnswer ? (
@@ -375,7 +456,7 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
               {busy ? "Checking..." : "Submit answer"}
             </Button>
           ) : null}
-          {(structured || feedback) ? (
+          {structured || feedback ? (
             <Button className="min-h-12" disabled={busy} onClick={goNext}>
               {currentIndex === questions.length - 1 ? (busy ? "Saving..." : "See results") : "Next question"}
             </Button>
