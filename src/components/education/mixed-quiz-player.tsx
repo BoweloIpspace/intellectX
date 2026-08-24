@@ -113,8 +113,8 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resumeHydrated, setResumeHydrated] = useState(false);
-  const submissionIdRef = useRef(createSubmissionId());
-  const deadlineRef = useRef(Date.now() + initialTime * 1000);
+  const submissionIdRef = useRef("");
+  const deadlineRef = useRef(0);
   const completionGuard = useRef(false);
 
   const question = questions[currentIndex];
