@@ -34,9 +34,14 @@ const mobileFreeNavItems = [
 ];
 
 type SessionState = LearnerSession | null | undefined;
+type NativeSurfaceState = boolean | null;
 
-function useNativeAppSurface() {
-  const [nativeAppSurface, setNativeAppSurface] = useState(false);
+function isAuthPath(pathname: string) {
+  return pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password";
+}
+
+function useNativeAppSurface(): NativeSurfaceState {
+  const [nativeAppSurface, setNativeAppSurface] = useState<NativeSurfaceState>(null);
 
   useEffect(() => {
     setNativeAppSurface(isMobileAppRuntime());
@@ -61,13 +66,16 @@ function ClerkNav() {
   const showAuthenticatedNav = isAppRoute || (isLoaded && isSignedIn);
   const navItems = !isLoaded && !isAppRoute ? [] : showAuthenticatedNav ? appNavItems : publicNavItems;
   const logoHref = showAuthenticatedNav ? "/courses" : "/";
-  const mobileNavigation = resolveMobileNavigationSurface({
-    nativeAppSurface,
-    webItems: navItems,
-    webLogoHref: logoHref,
-    nativeItems: mobileFreeNavItems,
-    nativeLogoHref: "/mobile-study",
-  });
+  const nativeAuthPath = nativeAppSurface !== false && isAuthPath(pathname);
+  const mobileNavigation = nativeAuthPath
+    ? { items: [], logoHref: pathname }
+    : resolveMobileNavigationSurface({
+        nativeAppSurface: nativeAppSurface === true,
+        webItems: navItems,
+        webLogoHref: logoHref,
+        nativeItems: mobileFreeNavItems,
+        nativeLogoHref: "/mobile-study",
+      });
 
   return (
     <>
@@ -76,6 +84,7 @@ function ClerkNav() {
         items={mobileNavigation.items}
         logoHref={mobileNavigation.logoHref}
         session={null}
+        showMenu={!nativeAuthPath && (isLoaded || isAppRoute)}
       />
       <DesktopNav className="hidden md:flex" items={navItems} logoHref={logoHref} session={null} />
     </>
@@ -116,15 +125,18 @@ function LocalSessionNav() {
 
   const isAppRoute = isAuthenticatedAppPath(pathname);
   const showAuthenticatedNav = isAppRoute || Boolean(session);
-  const navItems = showAuthenticatedNav ? appNavItems : publicNavItems;
+  const navItems = session === undefined && !isAppRoute ? [] : showAuthenticatedNav ? appNavItems : publicNavItems;
   const logoHref = showAuthenticatedNav ? "/courses" : "/";
-  const mobileNavigation = resolveMobileNavigationSurface({
-    nativeAppSurface,
-    webItems: navItems,
-    webLogoHref: logoHref,
-    nativeItems: mobileFreeNavItems,
-    nativeLogoHref: "/mobile-study",
-  });
+  const nativeAuthPath = nativeAppSurface !== false && isAuthPath(pathname);
+  const mobileNavigation = nativeAuthPath
+    ? { items: [], logoHref: pathname }
+    : resolveMobileNavigationSurface({
+        nativeAppSurface: nativeAppSurface === true,
+        webItems: navItems,
+        webLogoHref: logoHref,
+        nativeItems: mobileFreeNavItems,
+        nativeLogoHref: "/mobile-study",
+      });
 
   return (
     <>
@@ -133,6 +145,7 @@ function LocalSessionNav() {
         items={mobileNavigation.items}
         logoHref={mobileNavigation.logoHref}
         session={session}
+        showMenu={!nativeAuthPath && (session !== undefined || isAppRoute)}
       />
       <DesktopNav className="hidden md:flex" items={navItems} logoHref={logoHref} session={session} />
     </>

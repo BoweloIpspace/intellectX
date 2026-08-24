@@ -19,7 +19,7 @@ export function AuthPageShell({ mode, demoEntry }: AuthPageShellProps) {
       <LearnerSessionForm mode={mode} />
     );
   const shellCopy = clerkAuthEnabled
-      ? {
+    ? {
         title: mode === "login" ? "Secure access for every IntellectX role." : "Learner access for your account.",
         description:
           mode === "login"
@@ -34,11 +34,11 @@ export function AuthPageShell({ mode, demoEntry }: AuthPageShellProps) {
 
   return (
     <>
-      <div className="relative isolate min-h-screen overflow-hidden px-6 pt-28 pb-10 md:px-10">
+      <div className="relative isolate min-h-dvh overflow-hidden px-4 pt-24 pb-6 sm:px-6 lg:px-10 lg:pt-28 lg:pb-10">
         <BackgroundBlur className="-top-40 md:-top-0" />
         <Nav />
-        <main className="mx-auto grid min-h-[calc(100vh-11rem)] w-full max-w-6xl items-center gap-10 lg:grid-cols-[1fr_440px]">
-          <section className="max-w-2xl">
+        <main className="mx-auto grid min-h-[calc(100dvh-7.5rem)] w-full max-w-md items-center gap-6 lg:max-w-6xl lg:grid-cols-[1fr_440px] lg:gap-10">
+          <section className="hidden max-w-2xl lg:block">
             <p className="text-muted-foreground mb-4 text-xs font-semibold tracking-[0.18em] uppercase">
               IntellectX learner access
             </p>
@@ -49,13 +49,15 @@ export function AuthPageShell({ mode, demoEntry }: AuthPageShellProps) {
               {shellCopy.description}
             </p>
           </section>
-          <div className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-4">
             {demoEntry}
             {authPanel}
           </div>
         </main>
       </div>
-      <Footer />
+      <div className="hidden lg:block">
+        <Footer />
+      </div>
     </>
   );
 }

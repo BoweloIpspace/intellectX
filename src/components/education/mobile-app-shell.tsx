@@ -47,11 +47,14 @@ export function MobileAppShell({ children }: MobileAppShellProps) {
   const tabs = nativeAppSurface ? nativeTabs : webPreviewTabs;
 
   return (
-    <div className="relative isolate min-h-dvh overflow-x-hidden bg-background px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
+    <div
+      data-mobile-app-shell
+      className="relative isolate min-h-dvh overflow-x-hidden bg-background px-4 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-[calc(6.25rem+env(safe-area-inset-bottom))]"
+    >
       <BackgroundBlur className="-top-48" />
 
-      <header className="sticky top-[calc(0.5rem+env(safe-area-inset-top))] z-20 mx-auto mb-5 flex w-full max-w-md items-center justify-between rounded-full border border-white/70 bg-background/85 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10">
-        <Link href="/mobile-study" className="text-sm font-semibold tracking-tight">
+      <header className="sticky top-[calc(0.375rem+env(safe-area-inset-top))] z-20 mx-auto mb-3 flex w-full max-w-md items-center justify-between rounded-full border border-white/70 bg-background/85 px-4 py-2.5 shadow-sm backdrop-blur dark:border-white/10">
+        <Link href="/mobile-study" className="flex min-h-10 items-center text-sm font-semibold tracking-tight">
           IntellectX
         </Link>
         <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
@@ -59,7 +62,9 @@ export function MobileAppShell({ children }: MobileAppShellProps) {
         </span>
       </header>
 
-      <main className="relative z-10 mx-auto w-full max-w-md">{children}</main>
+      <main className="relative z-10 mx-auto w-full max-w-md [&_[data-slot=card]]:gap-4 [&_[data-slot=card]]:py-4 [&_[data-slot=card-content]]:px-4 [&_[data-slot=card-header]]:px-4">
+        {children}
+      </main>
 
       <nav
         aria-label="Mobile study navigation"

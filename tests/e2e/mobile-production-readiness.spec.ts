@@ -61,6 +61,15 @@ test("fresh native launch starts at learner login with signup available", async 
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByText("Continue on this device")).toBeVisible();
   await expect(page.getByRole("link", { name: "Create one" })).toHaveAttribute("href", "/signup");
+  await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
+});
+
+test("native signup keeps the authenticated hamburger gated", async ({ page }) => {
+  await simulateNativeAndroid(page);
+  await page.goto("/signup");
+
+  await expect(page.getByText("Create a local learner profile")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
 });
 
 test("new native signup chooses courses then lands on Home with those courses", async ({ page }) => {
@@ -75,12 +84,25 @@ test("new native signup chooses courses then lands on Home with those courses", 
   await expect(page.getByRole("heading", { name: "Choose your courses" })).toBeVisible();
   await page.getByRole("button", { name: /AI Study Systems/i }).click();
   await expect(page.getByText("1 / 5 selected")).toBeVisible();
-  await page.getByRole("button", { name: "Continue to Home" }).click();
+  const continueButton = page.getByRole("button", { name: "Continue to Home" });
+  await expect(continueButton).toBeInViewport();
+  await continueButton.click();
 
   await expect(page).toHaveURL(/\/mobile-study$/);
   await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
   await expect(page.getByRole("link", { name: /AI Study Systems/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /Critical Thinking Lab/i })).toHaveCount(0);
+});
+
+test("signed-in native learner does not remain on login", async ({ page }) => {
+  await simulateNativeAndroid(page);
+  await seedLocalLearner(page);
+  await seedCourseSelection(page);
+  await page.goto("/login");
+
+  await expect(page).toHaveURL(/\/mobile-study$/);
+  await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
+  await expect(page.getByText("Continue on this device")).toHaveCount(0);
 });
 
 test("selected course opens topics and each topic opens its quiz list", async ({ page }) => {
@@ -104,7 +126,7 @@ test("selected course opens topics and each topic opens its quiz list", async ({
   await expect(page.getByRole("heading", { name: "Weekly Review Check", exact: true })).toHaveCount(0);
 });
 
-test("mobile quiz detail stays inside the native quiz shell", async ({ page }) => {
+test("mobile quiz detail stays inside the native quiz shell with the primary action reachable", async ({ page }) => {
   await simulateNativeAndroid(page);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
@@ -122,6 +144,7 @@ test("mobile quiz detail stays inside the native quiz shell", async ({ page }) =
   await expect(mobileNav.getByRole("link", { name: "Flashcards" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Courses", exact: true })).toHaveCount(0);
   await expect(page.locator("footer")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Submit answer" })).toBeInViewport();
 });
 
 test("signed-out native course access returns to login before course selection", async ({ page }) => {
@@ -141,6 +164,49 @@ test("native login with no course selection sends learner to course setup", asyn
 
   await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
   await expect(page.getByRole("heading", { name: "Choose your courses" })).toBeVisible();
+});
+
+test("native profile logout goes straight to login without visiting the public landing route", async ({ page }) => {
+  await simulateNativeAndroid(page);
+  await page.goto("/login");
+  await page.evaluate(() => {
+    const selectedAt = Date.now();
+    window.localStorage.setItem(
+      "intellectx:learner-session",
+      JSON.stringify({
+        name: "Mobile Learner",
+        email: "mobile.learner@intellectx.local",
+        role: "student",
+      }),
+    );
+    window.localStorage.setItem(
+      "intellectx:course-selection",
+      JSON.stringify({
+        selectedCourseIds: ["ai-study-systems"],
+        selectedAt,
+        gracePeriodEndsAt: selectedAt + 7 * 24 * 60 * 60 * 1000,
+        lockedAt: null,
+        locked: false,
+      }),
+    );
+  });
+
+  const navigatedPaths: string[] = [];
+  page.on("framenavigated", (frame) => {
+    if (frame === page.mainFrame()) {
+      navigatedPaths.push(new URL(frame.url()).pathname);
+    }
+  });
+
+  await page.goto("/mobile-profile");
+  const logoutButton = page.getByRole("button", { name: "Logout", exact: true });
+  await expect(logoutButton).toBeInViewport();
+  navigatedPaths.length = 0;
+  await logoutButton.click();
+
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByText("Continue on this device")).toBeVisible();
+  expect(navigatedPaths).not.toContain("/");
 });
 
 test("native direct quiz deep links resolve to the quiz-only mobile shell", async ({ page }) => {

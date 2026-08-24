@@ -11,17 +11,16 @@ export const metadata: Metadata = {
 export default function MobileQuizzesPage() {
   return (
     <MobileAppShell>
-      <section className="mb-6 flex flex-col items-start gap-4">
+      <section className="mb-3 flex flex-col items-start gap-2">
         <Badge variant="secondary" className="uppercase">
-          Mobile quizzes
+          Courses & quizzes
         </Badge>
-        <h1 className="text-3xl leading-[1.08] font-medium tracking-tight">Practice with focused quizzes</h1>
-        <p className="text-muted-foreground text-base leading-7">
-          Choose a course, open its quizzes, and review explanations as you practice.
-        </p>
+        <h1 className="text-2xl leading-[1.08] font-medium tracking-tight">Practice with focused quizzes</h1>
       </section>
 
-      <MobileQuizzesSection />
+      <div className="mobile-quizzes-flow">
+        <MobileQuizzesSection />
+      </div>
     </MobileAppShell>
   );
 }

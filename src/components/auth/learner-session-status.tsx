@@ -4,6 +4,7 @@ import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runti
 import { Button } from "@/components/ui/button";
 import { getClerkDisplayName } from "@/lib/auth-identity";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
+import { isMobileAppRuntime } from "@/lib/feature-scope";
 import { clearLearnerSession, type LearnerSession } from "@/lib/learner-session";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { LogOutIcon, UserRoundIcon } from "lucide-react";
@@ -66,7 +67,13 @@ function ClerkLearnerSessionStatus({ compact = false }: Pick<LearnerSessionStatu
 function LocalLearnerSessionStatus({ compact = false, session }: LearnerSessionStatusProps) {
   function handleLogout() {
     clearLearnerSession();
-    window.location.assign("/");
+    window.location.replace(isMobileAppRuntime() ? "/login" : "/");
+  }
+
+  // `undefined` means the local session has not been hydrated yet. Rendering
+  // signed-out actions here causes a brief Login/Signup flash for signed-in users.
+  if (session === undefined) {
+    return null;
   }
 
   if (session) {

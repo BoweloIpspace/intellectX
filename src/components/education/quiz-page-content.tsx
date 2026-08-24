@@ -27,24 +27,27 @@ export function QuizPageContent({ quiz, courseId, mobileRequested }: QuizPageCon
   return (
     <PageShell surface={mobileSurface ? "mobile" : "web"}>
       <section className={mobileSurface ? "w-full" : "mx-auto max-w-3xl"}>
-        <Badge variant="secondary" className="mb-5">
+        <Badge variant="secondary" className={mobileSurface ? "mb-3" : "mb-5"}>
           Quiz
         </Badge>
         <h1
           className={
             mobileSurface
-              ? "mb-4 text-3xl leading-[1.1] font-medium tracking-tight"
+              ? "mb-2 text-2xl leading-[1.1] font-medium tracking-tight"
               : "mb-4 text-4xl leading-[1.1] font-medium tracking-tight md:text-6xl"
           }
         >
           {quiz.title}
         </h1>
-        <p className="text-muted-foreground mb-8 leading-6">
-          Select an answer, check your result, and use the feedback to close the learning loop. Completed attempts are
-          saved so your scores and learning activity can appear across IntellectX.
+        <p className={mobileSurface ? "text-muted-foreground mb-4 text-sm leading-5" : "text-muted-foreground mb-8 leading-6"}>
+          {mobileSurface
+            ? "Choose an answer, check the explanation, then continue."
+            : "Select an answer, check your result, and use the feedback to close the learning loop. Completed attempts are saved so your scores and learning activity can appear across IntellectX."}
         </p>
-        <SecureQuizPlayer quiz={quiz} surface={mobileSurface ? "mobile" : "web"} />
-        <Button className="mt-6 min-h-12" variant="ghost" asChild>
+        <div className={mobileSurface ? "mobile-quiz-player" : undefined}>
+          <SecureQuizPlayer quiz={quiz} surface={mobileSurface ? "mobile" : "web"} />
+        </div>
+        <Button className="mt-4 min-h-11" variant="ghost" asChild>
           <Link href={mobileSurface ? "/mobile-quizzes" : `/courses/${courseId}`}>
             {mobileSurface ? "Back to mobile quizzes" : "Back to course"}
           </Link>

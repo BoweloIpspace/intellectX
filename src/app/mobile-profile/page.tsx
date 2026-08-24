@@ -12,19 +12,16 @@ export const metadata: Metadata = {
 export default function MobileProfilePage() {
   return (
     <PageShell surface="mobile">
-      <section className="mb-6 flex flex-col items-start gap-4">
+      <section className="mb-3 flex flex-col items-start gap-2">
         <Badge variant="secondary" className="uppercase">
           Profile
         </Badge>
-        <h1 className="text-3xl leading-[1.08] font-medium tracking-tight">Quiz learner profile</h1>
-        <p className="text-muted-foreground text-base leading-7">
-          Keep your learner details current and manage the account used for quiz progress.
-        </p>
+        <h1 className="text-2xl leading-[1.08] font-medium tracking-tight">Quiz learner profile</h1>
       </section>
 
-      <div className="grid gap-4">
-        <StudyProfileCard />
+      <div className="grid gap-3">
         <ProfileLearnerSession />
+        <StudyProfileCard />
       </div>
     </PageShell>
   );

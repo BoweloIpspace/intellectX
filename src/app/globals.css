@@ -143,6 +143,45 @@
   );
 }
 
+/* Native quiz actions stay above the bottom tabs so learners do not have to
+   repeatedly scroll to submit or continue. This is scoped to the quiz player. */
+.mobile-quiz-player [data-slot="card-content"] {
+  padding-bottom: 5.25rem;
+}
+
+.mobile-quiz-player [data-slot="card-content"] > div:last-child {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  left: 1rem;
+  z-index: 25;
+  max-width: 26rem;
+  margin-inline: auto;
+  padding: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--background);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 12%);
+}
+
+/* Course setup has one primary confirmation action. Keep that action reachable
+   without pinning every control in the mobile catalog. */
+.mobile-quizzes-flow section > button:last-child {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  left: 1rem;
+  z-index: 25;
+  width: auto;
+  max-width: 26rem;
+  margin-inline: auto;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 12%);
+}
+
+.mobile-quizzes-flow section:has(> button:last-child) {
+  padding-bottom: 4.5rem;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .animate-widget {
     animation: widget-slide-up 520ms ease-out both;

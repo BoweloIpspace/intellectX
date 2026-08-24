@@ -12,10 +12,11 @@ type Props = {
   }[];
   logoHref?: string;
   session: LearnerSession | null | undefined;
+  showMenu?: boolean;
   className?: string;
 };
 
-export function MobileNav({ items, logoHref = "/", session, className }: Props) {
+export function MobileNav({ items, logoHref = "/", session, showMenu = true, className }: Props) {
   return (
     <nav
       className={cn(
@@ -30,21 +31,23 @@ export function MobileNav({ items, logoHref = "/", session, className }: Props) 
           </span>
           <span>IntellectX</span>
         </Link>
-        <Drawer direction="top">
-          <DrawerTrigger className="relative -m-2 grid min-h-11 min-w-11 touch-manipulation cursor-pointer place-items-center p-2">
-            <span className="sr-only">Open menu</span>
-            <Menu className="h-6 w-6" />
-          </DrawerTrigger>
-          <DrawerContent className="flex flex-col gap-4 px-8 pt-[calc(2rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))]">
-            <DrawerTitle className="sr-only">Menu</DrawerTitle>
-            {items.map((item) => (
-              <Link key={item.href} href={item.href} className="flex min-h-11 touch-manipulation items-center">
-                {item.label}
-              </Link>
-            ))}
-            <LearnerSessionStatus compact session={session} />
-          </DrawerContent>
-        </Drawer>
+        {showMenu ? (
+          <Drawer direction="top">
+            <DrawerTrigger className="relative -m-2 grid min-h-11 min-w-11 touch-manipulation cursor-pointer place-items-center p-2">
+              <span className="sr-only">Open menu</span>
+              <Menu className="h-6 w-6" />
+            </DrawerTrigger>
+            <DrawerContent className="flex flex-col gap-4 px-8 pt-[calc(2rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))]">
+              <DrawerTitle className="sr-only">Menu</DrawerTitle>
+              {items.map((item) => (
+                <Link key={item.href} href={item.href} className="flex min-h-11 touch-manipulation items-center">
+                  {item.label}
+                </Link>
+              ))}
+              <LearnerSessionStatus compact session={session} />
+            </DrawerContent>
+          </Drawer>
+        ) : null}
       </div>
     </nav>
   );
