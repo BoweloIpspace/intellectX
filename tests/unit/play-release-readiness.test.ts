@@ -135,6 +135,12 @@ describe("Google Play release-readiness contracts", () => {
     expect(lifecycleWorkflowSource).toContain("airplane-mode enable");
     expect(lifecycleWorkflowSource).toContain("airplane-mode disable");
     expect(lifecycleWorkflowSource).toContain("IntellectX is temporarily unavailable");
+    expect(capacitorSource).toContain("errorPath: `mobile-error.html?nativeShellVersion=${encodedNativeShellVersion}`");
+    expect(mobileErrorSource).toContain(`const productionOrigin = "${productionUrl}"`);
+    expect(mobileErrorSource).toContain("const maxProbeAttempts = 5");
+    expect(mobileErrorSource).toContain("await fetch(probeUrl");
+    expect(mobileErrorSource).toContain('cache: "no-store"');
+    expect(mobileErrorSource).toContain("window.location.replace(productionMobileUrl.toString())");
   });
 
   it("keeps Data Safety documentation evidence-based instead of claiming submission is complete", () => {
