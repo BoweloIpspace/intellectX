@@ -2,6 +2,10 @@ import { INTELLECTX_PUBLIC_SITE_URL } from "@/lib/site-config";
 
 export const INTELLECTX_MOBILE_ARCHITECTURE = "remote-webview" as const;
 
+type ReleaseHealthEnv = {
+  VERCEL_GIT_COMMIT_SHA?: string;
+};
+
 export type PublicReleaseHealth = {
   status: "ok";
   app: "IntellectX";
@@ -16,7 +20,7 @@ function normalizeCommitSha(value: string | undefined) {
   return candidate && /^[0-9a-f]{40}$/.test(candidate) ? candidate : null;
 }
 
-export function getPublicReleaseHealth(env: NodeJS.ProcessEnv = process.env): PublicReleaseHealth {
+export function getPublicReleaseHealth(env: ReleaseHealthEnv = process.env): PublicReleaseHealth {
   return {
     status: "ok",
     app: "IntellectX",
