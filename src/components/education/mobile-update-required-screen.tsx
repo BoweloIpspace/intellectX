@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { MOBILE_MIN_SUPPORTED_SHELL_VERSION } from "@/lib/mobile-runtime-version";
 import { cn } from "@/lib/utils";
 
@@ -19,9 +19,9 @@ export function MobileUpdateRequiredScreen({ overlay = false }: MobileUpdateRequ
     >
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle id="mobile-update-required-title" className="text-2xl tracking-tight">
+          <h1 id="mobile-update-required-title" className="text-2xl font-semibold tracking-tight">
             IntellectX update required
-          </CardTitle>
+          </h1>
         </CardHeader>
         <CardContent className="grid gap-3 text-sm leading-6 text-muted-foreground">
           <p>
