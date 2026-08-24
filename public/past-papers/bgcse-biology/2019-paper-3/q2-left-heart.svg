@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" role="img" aria-labelledby="title desc">
+  <title id="title">Reconstructed left side of the heart</title>
+  <desc id="desc">The left atrium is above the left ventricle. Valve X is positioned between the atrium and ventricle. The aorta leaves the ventricle.</desc>
+  <rect width="720" height="420" fill="white"/>
+  <g fill="none" stroke="#111827" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M315 66 C250 70 220 112 229 169 C235 204 266 219 300 221"/>
+    <path d="M300 221 C241 240 230 309 270 352 C309 394 409 380 452 314 C480 270 469 209 428 177"/>
+    <path d="M428 177 C455 126 447 85 414 60"/>
+    <path d="M414 60 C421 34 454 25 482 42 C511 60 514 97 497 128"/>
+    <path d="M300 221 L354 249 L410 211"/>
+    <path d="M354 249 L354 326" stroke-width="3"/>
+    <path d="M285 222 C308 237 331 239 354 226" stroke-width="3"/>
+    <path d="M354 226 C377 239 400 236 423 219" stroke-width="3"/>
+    <path d="M550 206 L407 226"/>
+  </g>
+  <g fill="#111827" font-family="Arial, sans-serif">
+    <text x="95" y="140" font-size="25">left atrium</text>
+    <text x="78" y="324" font-size="25">left ventricle</text>
+    <text x="484" y="55" font-size="25">aorta</text>
+    <text x="570" y="211" font-size="30" font-weight="700">X</text>
+  </g>
+</svg>

@@ -88,6 +88,8 @@ export const getPastPapersByCourse = queryGeneric({
         session: paper.session,
         description: paper.description,
         estimatedTime: paper.estimatedTime,
+        totalMarks: paper.totalMarks,
+        pageCount: paper.pageCount,
         order: paper.order,
       }));
   },
@@ -113,14 +115,22 @@ export const getPastPaperById = queryGeneric({
       session: paper.session,
       description: paper.description,
       estimatedTime: paper.estimatedTime,
+      totalMarks: paper.totalMarks,
+      pageCount: paper.pageCount,
       order: paper.order,
       questions: questions
         .sort((left: any, right: any) => left.order - right.order)
         .map((question: any) => ({
           stableId: question.stableId,
           questionNumber: question.questionNumber,
+          sectionLabel: question.sectionLabel,
           prompt: question.prompt,
           marks: question.marks,
+          stimulusTitle: question.stimulusTitle,
+          stimulusText: question.stimulusText,
+          stimulusAssetPath: question.stimulusAssetPath,
+          stimulusAssetAlt: question.stimulusAssetAlt,
+          stimulusSourceStatus: question.stimulusSourceStatus,
           order: question.order,
         })),
     };

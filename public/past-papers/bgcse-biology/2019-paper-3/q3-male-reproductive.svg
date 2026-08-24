@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 480" role="img" aria-labelledby="title desc">
+  <title id="title">Reconstructed male reproductive system study diagram</title>
+  <desc id="desc">A side-view study diagram. S points to the narrow sperm-carrying tube running upward from a testis. T points to a gland behind the bladder, U to the gland below the bladder, and V to the oval organ inside the scrotum.</desc>
+  <rect width="760" height="480" fill="white"/>
+  <g fill="none" stroke="#111827" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="370" cy="105" rx="92" ry="60"/>
+    <path d="M372 165 C370 215 382 246 411 274"/>
+    <path d="M408 274 C450 297 474 323 482 356"/>
+    <path d="M482 356 C485 395 460 424 425 432"/>
+    <ellipse cx="376" cy="382" rx="48" ry="35"/>
+    <path d="M350 353 C310 315 300 262 320 214 C335 178 360 161 385 158"/>
+    <path d="M345 355 C348 323 349 288 345 257" stroke-width="3"/>
+    <ellipse cx="430" cy="185" rx="34" ry="18"/>
+    <ellipse cx="372" cy="232" rx="41" ry="23"/>
+    <path d="M182 136 L333 226"/>
+    <path d="M591 135 L458 181"/>
+    <path d="M603 252 L414 234"/>
+    <path d="M592 392 L425 382"/>
+  </g>
+  <g fill="#111827" font-family="Arial, sans-serif" font-size="30" font-weight="700">
+    <text x="145" y="126">S</text>
+    <text x="610" y="130">T</text>
+    <text x="621" y="258">U</text>
+    <text x="612" y="400">V</text>
+  </g>
+</svg>

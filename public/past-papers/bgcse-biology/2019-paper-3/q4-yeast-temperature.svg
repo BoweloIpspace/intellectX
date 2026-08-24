@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 410" role="img" aria-labelledby="title desc">
+  <title id="title">Yeast and glucose at three temperatures</title>
+  <desc id="desc">Three equal yeast and glucose samples after 30 minutes. The 2 degrees Celsius tube has a small layer of froth, the 25 degrees Celsius tube has a much larger froth layer, and the 60 degrees Celsius tube has no visible froth.</desc>
+  <rect width="760" height="410" fill="white"/>
+  <g stroke="#111827" stroke-width="5" fill="none" stroke-linejoin="round">
+    <path d="M130 72 L130 304 Q130 340 166 340 L214 340 Q250 340 250 304 L250 72"/>
+    <path d="M320 72 L320 304 Q320 340 356 340 L404 340 Q440 340 440 304 L440 72"/>
+    <path d="M510 72 L510 304 Q510 340 546 340 L594 340 Q630 340 630 304 L630 72"/>
+    <path d="M134 228 L246 228" stroke-width="2.5"/>
+    <path d="M324 228 L436 228" stroke-width="2.5"/>
+    <path d="M514 228 L626 228" stroke-width="2.5"/>
+  </g>
+  <g fill="#d1d5db" stroke="#111827" stroke-width="2">
+    <rect x="136" y="228" width="108" height="103"/>
+    <rect x="326" y="228" width="108" height="103"/>
+    <rect x="516" y="228" width="108" height="103"/>
+  </g>
+  <g fill="white" stroke="#111827" stroke-width="2">
+    <circle cx="156" cy="214" r="12"/><circle cx="182" cy="211" r="15"/><circle cx="212" cy="215" r="11"/><circle cx="235" cy="213" r="9"/>
+    <circle cx="342" cy="205" r="17"/><circle cx="372" cy="194" r="23"/><circle cx="408" cy="205" r="20"/><circle cx="430" cy="184" r="14"/>
+    <circle cx="348" cy="169" r="20"/><circle cx="385" cy="162" r="23"/><circle cx="421" cy="153" r="18"/>
+    <circle cx="351" cy="134" r="15"/><circle cx="383" cy="125" r="19"/><circle cx="416" cy="119" r="16"/>
+  </g>
+  <g fill="#111827" font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="190" y="380" font-size="26">2°C</text>
+    <text x="380" y="380" font-size="26">25°C</text>
+    <text x="570" y="380" font-size="26">60°C</text>
+    <text x="380" y="45" font-size="22">froth after 30 minutes</text>
+  </g>
+</svg>
