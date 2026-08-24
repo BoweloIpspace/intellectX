@@ -19,16 +19,19 @@ describe("native past paper flow", () => {
     expect(backend).toContain("export const getPastPaperAnswer");
   });
 
-  it("makes past-paper-only courses selectable and exposes learner-visible paper counts", () => {
+  it("keeps published past-paper courses in the separate Exams destination", () => {
     const backend = source("convex/pastPapers.ts");
-    const mobileCourses = source("src/components/education/mobile-quizzes-section.tsx");
+    const exams = source("src/components/education/mobile-exams-home.tsx");
+    const quizzes = source("src/components/education/mobile-quizzes-section.tsx");
 
     expect(backend).toContain("export const listPastPaperCourseSummaries");
     expect(backend).toContain("paperCount");
-    expect(mobileCourses).toContain("convexApi.pastPapers.listPastPaperCourseSummaries");
-    expect(mobileCourses).toContain("getCoursePaperCount");
-    expect(mobileCourses).toContain("/mobile-past-papers?course=");
-    expect(mobileCourses).toContain("Past Papers");
+    expect(exams).toContain("convexApi.pastPapers.listPastPaperCourseSummaries");
+    expect(exams).toContain("loadCourseSelection");
+    expect(exams).toContain("/mobile-past-papers?course=");
+    expect(exams).toContain("Long-form exam practice");
+    expect(quizzes).not.toContain("listPastPaperCourseSummaries");
+    expect(quizzes).not.toContain("Past Papers");
   });
 
   it("reveals answers on demand, persists paper position, and never navigates back to the web course surface", () => {
