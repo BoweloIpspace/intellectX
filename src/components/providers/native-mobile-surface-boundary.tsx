@@ -56,5 +56,10 @@ export function NativeMobileSurfaceBoundary() {
     router.replace(needsCourseSetup ? MOBILE_COURSE_SETUP_ROUTE : MOBILE_HOME_ROUTE);
   }, [pathname, router]);
 
-  return updateRequired ? <MobileUpdateRequiredScreen overlay /> : null;
+  // While the client router transitions away from an incompatible route, block
+  // the old content immediately. Once the dedicated route is active it owns the
+  // final screen, avoiding duplicate headings/dialogs in the accessibility tree.
+  return updateRequired && pathname !== MOBILE_UPDATE_REQUIRED_ROUTE ? (
+    <MobileUpdateRequiredScreen overlay />
+  ) : null;
 }
