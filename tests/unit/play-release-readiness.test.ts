@@ -139,11 +139,11 @@ describe("Google Play release-readiness contracts", () => {
 
   it("keeps Data Safety documentation evidence-based instead of claiming submission is complete", () => {
     expect(dataSafetySource).toContain("engineering evidence inventory");
-    expect(dataSafetySource).toContain("not** a completed or submitted Google Play Data Safety declaration");
+    expect(dataSafetySource).toContain("**not** a completed or submitted Google Play Data Safety declaration");
     expect(dataSafetySource).toContain("mobile-local-convex");
     expect(dataSafetySource).toContain("Vercel");
     expect(dataSafetySource).toContain("Convex");
-    expect(dataSafetySource).toContain("provider request/log retention");
+    expect(dataSafetySource).toContain("Provider request/log retention");
     expect(dataSafetySource).toContain("android.permission.INTERNET");
     expect(dataSafetySource).toContain("exact signed artifact");
     expect(dataSafetySource).toContain("support.google.com/googleplay/android-developer/answer/10787469");
