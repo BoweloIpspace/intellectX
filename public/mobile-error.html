@@ -57,6 +57,7 @@
         font-weight: 600;
         cursor: pointer;
       }
+      button:disabled { cursor: progress; opacity: 0.72; }
       @media (prefers-color-scheme: dark) {
         :root, body { background: #252525; color: #f7f7f7; }
         main { border-color: rgba(255, 255, 255, 0.1); background: rgba(33, 33, 33, 0.94); }
@@ -69,10 +70,73 @@
     <main>
       <div class="mark" aria-hidden="true">IX</div>
       <h1>IntellectX is temporarily unavailable</h1>
-      <p>Check your internet connection and try again. Your local study data remains on this device while the app reconnects.</p>
-      <button type="button" onclick="window.location.replace('https://intellectx-lovat.vercel.app/mobile-study')">
-        Try again
-      </button>
+      <p id="status" aria-live="polite">Check your internet connection and try again. Your local study data remains on this device while the app reconnects.</p>
+      <button id="retry" type="button">Try again</button>
     </main>
+    <script>
+      (() => {
+        const productionOrigin = "https://intellectx-lovat.vercel.app";
+        const errorParams = new URLSearchParams(window.location.search);
+        const shellVersion = errorParams.get("nativeShellVersion")?.trim();
+        const productionMobileUrl = new URL("/mobile-study", productionOrigin);
+        if (shellVersion) {
+          productionMobileUrl.searchParams.set("nativeShellVersion", shellVersion);
+        }
+
+        const retryButton = document.getElementById("retry");
+        const status = document.getElementById("status");
+        const maxProbeAttempts = 5;
+        const probeTimeoutMs = 3500;
+        const probeDelayMs = 1500;
+
+        const delay = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+
+        async function productionIsReachable(attempt) {
+          const controller = new AbortController();
+          const timeout = window.setTimeout(() => controller.abort(), probeTimeoutMs);
+          const probeUrl = new URL("/robots.txt", productionOrigin);
+          probeUrl.searchParams.set("intellectxReconnect", `${Date.now()}-${attempt}`);
+
+          try {
+            await fetch(probeUrl, {
+              method: "GET",
+              mode: "no-cors",
+              cache: "no-store",
+              credentials: "omit",
+              signal: controller.signal,
+            });
+            return true;
+          } catch {
+            return false;
+          } finally {
+            window.clearTimeout(timeout);
+          }
+        }
+
+        async function retry() {
+          retryButton.disabled = true;
+          status.textContent = "Reconnecting to IntellectX…";
+
+          for (let attempt = 1; attempt <= maxProbeAttempts; attempt += 1) {
+            if (await productionIsReachable(attempt)) {
+              status.textContent = "Connection restored. Reopening IntellectX…";
+              window.location.replace(productionMobileUrl.toString());
+              return;
+            }
+
+            if (attempt < maxProbeAttempts) {
+              await delay(probeDelayMs);
+            }
+          }
+
+          status.textContent = "IntellectX is still offline. Check your connection, then try again.";
+          retryButton.disabled = false;
+        }
+
+        retryButton.addEventListener("click", () => {
+          void retry();
+        });
+      })();
+    </script>
   </body>
 </html>
