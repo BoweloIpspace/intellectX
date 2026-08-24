@@ -84,6 +84,7 @@ jobs:
         env:
           INTELLECTX_REQUIRE_RELEASE_SIGNING: "true"
         run: |
+          chmod +x gradlew
           set +e
           SIGNING_CHECK_OUTPUT="$(./gradlew --no-daemon --console=plain help 2>&1)"
           SIGNING_CHECK_STATUS=$?
