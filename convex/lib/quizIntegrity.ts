@@ -6,6 +6,8 @@ export type AuthoritativeQuizQuestionRecord = {
   choices: readonly string[];
   answerIndex: number;
   explanation: string;
+  diagramPath?: string;
+  diagramAlt?: string;
   order: number;
 };
 
@@ -26,6 +28,8 @@ export function toLearnerQuizQuestionPayload(question: AuthoritativeQuizQuestion
     prompt: question.prompt,
     choices: [...question.choices],
     questionType: isStructuredQuizQuestion(question) ? ("structured" as const) : ("mcq" as const),
+    diagramPath: question.diagramPath,
+    diagramAlt: question.diagramAlt,
     order: question.order,
   };
 }
