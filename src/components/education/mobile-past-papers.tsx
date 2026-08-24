@@ -26,6 +26,7 @@ import {
   FileTextIcon,
   RotateCcwIcon,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -39,14 +40,22 @@ type PastPaperSummary = {
   session?: string;
   description?: string;
   estimatedTime?: string;
+  totalMarks?: number;
+  pageCount?: number;
   order: number;
 };
 
 type PastPaperQuestion = {
   stableId: string;
   questionNumber: string;
+  sectionLabel?: string;
   prompt: string;
   marks?: number;
+  stimulusTitle?: string;
+  stimulusText?: string;
+  stimulusAssetPath?: string;
+  stimulusAssetAlt?: string;
+  stimulusSourceStatus?: "source-text" | "reconstructed-visual";
   order: number;
 };
 
@@ -150,8 +159,8 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
         <Badge variant="secondary">Past Papers</Badge>
         <h1 className="mt-4 text-2xl font-semibold tracking-tight">Exam practice</h1>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Work through a paper one question at a time, then reveal the model answer when you are ready. Unfinished papers
-          resume on this device.
+          Work through a paper one question at a time, use the supplied source material, then reveal the model answer when
+          you are ready. Unfinished papers resume on this device.
         </p>
       </div>
 
@@ -168,6 +177,14 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
                 ? "Completed on this device"
                 : `Resume at question ${savedProgress.currentIndex + 1}`
               : null;
+            const paperFacts = [
+              paper.session ?? String(paper.year),
+              paper.estimatedTime,
+              typeof paper.totalMarks === "number" ? `${paper.totalMarks} marks` : null,
+              typeof paper.pageCount === "number" ? `${paper.pageCount} pages` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ");
 
             return (
               <Link
@@ -181,10 +198,7 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
                 <span className="min-w-0 flex-1">
                   <span className="block text-lg font-semibold tracking-tight">{paper.title}</span>
                   <span className="text-muted-foreground mt-1 block text-sm">{paper.paperCode}</span>
-                  <span className="text-muted-foreground mt-2 block text-xs">
-                    {paper.session ?? paper.year}
-                    {paper.estimatedTime ? ` · ${paper.estimatedTime}` : ""}
-                  </span>
+                  <span className="text-muted-foreground mt-2 block text-xs">{paperFacts}</span>
                   {progressLabel ? <span className="mt-2 block text-xs font-medium text-primary">{progressLabel}</span> : null}
                 </span>
                 <ArrowRightIcon className="size-5 shrink-0" />
@@ -316,6 +330,9 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
             You worked through all {paper.questions.length} questions and revealed {revealedCount} model answers. This
             completion is saved on this device.
           </p>
+          {typeof paper.totalMarks === "number" ? (
+            <p className="text-muted-foreground mt-2 text-xs">Paper total: {paper.totalMarks} marks</p>
+          ) : null}
         </div>
         <Button className="min-h-12 w-full" onClick={restart}>
           <RotateCcwIcon className="size-4" />
@@ -329,6 +346,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
   }
 
   const progress = Math.round(((currentIndex + 1) / paper.questions.length) * 100);
+  const hasStimulus = Boolean(current.stimulusTitle || current.stimulusText || current.stimulusAssetPath);
 
   return (
     <section className="space-y-4">
@@ -342,7 +360,10 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
       <div className="rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <Badge variant="secondary">{paper.title}</Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">{paper.title}</Badge>
+              {current.sectionLabel ? <Badge variant="outline">{current.sectionLabel}</Badge> : null}
+            </div>
             <h1 className="mt-3 text-xl font-semibold tracking-tight">Question {current.questionNumber}</h1>
           </div>
           {typeof current.marks === "number" ? (
@@ -356,6 +377,39 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
         <p className="text-muted-foreground mt-2 text-xs">
           {currentIndex + 1} of {paper.questions.length}
         </p>
+
+        {hasStimulus ? (
+          <aside
+            className="mt-5 rounded-lg border bg-background/70 p-4"
+            aria-label={`Source material for question ${current.questionNumber}`}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <p className="text-sm font-semibold">{current.stimulusTitle ?? "Source material"}</p>
+              {current.stimulusSourceStatus ? (
+                <Badge variant="outline" className="text-[10px]">
+                  {current.stimulusSourceStatus === "reconstructed-visual"
+                    ? "Reconstructed study visual"
+                    : "Source information"}
+                </Badge>
+              ) : null}
+            </div>
+            {current.stimulusAssetPath && current.stimulusAssetAlt ? (
+              <div className="mt-4 overflow-hidden rounded-md border bg-white p-2">
+                <Image
+                  src={current.stimulusAssetPath}
+                  alt={current.stimulusAssetAlt}
+                  width={760}
+                  height={480}
+                  unoptimized
+                  className="h-auto w-full"
+                />
+              </div>
+            ) : null}
+            {current.stimulusText ? (
+              <p className="text-muted-foreground mt-3 whitespace-pre-wrap text-sm leading-6">{current.stimulusText}</p>
+            ) : null}
+          </aside>
+        ) : null}
 
         <div className="mt-5 whitespace-pre-wrap text-base leading-7">{current.prompt}</div>
 
