@@ -42,6 +42,30 @@ describe("native past paper flow", () => {
     expect(runner).not.toContain("/courses/");
   });
 
+  it("supports the full previous-next-finish lifecycle and saves completion for Progress and Profile", () => {
+    const runner = source("src/components/education/mobile-past-papers.tsx");
+    const progress = source("src/components/education/mobile-progress-content.tsx");
+    const profile = source("src/components/education/mobile-profile-study-summary.tsx");
+
+    expect(runner).toContain("Previous");
+    expect(runner).toContain("Next");
+    expect(runner).toContain("Finish");
+    expect(runner).toContain("Paper complete");
+    expect(runner).toContain("finished,");
+    expect(progress).toContain("readMobilePastPaperProgresses");
+    expect(progress).toContain("Past paper practice");
+    expect(profile).toContain("completedPastPaperCount");
+    expect(profile).toContain("inProgressPastPaperCount");
+  });
+
+  it("keeps completed papers out of Home resume while unfinished papers remain resumable", () => {
+    const home = source("src/components/education/mobile-study-home.tsx");
+
+    expect(home).toContain("progress && !progress.finished ? lastActivity : null");
+    expect(home).toContain("!progress.finished && selectedCourseIds.includes(progress.courseId)");
+    expect(home).toContain("Resume study");
+  });
+
   it("does not hardcode a Convex deployment into shared education configuration", () => {
     const educationData = source("src/lib/education-data.ts");
 
