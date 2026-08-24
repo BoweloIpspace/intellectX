@@ -9,10 +9,12 @@ describe("native mobile feature scope", () => {
     expect(isFeatureAllowedOnMobile("notes")).toBe(false);
   });
 
-  it("allows native quiz home, quizzes, progress, profile, auth, onboarding, and legal routes", () => {
+  it("allows native quiz home, quizzes, past papers, progress, profile, auth, onboarding, and legal routes", () => {
     for (const pathname of [
       "/mobile-study",
       "/mobile-quizzes",
+      "/mobile-past-papers",
+      "/mobile-past-papers/bgcse-biology-2019-paper-3",
       "/mobile-progress",
       "/mobile-profile",
       "/quiz/ai-study-systems-check",
@@ -37,6 +39,7 @@ describe("native mobile feature scope", () => {
       "/progress",
       "/quizzes",
       "/flashcards",
+      "/past-papers/bgcse-biology-2019-paper-3",
       "/mobile-flashcards",
       "/mobile-notes",
     ]) {
@@ -46,6 +49,7 @@ describe("native mobile feature scope", () => {
 
   it("does not allow lookalike paths that only share a string prefix", () => {
     expect(isRouteWebOnly("/mobile-quizzesevil")).toBe(true);
+    expect(isRouteWebOnly("/mobile-past-papersevil")).toBe(true);
     expect(isRouteWebOnly("/mobile-profile-extra")).toBe(true);
     expect(isRouteWebOnly("/loginsomething")).toBe(true);
     expect(isRouteWebOnly("/authentic-looking")).toBe(true);

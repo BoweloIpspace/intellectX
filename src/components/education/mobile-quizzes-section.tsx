@@ -18,16 +18,19 @@ import {
   loadCourseSelection,
   toggleSelectedCourse,
 } from "@/lib/course-selection";
+import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
 import { buildLearnerCatalog, type LearnerCatalog, useLearnerCatalog } from "@/lib/learner-catalog-client";
 import { getLearnerSession } from "@/lib/learner-session";
+import { useQuery } from "convex/react";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   BookOpenCheckIcon,
   BookOpenIcon,
   CheckIcon,
+  FileTextIcon,
   ListChecksIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -36,7 +39,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export function MobileQuizzesSection() {
   if (!convexEnv.isConfigured) {
-    return <MobileQuizzesContent catalog={buildLearnerCatalog()} />;
+    return <MobileQuizzesContent catalog={buildLearnerCatalog()} pastPaperCourseIds={[]} />;
   }
 
   return <ConvexMobileQuizzesSection />;
@@ -44,17 +47,33 @@ export function MobileQuizzesSection() {
 
 function ConvexMobileQuizzesSection() {
   const catalog = useLearnerCatalog();
-  return <MobileQuizzesContent catalog={catalog} />;
+  const pastPaperCourseIds = useQuery(convexApi.pastPapers.listPastPaperCourseIds, {}) as string[] | undefined;
+
+  return (
+    <MobileQuizzesContent
+      catalog={catalog}
+      pastPaperCourseIds={pastPaperCourseIds ?? []}
+      pastPapersLoading={pastPaperCourseIds === undefined}
+    />
+  );
 }
 
-function MobileQuizzesContent({ catalog }: { catalog: LearnerCatalog }) {
+function MobileQuizzesContent({
+  catalog,
+  pastPaperCourseIds,
+  pastPapersLoading = false,
+}: {
+  catalog: LearnerCatalog;
+  pastPaperCourseIds: string[];
+  pastPapersLoading?: boolean;
+}) {
   const [nativeAppSurface, setNativeAppSurface] = useState<boolean | null>(null);
 
   useEffect(() => {
     setNativeAppSurface(isMobileAppRuntime());
   }, []);
 
-  if (catalog.isLoading || nativeAppSurface === null) {
+  if (catalog.isLoading || pastPapersLoading || nativeAppSurface === null) {
     return (
       <div className="flex min-h-48 items-center justify-center">
         <AppLoadingSpinner label="Loading mobile study catalog" showLabel />
@@ -66,10 +85,16 @@ function MobileQuizzesContent({ catalog }: { catalog: LearnerCatalog }) {
     return <FlatQuizLibrary catalog={catalog} />;
   }
 
-  return <NativeCourseTopicQuizFlow catalog={catalog} />;
+  return <NativeCourseTopicQuizFlow catalog={catalog} pastPaperCourseIds={pastPaperCourseIds} />;
 }
 
-function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
+function NativeCourseTopicQuizFlow({
+  catalog,
+  pastPaperCourseIds,
+}: {
+  catalog: LearnerCatalog;
+  pastPaperCourseIds: string[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useLearnerAuthRuntime();
@@ -124,16 +149,20 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
     };
   }, [accessReady]);
 
-  const quizCourses = useMemo(
-    () => catalog.courses.filter((course) => catalog.lessons.some((lesson) => lesson.courseId === course.id)),
-    [catalog.courses, catalog.lessons],
+  const availableCourses = useMemo(
+    () =>
+      catalog.courses.filter(
+        (course) =>
+          catalog.lessons.some((lesson) => lesson.courseId === course.id) || pastPaperCourseIds.includes(course.id),
+      ),
+    [catalog.courses, catalog.lessons, pastPaperCourseIds],
   );
 
   const selectableCourses = useMemo(() => {
-    if (!profile) return quizCourses;
-    const matchedCourses = quizCourses.filter((course) => courseMatchesAcademicProfile(course, profile));
-    return matchedCourses.length > 0 ? matchedCourses : quizCourses;
-  }, [profile, quizCourses]);
+    if (!profile) return availableCourses;
+    const matchedCourses = availableCourses.filter((course) => courseMatchesAcademicProfile(course, profile));
+    return matchedCourses.length > 0 ? matchedCourses : availableCourses;
+  }, [profile, availableCourses]);
 
   if (!accessReady || !selection) {
     return (
@@ -143,7 +172,7 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
     );
   }
 
-  const selectedCourses = quizCourses.filter((course) => selection.selectedCourseIds.includes(course.id));
+  const selectedCourses = availableCourses.filter((course) => selection.selectedCourseIds.includes(course.id));
   const needsCourseSelection = selectingCourses || setupRequested || selectedCourses.length === 0;
 
   function toggleCourse(courseId: string) {
@@ -164,6 +193,7 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
       <CourseSelectionStep
         courses={selectableCourses}
         catalog={catalog}
+        pastPaperCourseIds={pastPaperCourseIds}
         selection={selection}
         error={selectionError}
         onToggle={toggleCourse}
@@ -181,15 +211,29 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   }
 
   if (selectedCourse) {
-    return <CourseTopicList catalog={catalog} courseId={selectedCourse.id} />;
+    return (
+      <CourseTopicList
+        catalog={catalog}
+        courseId={selectedCourse.id}
+        hasPastPapers={pastPaperCourseIds.includes(selectedCourse.id)}
+      />
+    );
   }
 
-  return <SelectedCourseList catalog={catalog} courses={selectedCourses} selection={selection} />;
+  return (
+    <SelectedCourseList
+      catalog={catalog}
+      courses={selectedCourses}
+      selection={selection}
+      pastPaperCourseIds={pastPaperCourseIds}
+    />
+  );
 }
 
 function CourseSelectionStep({
   courses,
   catalog,
+  pastPaperCourseIds,
   selection,
   error,
   onToggle,
@@ -197,6 +241,7 @@ function CourseSelectionStep({
 }: {
   courses: LearnerCatalog["courses"];
   catalog: LearnerCatalog;
+  pastPaperCourseIds: string[];
   selection: CourseSelection;
   error: string | null;
   onToggle: (courseId: string) => void;
@@ -208,9 +253,9 @@ function CourseSelectionStep({
     return (
       <section className="animate-widget rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
         <BookOpenIcon className="mx-auto size-6" />
-        <h2 className="mt-4 text-xl font-semibold tracking-tight">No quiz courses available yet</h2>
+        <h2 className="mt-4 text-xl font-semibold tracking-tight">No study courses available yet</h2>
         <p className="text-muted-foreground mt-3 text-sm leading-6">
-          Courses will appear here as soon as they have learner topics and quizzes available.
+          Courses will appear here as soon as learner quizzes or past papers are published.
         </p>
       </section>
     );
@@ -233,6 +278,7 @@ function CourseSelectionStep({
         {courses.map((course) => {
           const selected = selection.selectedCourseIds.includes(course.id);
           const topicCount = catalog.lessons.filter((lesson) => lesson.courseId === course.id).length;
+          const hasPastPapers = pastPaperCourseIds.includes(course.id);
 
           return (
             <button
@@ -254,7 +300,9 @@ function CourseSelectionStep({
                 <span className="block font-semibold text-foreground">{course.title}</span>
                 <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
                 <span className="text-muted-foreground mt-2 block text-xs">
-                  {topicCount} {topicCount === 1 ? "topic" : "topics"}
+                  {topicCount > 0 ? `${topicCount} ${topicCount === 1 ? "topic" : "topics"}` : ""}
+                  {topicCount > 0 && hasPastPapers ? " · " : ""}
+                  {hasPastPapers ? "Past papers" : ""}
                 </span>
               </span>
             </button>
@@ -285,10 +333,12 @@ function SelectedCourseList({
   catalog,
   courses,
   selection,
+  pastPaperCourseIds,
 }: {
   catalog: LearnerCatalog;
   courses: LearnerCatalog["courses"];
   selection: CourseSelection;
+  pastPaperCourseIds: string[];
 }) {
   return (
     <section className="space-y-4">
@@ -296,7 +346,7 @@ function SelectedCourseList({
         <div>
           <Badge variant="secondary">My courses</Badge>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight">Choose a course</h2>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">Tap a course to open its topics.</p>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">Tap a course to open its study content.</p>
         </div>
         {!selection.locked ? (
           <Button asChild size="sm" variant="outline">
@@ -308,6 +358,7 @@ function SelectedCourseList({
       <div className="grid gap-3">
         {courses.map((course) => {
           const topicCount = catalog.lessons.filter((lesson) => lesson.courseId === course.id).length;
+          const hasPastPapers = pastPaperCourseIds.includes(course.id);
           return (
             <Link
               key={course.id}
@@ -321,7 +372,9 @@ function SelectedCourseList({
                 <span className="block text-lg font-semibold tracking-tight text-foreground">{course.title}</span>
                 <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
                 <span className="text-muted-foreground mt-2 block text-xs">
-                  {topicCount} {topicCount === 1 ? "topic" : "topics"}
+                  {topicCount > 0 ? `${topicCount} ${topicCount === 1 ? "topic" : "topics"}` : ""}
+                  {topicCount > 0 && hasPastPapers ? " · " : ""}
+                  {hasPastPapers ? "Past papers" : ""}
                 </span>
               </span>
               <ArrowRightIcon className="size-5 shrink-0" />
@@ -333,7 +386,15 @@ function SelectedCourseList({
   );
 }
 
-function CourseTopicList({ catalog, courseId }: { catalog: LearnerCatalog; courseId: string }) {
+function CourseTopicList({
+  catalog,
+  courseId,
+  hasPastPapers,
+}: {
+  catalog: LearnerCatalog;
+  courseId: string;
+  hasPastPapers: boolean;
+}) {
   const course = catalog.courseById.get(courseId);
   const topics = catalog.lessons.filter(
     (lesson) =>
@@ -341,7 +402,7 @@ function CourseTopicList({ catalog, courseId }: { catalog: LearnerCatalog; cours
       catalog.quizzes.some((quiz) => quiz.courseId === courseId && quiz.lessonId === lesson.id),
   );
 
-  if (!course || topics.length === 0) {
+  if (!course || (topics.length === 0 && !hasPastPapers)) {
     return <SelectedCourseFallback />;
   }
 
@@ -357,10 +418,34 @@ function CourseTopicList({ catalog, courseId }: { catalog: LearnerCatalog; cours
       <div className="rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
         <Badge variant="secondary">{course.subject}</Badge>
         <h2 className="mt-4 text-2xl font-semibold tracking-tight">{course.title}</h2>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">Choose a topic to see its quizzes.</p>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          {hasPastPapers && topics.length > 0
+            ? "Choose a topic or open Past Papers."
+            : hasPastPapers
+              ? "Open Past Papers to practice published exam questions."
+              : "Choose a topic to see its quizzes."}
+        </p>
       </div>
 
       <div className="grid gap-3">
+        {hasPastPapers ? (
+          <Link
+            href={`/mobile-past-papers?course=${encodeURIComponent(courseId)}`}
+            className="animate-widget flex min-h-28 items-center gap-4 rounded-lg border border-white/70 bg-white/60 p-4 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-card/60"
+          >
+            <span className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-full">
+              <FileTextIcon className="size-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold text-foreground">Past Papers</span>
+              <span className="text-muted-foreground mt-1 block text-xs">
+                Exam questions with reveal-answer revision
+              </span>
+            </span>
+            <ArrowRightIcon className="size-5 shrink-0" />
+          </Link>
+        ) : null}
+
         {topics.map((topic) => {
           const quizCount = catalog.quizzes.filter(
             (quiz) => quiz.courseId === courseId && quiz.lessonId === topic.id,

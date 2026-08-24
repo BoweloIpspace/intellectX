@@ -28,7 +28,7 @@ type MobileAppShellProps = {
 
 function isTabActive(pathname: string, href: string) {
   if (href === "/mobile-quizzes") {
-    return pathname === href || pathname.startsWith("/quiz/");
+    return pathname === href || pathname.startsWith("/quiz/") || pathname.startsWith("/mobile-past-papers");
   }
 
   return pathname === href;
