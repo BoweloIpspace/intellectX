@@ -16,7 +16,7 @@ describe("Capacitor production configuration", () => {
     expect(config.webDir).toBe("public");
     expect(config.server?.url).toBe(INTELLECTX_PRODUCTION_SERVER_URL);
     expect(config.server?.cleartext).toBe(false);
-    expect(config.server?.appStartPath).toMatch(/^\/mobile-study\?nativeShellVersion=/);
+    expect(config.server?.appStartPath).toMatch(/^\/login\?nativeShellVersion=/);
     expect(config.server?.errorPath).toMatch(/^mobile-error\.html\?nativeShellVersion=/);
 
     const startShellVersion = new URL(config.server?.appStartPath ?? "", INTELLECTX_PRODUCTION_SERVER_URL).searchParams.get(
