@@ -47,7 +47,10 @@ async function createLocalProfile(page: import("@playwright/test").Page, email: 
 
 test("corrupt session is discarded and orphaned course state is not inherited by the next learner", async ({ page }) => {
   await simulateNativeAndroid(page);
-  await page.addInitScript(() => {
+  // Seed corruption once in the current origin. An init script would run on
+  // every navigation and would incorrectly overwrite the newly created session.
+  await page.goto("/login");
+  await page.evaluate(() => {
     window.localStorage.setItem("intellectx:learner-session", "{broken json");
     window.localStorage.setItem(
       "intellectx:course-selection",
@@ -157,15 +160,16 @@ test("delete local profile requires confirmation and removes only that profile s
   await expect(page.getByText("0 / 5 selected")).toBeVisible();
 });
 
-test("known stale Android shell is routed to the update-required screen", async ({ page }) => {
+test("known stale Android shell is visibly blocked and routed to the update-required screen", async ({ page }) => {
   await simulateNativeAndroid(page);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
 
   await page.goto("/mobile-study?nativeShellVersion=0.9.9");
 
-  await expect(page).toHaveURL(/\/mobile-update-required$/);
   await expect(page.getByRole("heading", { name: "IntellectX update required" })).toBeVisible();
+  await expect(page).toHaveURL(/\/mobile-update-required$/);
+  await expect(page.getByRole("navigation", { name: "Mobile study navigation" })).toBeHidden();
 });
 
 test("supported Android shell version is recorded and visible in Profile build information", async ({ page }) => {
