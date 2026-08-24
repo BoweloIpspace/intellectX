@@ -17,10 +17,22 @@ type PastPaperCourseSummary = {
 };
 
 export function MobileExamsHome() {
+  if (!convexEnv.isConfigured) {
+    return <MobileExamsHomeContent summaries={[]} />;
+  }
+
+  return <ConfiguredMobileExamsHome />;
+}
+
+function ConfiguredMobileExamsHome() {
+  const summaries = useQuery(convexApi.pastPapers.listPastPaperCourseSummaries, {}) as
+    | PastPaperCourseSummary[]
+    | undefined;
+  return <MobileExamsHomeContent summaries={summaries} />;
+}
+
+function MobileExamsHomeContent({ summaries }: { summaries: PastPaperCourseSummary[] | undefined }) {
   const catalog = useLearnerCatalog();
-  const summaries = convexEnv.isConfigured
-    ? (useQuery(convexApi.pastPapers.listPastPaperCourseSummaries, {}) as PastPaperCourseSummary[] | undefined)
-    : [];
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
