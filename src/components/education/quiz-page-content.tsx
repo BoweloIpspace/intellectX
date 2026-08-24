@@ -33,6 +33,7 @@ export function QuizPageContent({
   }, []);
 
   const mobileSurface = mobileRequested || nativeMobile;
+  const hasStructuredQuestions = quiz.questions.some((question) => question.choices.length === 0);
 
   useEffect(() => {
     if (!mobileSurface) return;
@@ -70,11 +71,17 @@ export function QuizPageContent({
         </h1>
         <p className={mobileSurface ? "text-muted-foreground mb-4 text-sm leading-5" : "text-muted-foreground mb-8 leading-6"}>
           {mobileSurface
-            ? "Multiple-choice questions use the timed quiz flow. Structured questions let you reveal the model answer after working them out."
+            ? hasStructuredQuestions
+              ? "Multiple-choice questions use the timed quiz flow. Structured questions let you reveal the model answer after working them out."
+              : "Choose an answer, use the timer, check your result, then continue to the next question."
             : "Select an answer, check your result, and use the feedback to close the learning loop. Completed attempts are saved so your scores and learning activity can appear across IntellectX."}
         </p>
         <div className={mobileSurface ? "mobile-quiz-player" : undefined}>
-          {mobileSurface ? <MixedQuizPlayer quiz={quiz} /> : <SecureQuizPlayer quiz={quiz} surface="web" />}
+          {mobileSurface && hasStructuredQuestions ? (
+            <MixedQuizPlayer quiz={quiz} />
+          ) : (
+            <SecureQuizPlayer quiz={quiz} surface={mobileSurface ? "mobile" : "web"} />
+          )}
         </div>
         <Button className="mt-4 min-h-11" variant="ghost" asChild>
           <Link href={returnHref}>{returnLabel}</Link>
