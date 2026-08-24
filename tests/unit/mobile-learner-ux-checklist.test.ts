@@ -29,18 +29,24 @@ describe("mobile learner UX checklist", () => {
     expect(shell).toContain("grid-cols-4");
   });
 
-  it("wires the mobile quiz surface to mixed MCQ and structured-question behavior", () => {
+  it("keeps the original timed player for pure MCQ and uses mixed behavior only when structured questions exist", () => {
     const page = source("src/components/education/quiz-page-content.tsx");
     const mixedPlayer = source("src/components/education/mixed-quiz-player.tsx");
     const integrity = source("convex/lib/quizIntegrity.ts");
     expect(page).toContain('import { MixedQuizPlayer }');
-    expect(page).toContain("mobileSurface ? <MixedQuizPlayer quiz={quiz} />");
+    expect(page).toContain("hasStructuredQuestions");
+    expect(page).toContain("mobileSurface && hasStructuredQuestions");
+    expect(page).toContain("<MixedQuizPlayer quiz={quiz} />");
+    expect(page).toContain('<SecureQuizPlayer quiz={quiz} surface={mobileSurface ? "mobile" : "web"} />');
     expect(mixedPlayer).toContain('action: "check"');
     expect(mixedPlayer).toContain('action: "reveal"');
     expect(mixedPlayer).toContain("Time left:");
     expect(mixedPlayer).toContain("Reveal answer");
     expect(mixedPlayer).toContain("question.diagramPath");
     expect(mixedPlayer).toContain("grayscale contrast-125 dark:invert");
+    expect(mixedPlayer).toContain("readMobileQuizProgress");
+    expect(mixedPlayer).toContain("writeMobileQuizProgress");
+    expect(mixedPlayer).toContain("clearMobileQuizProgress");
     expect(integrity).toContain("gradableQuestions");
   });
 
