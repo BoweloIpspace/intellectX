@@ -304,7 +304,8 @@ test("mobile notes and flashcards entry routes load", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Lesson notes stay with the full lesson experience" }),
   ).toBeVisible();
-  await expect(page.getByText("The free mobile app focuses on quizzes and flashcards.")).toBeVisible();
+  await expect(page.getByText(/Notes remain attached to full lessons in the web experience\./)).toBeVisible();
+  await expect(page.getByText(/The native learner app uses selected courses, quizzes, past papers, Progress, and Profile instead\./)).toBeVisible();
   await expect(page.getByRole("link", { name: "Open flashcards" })).toHaveAttribute("href", "/mobile-flashcards");
   await expect(page.getByRole("link", { name: "Browse lessons" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Open lesson notes" })).toHaveCount(0);
