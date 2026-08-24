@@ -13,6 +13,7 @@ const mobileAllowedRoutePrefixes = [
   "/mobile-past-papers",
   "/mobile-progress",
   "/mobile-profile",
+  "/mobile-update-required",
   "/quiz",
   "/login",
   "/signup",

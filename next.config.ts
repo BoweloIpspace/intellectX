@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const isProductionDeployment = process.env.VERCEL_ENV === "production";
+const appVersion = process.env.INTELLECTX_APP_VERSION ?? process.env.npm_package_version ?? "0.1.0";
+const buildSha = process.env.INTELLECTX_BUILD_SHA ?? process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? "local";
+const appEnvironment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -51,6 +54,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1", "localhost"],
+  env: {
+    NEXT_PUBLIC_INTELLECTX_APP_VERSION: appVersion,
+    NEXT_PUBLIC_INTELLECTX_BUILD_SHA: buildSha,
+    NEXT_PUBLIC_INTELLECTX_ENV: appEnvironment,
+  },
   async headers() {
     return [
       {

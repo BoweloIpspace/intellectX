@@ -1,4 +1,5 @@
 import { ProfileLearnerSession } from "@/components/auth/profile-learner-session";
+import { MobileBuildInfoCard } from "@/components/education/mobile-build-info-card";
 import { PageShell } from "@/components/education/page-shell";
 import { StudyProfileCard } from "@/components/education/study-profile-card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ export default function MobileProfilePage() {
       <div className="grid gap-3">
         <ProfileLearnerSession />
         <StudyProfileCard />
+        <MobileBuildInfoCard />
       </div>
     </PageShell>
   );
