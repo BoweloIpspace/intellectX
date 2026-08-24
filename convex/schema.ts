@@ -114,6 +114,8 @@ export default defineSchema({
     choices: v.array(v.string()),
     answerIndex: v.number(),
     explanation: v.string(),
+    diagramPath: v.optional(v.string()),
+    diagramAlt: v.optional(v.string()),
     order: v.number(),
     seedManaged: v.optional(v.boolean()),
   })
