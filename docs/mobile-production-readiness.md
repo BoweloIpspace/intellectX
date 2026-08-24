@@ -68,7 +68,7 @@ All Clerk + Convex production variables are configured together. Partial configu
 - Run the deterministic Past Paper release seed against the intended production Convex deployment only when an explicit production content audit proves that release content needs reconciliation. Code deployment alone is not a reason to seed or reset production data.
 - Confirm that the existing production Convex target `bowelojay978:intellectx-61f15` is the intended permanent production account/project before freezing the Play candidate; do not rename or migrate it without proof.
 - Configure Clerk + Convex only if cloud accounts/sync are desired. The admin Past Paper workspace requires a trusted authenticated admin identity when used outside non-production demo tooling.
-- Create and securely store the Android upload key, configure the four signing secrets plus base64 keystore secret used by the signed-release workflow, and enable/confirm Play App Signing before the first Play upload.
+- Create and securely store the Android upload key, configure the four signed-release secrets (`INTELLECTX_UPLOAD_KEYSTORE_BASE64`, store password, key alias, and key password), and enable/confirm Play App Signing before the first Play upload.
 - Run the signed-release workflow with an explicit monotonic `versionCode` and intended `versionName`, then keep the resulting checksum with the exact candidate SHA.
 - Complete the provider-retention/runtime-network verification listed in `docs/google-play-data-safety.md`, then complete Play Console Data Safety using the exact shipped behavior.
 - Complete Play Console app listing, content rating, app access, target audience, and other policy declarations.

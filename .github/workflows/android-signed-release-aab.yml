@@ -25,9 +25,6 @@ jobs:
       INTELLECTX_REQUIRE_RELEASE_SIGNING: "true"
       INTELLECTX_VERSION_CODE: ${{ inputs.version_code }}
       INTELLECTX_VERSION_NAME: ${{ inputs.version_name }}
-      INTELLECTX_UPLOAD_STORE_PASSWORD: ${{ secrets.INTELLECTX_UPLOAD_STORE_PASSWORD }}
-      INTELLECTX_UPLOAD_KEY_ALIAS: ${{ secrets.INTELLECTX_UPLOAD_KEY_ALIAS }}
-      INTELLECTX_UPLOAD_KEY_PASSWORD: ${{ secrets.INTELLECTX_UPLOAD_KEY_PASSWORD }}
 
     steps:
       - name: Harden the runner
@@ -71,6 +68,9 @@ jobs:
         shell: bash
         env:
           INTELLECTX_UPLOAD_KEYSTORE_BASE64: ${{ secrets.INTELLECTX_UPLOAD_KEYSTORE_BASE64 }}
+          INTELLECTX_UPLOAD_STORE_PASSWORD: ${{ secrets.INTELLECTX_UPLOAD_STORE_PASSWORD }}
+          INTELLECTX_UPLOAD_KEY_ALIAS: ${{ secrets.INTELLECTX_UPLOAD_KEY_ALIAS }}
+          INTELLECTX_UPLOAD_KEY_PASSWORD: ${{ secrets.INTELLECTX_UPLOAD_KEY_PASSWORD }}
         run: |
           set -euo pipefail
 
@@ -108,6 +108,10 @@ jobs:
 
       - name: Build signed release AAB
         working-directory: android
+        env:
+          INTELLECTX_UPLOAD_STORE_PASSWORD: ${{ secrets.INTELLECTX_UPLOAD_STORE_PASSWORD }}
+          INTELLECTX_UPLOAD_KEY_ALIAS: ${{ secrets.INTELLECTX_UPLOAD_KEY_ALIAS }}
+          INTELLECTX_UPLOAD_KEY_PASSWORD: ${{ secrets.INTELLECTX_UPLOAD_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon --console=plain bundleRelease
@@ -133,9 +137,11 @@ jobs:
         run: |
           set -euo pipefail
           AAB="android/app/build/outputs/bundle/release/app-release.aab"
+          ENTRY_LIST="$RUNNER_TEMP/intellectx-aab-entries.txt"
           test -f "$AAB"
           unzip -t "$AAB" >/dev/null
-          unzip -Z1 "$AAB" | grep -Eq '^META-INF/[^/]+\.SF$'
+          unzip -Z1 "$AAB" > "$ENTRY_LIST"
+          grep -Eq '^META-INF/[^/]+\.SF$' "$ENTRY_LIST"
           jarsigner -verify -strict "$AAB" >/dev/null
           sha256sum "$AAB" | tee "$AAB.sha256"
 
@@ -150,7 +156,9 @@ jobs:
           retention-days: 14
           compression-level: 0
 
-      - name: Remove temporary upload keystore
+      - name: Remove temporary signing files
         if: always()
         shell: bash
-        run: rm -f "$RUNNER_TEMP/intellectx-upload.jks"
+        run: |
+          rm -f "$RUNNER_TEMP/intellectx-upload.jks"
+          rm -f "$RUNNER_TEMP/intellectx-aab-entries.txt"
