@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const MOBILE_HOME_ROUTE = "/mobile-study";
-const MOBILE_LOGIN_ROUTE = "/login";
+const MOBILE_LOGIN_ROUTE = "/login?native=1";
 const MOBILE_UPDATE_REQUIRED_ROUTE = "/mobile-update-required";
 
 function isNativeAuthRoute(pathname: string) {
@@ -47,7 +47,6 @@ export function NativeMobileSurfaceBoundary() {
     }
 
     setUpdateRequired(false);
-
     const launchAuthorized = hasNativeLaunchAuthorization();
 
     if (pathname === MOBILE_UPDATE_REQUIRED_ROUTE) {
@@ -55,9 +54,6 @@ export function NativeMobileSurfaceBoundary() {
       return;
     }
 
-    // A remembered local learner profile must never silently open study content.
-    // Every fresh WebView session begins without this sessionStorage flag and
-    // therefore requires an explicit Login or Sign up action first.
     if (!launchAuthorized && !isNativeAuthRoute(pathname)) {
       router.replace(MOBILE_LOGIN_ROUTE);
       return;
