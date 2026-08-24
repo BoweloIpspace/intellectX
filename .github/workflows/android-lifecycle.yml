@@ -142,6 +142,11 @@ jobs:
       - name: Verify cold process restart
         shell: bash
         run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          adb install -r "$APK"
+          adb shell pm list packages | grep -q '^package:com.intellectx.app$'
           adb shell am force-stop com.intellectx.app
           START_OUTPUT="$(adb shell am start -W -n com.intellectx.app/.MainActivity)"
           printf '%s\n' "$START_OUTPUT"
