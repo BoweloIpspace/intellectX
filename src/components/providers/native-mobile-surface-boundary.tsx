@@ -3,18 +3,39 @@
 import { loadCourseSelection } from "@/lib/course-selection";
 import { isMobileAppRuntime, isRouteWebOnly } from "@/lib/feature-scope";
 import { getLearnerSession } from "@/lib/learner-session";
+import { captureMobileShellVersion, isMobileShellVersionSupported } from "@/lib/mobile-runtime-version";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const MOBILE_HOME_ROUTE = "/mobile-study";
 const MOBILE_COURSE_SETUP_ROUTE = "/mobile-quizzes";
+const MOBILE_UPDATE_REQUIRED_ROUTE = "/mobile-update-required";
 
 export function NativeMobileSurfaceBoundary() {
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isMobileAppRuntime() || !isRouteWebOnly(pathname)) {
+    if (!isMobileAppRuntime()) {
+      return;
+    }
+
+    const shellVersion = captureMobileShellVersion();
+    const shellSupported = isMobileShellVersionSupported(shellVersion);
+
+    if (!shellSupported) {
+      if (pathname !== MOBILE_UPDATE_REQUIRED_ROUTE) {
+        router.replace(MOBILE_UPDATE_REQUIRED_ROUTE);
+      }
+      return;
+    }
+
+    if (pathname === MOBILE_UPDATE_REQUIRED_ROUTE) {
+      router.replace(MOBILE_HOME_ROUTE);
+      return;
+    }
+
+    if (!isRouteWebOnly(pathname)) {
       return;
     }
 
