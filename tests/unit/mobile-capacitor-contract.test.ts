@@ -10,9 +10,14 @@ describe("Capacitor mobile launch contract", () => {
   it("launches the production mobile surface with a versioned Android shell", () => {
     const capacitor = source("capacitor.config.ts");
 
-    expect(capacitor).toContain('url: "https://intellectx-lovat.vercel.app"');
+    expect(capacitor).toContain(
+      'export const INTELLECTX_PRODUCTION_SERVER_URL = "https://intellectx-lovat.vercel.app"',
+    );
+    expect(capacitor).toContain("resolveCapacitorServerUrl");
+    expect(capacitor).toContain("url: serverUrl");
     expect(capacitor).toContain("nativeShellVersion");
     expect(capacitor).toContain('errorPath: "mobile-error.html"');
+    expect(capacitor).toContain("cleartext: false");
     expect(capacitor).not.toContain("_vercel_share");
     expect(capacitor).not.toContain("wary-meerkat-937");
   });

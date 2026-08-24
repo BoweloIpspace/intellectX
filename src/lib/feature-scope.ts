@@ -7,6 +7,10 @@ export type StudyFeature = "quizzes" | "flashcards" | "notes";
 // the native mobile surface.
 const mobileStudyFeatures = ["quizzes"] as const satisfies readonly StudyFeature[];
 
+// Commerce remains a web concern. Native mobile must never expose checkout,
+// subscriptions, premium entitlements, purchase restoration, or billing UI.
+const mobileCommerceEnabled = false as const;
+
 const mobileAllowedRoutePrefixes = [
   "/mobile-study",
   "/mobile-quizzes",
@@ -27,6 +31,7 @@ const mobileAllowedRoutePrefixes = [
 
 export const featureScope = {
   mobileStudyFeatures,
+  mobileCommerceEnabled,
   mobileAllowedRoutePrefixes,
 };
 
@@ -66,6 +71,10 @@ export function isFeatureAllowedOnSurface(feature: StudyFeature, surface: AppSur
 
 export function isFeatureAllowedOnMobile(feature: StudyFeature) {
   return isFeatureAllowedOnSurface(feature, "mobile");
+}
+
+export function isCommerceEnabledOnSurface(surface: AppSurface) {
+  return surface === "web" ? true : mobileCommerceEnabled;
 }
 
 function matchesRoutePrefix(pathname: string, prefix: string) {
