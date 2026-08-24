@@ -29,9 +29,10 @@ The native IntellectX app is a **free learner practice experience** with Home, Q
 - Visual/source-dependent Biology 2019 questions include accessible digital source material before **Reveal answer** rather than relying on missing examination figures.
 - Biology 2019 reconstructed artwork is explicitly labelled as an IntellectX study reconstruction; the app does not present reconstructed Q3/Q6 artwork or instructional model answers as an official examination facsimile/mark scheme.
 - Past Papers now have an admin-only CRUD workspace for paper metadata, publication state, question ordering, marks, source material, model answers, and explanations.
-- Past Paper create/update/delete operations are protected by trusted Convex admin RBAC and recorded in the append-only audit log; paper deletion cascades to its question rows.
+- Past Paper create/update/delete operations are protected by trusted Convex admin RBAC and recorded in the append-only audit log; paper deletion cascades to its question rows and records each destructive question deletion before the paper deletion.
+- Admin-managed Past Paper visual references accept only safe app-relative paths and require an accessibility description whenever a visual asset path is stored.
 - Past Paper records distinguish repository-controlled seed data from manual admin data using `seedManaged` provenance. Admin edits intentionally become manual records.
-- Biology 2019 has an explicit deterministic release-seed entrypoint. Normal reconciliation is non-destructive; deliberate `reset: true` reconciliation removes canonical duplicates and stale seed-managed/legacy Biology seed rows while protecting unrelated manual content.
+- Biology 2019 has an explicit deterministic release-seed entrypoint. Normal reconciliation is non-destructive; deliberate `reset: true` reconciliation removes canonical duplicates and stale Biology 2019 Paper 3 seed-managed/legacy rows while protecting manual records, other Biology years, other paper codes, and unrelated courses.
 - Production environment validation supports intentional local-only, `mobile-local-convex`, or fully configured Clerk + Convex modes while rejecting partial Clerk configuration.
 - Payments must remain disabled for the free mobile product.
 - CI runs typecheck, lint, unit tests, a production dependency audit, a production build, and Playwright against `next start` rather than `next dev`.
