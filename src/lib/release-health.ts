@@ -20,7 +20,9 @@ function normalizeCommitSha(value: string | undefined) {
   return candidate && /^[0-9a-f]{40}$/.test(candidate) ? candidate : null;
 }
 
-export function getPublicReleaseHealth(env: ReleaseHealthEnv = process.env): PublicReleaseHealth {
+export function getPublicReleaseHealth(
+  env: ReleaseHealthEnv = { VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA },
+): PublicReleaseHealth {
   return {
     status: "ok",
     app: "IntellectX",
