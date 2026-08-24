@@ -131,6 +131,7 @@ export default defineSchema({
     totalMarks: v.optional(v.number()),
     pageCount: v.optional(v.number()),
     accessLevel: v.optional(v.union(v.literal("free"), v.literal("paid"))),
+    seedManaged: v.optional(v.boolean()),
     published: v.boolean(),
     order: v.number(),
     updatedAt: v.optional(v.number()),
@@ -152,6 +153,7 @@ export default defineSchema({
     modelAnswer: v.string(),
     explanation: v.optional(v.string()),
     order: v.number(),
+    seedManaged: v.optional(v.boolean()),
     updatedAt: v.optional(v.number()),
   })
     .index("by_stable_id", ["stableId"])
