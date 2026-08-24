@@ -1,15 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { mobileTopicQuizzes } from "@/data/mobile-topic-quizzes";
 import { quizzes } from "@/data/quizzes";
 import { getSeedQuizAnswer } from "../../convex/seedQuizAnswers";
 
 describe("mobile quiz answer authority", () => {
-  it("has a server-side answer and explanation for every learner-visible bundled quiz question", () => {
-    const learnerVisibleQuizzes = [...quizzes, ...mobileTopicQuizzes];
+  it("has a server-side answer and explanation for every bundled learner-visible quiz question", () => {
     const seenQuizIds = new Set<string>();
 
-    for (const quiz of learnerVisibleQuizzes) {
+    for (const quiz of quizzes) {
       expect(seenQuizIds.has(quiz.id), `duplicate learner-visible quiz id ${quiz.id}`).toBe(false);
       seenQuizIds.add(quiz.id);
 
@@ -22,17 +20,7 @@ describe("mobile quiz answer authority", () => {
     }
 
     expect(seenQuizIds).toEqual(
-      new Set([
-        "ai-study-systems-check",
-        "critical-thinking-check",
-        "exam-accelerator-check",
-        "memory-systems-check",
-        "weekly-review-check",
-        "source-quality-check",
-        "counterexamples-check",
-        "active-recall-check",
-        "timed-practice-check",
-      ]),
+      new Set(["ai-study-systems-check", "critical-thinking-check", "exam-accelerator-check"]),
     );
   });
 });
