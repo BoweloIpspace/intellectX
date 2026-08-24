@@ -1,0 +1,25 @@
+{
+  "appName": "IntellectX",
+  "packageName": "com.intellectx.app",
+  "category": "Education",
+  "shortDescription": "Practice quizzes and past papers with local progress tracking.",
+  "fullDescription": "IntellectX is a free learner practice app for selected published courses. Learners can create a device-local profile, choose courses, practice quizzes and past papers, resume unfinished practice, and review progress and profile summaries. Standard quiz grading is server-authoritative, while past-paper model answers are revealed only on demand. The Android app does not expose billing, subscriptions, admin or instructor workspaces, flashcards, or notes in native navigation. Learner profile and practice progress data are stored locally on the device for the current mobile release.",
+  "privacyPolicyUrl": "https://intellectx-lovat.vercel.app/privacy-policy",
+  "supportUrl": "https://github.com/BoweloIpspace/intellectX/issues",
+  "appAccessReviewInstructions": "No server account credentials are required for the native learner flow. A reviewer can create a device-local learner profile with a name and email address; no password is requested. Admin and instructor workspaces are intentionally outside the Android learner product.",
+  "nativeSurfaces": [
+    "Home",
+    "Quizzes",
+    "Past Papers",
+    "Progress",
+    "Profile"
+  ],
+  "excludedNativeSurfaces": [
+    "Payments",
+    "Billing",
+    "Admin",
+    "Instructor",
+    "Flashcards",
+    "Notes"
+  ]
+}
