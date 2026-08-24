@@ -105,7 +105,7 @@ test("failed final submission preserves progress and retries with the same submi
   await expect(page.getByText("Correct", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "See results" }).click();
 
-  await expect(page.getByRole("alert")).toContainText(/Connection problem/i);
+  await expect(page.getByText(/Connection problem\. Your selected answer and quiz progress are still saved/i)).toBeVisible();
   await expect(page.getByRole("button", { name: "Try saving again" })).toBeVisible();
   expect(submissionIds).toHaveLength(3);
   expect(new Set(submissionIds).size).toBe(1);
