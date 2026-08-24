@@ -117,7 +117,9 @@ export function printProductionEnvReport(report) {
     console.log("Clerk Convex JWT template: verify manually in Clerk Dashboard; expected template name is convex.");
     console.log("Trusted staff role claim paths: staff.role, metadata.role, publicMetadata.role, appMetadata.role.");
   } else if (report.mode === "mobile-local-convex") {
-    console.log("Convex-backed mobile mode: learning content uses Convex while learner identity and progress remain device-local.");
+    console.log(
+      "Convex-backed mobile mode: learning content uses Convex while learner identity and progress remain device-local; quiz grading uses the server fallback until verified Clerk+Convex learner identity is enabled.",
+    );
   } else {
     console.log("Local-only mobile mode: quiz grading uses the server fallback and learner state remains device-local.");
   }

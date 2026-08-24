@@ -1,21 +1,18 @@
 "use client";
 
+import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runtime-provider";
 import { quizzes } from "@/data/quizzes";
+import { hasPendingLocalLearnerMigrationSource } from "@/lib/authenticated-learner-local-data";
+import { hydrateAuthenticatedQuizAttemptHistory } from "@/lib/authenticated-learner-hydration";
 import { convexApi } from "@/lib/convex-api";
 import {
   getCurrentConvexLearnerIdentity,
   type ConvexLearnerArgs,
   type ConvexLearnerIdentity,
 } from "@/lib/convex-learner-identity";
-import { convexEnv } from "@/lib/education-data";
-import { hasPendingLocalLearnerMigrationSource } from "@/lib/authenticated-learner-local-data";
-import { hydrateAuthenticatedQuizAttemptHistory } from "@/lib/authenticated-learner-hydration";
-import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runtime-provider";
 import { LEARNER_SESSION_CHANGE_EVENT } from "@/lib/learner-session";
-import {
-  mergeQuizAttemptHistory,
-  type QuizAttemptHistoryItem,
-} from "@/lib/quiz-attempt-history";
+import { usesAuthenticatedConvexQuizGrading } from "@/lib/mobile-quiz-grading-mode";
+import type { QuizAttemptHistoryItem } from "@/lib/quiz-attempt-history";
 import { useConvex } from "convex/react";
 import { useEffect, useState } from "react";
 
@@ -66,7 +63,9 @@ function getIdentityArgs(identity: ConvexLearnerIdentity): ConvexLearnerArgs {
 }
 
 export function QuizAttemptHistorySync() {
-  if (!convexEnv.isConfigured) {
+  // A public Convex content connection does not authenticate a device-local learner.
+  // Only hydrate protected attempt history when Clerk and Convex form a verified identity path.
+  if (!usesAuthenticatedConvexQuizGrading()) {
     return null;
   }
 
@@ -97,7 +96,7 @@ function ConvexQuizAttemptHistorySync() {
   }, [isLoaded, isSignedIn, userId]);
 
   useEffect(() => {
-    if (!identity) {
+    if (!identity || identity.source !== "authenticated-convex") {
       return;
     }
 
@@ -115,17 +114,10 @@ function ConvexQuizAttemptHistorySync() {
           .map((attempt) => toQuizAttemptHistoryItem(attempt))
           .filter((attempt): attempt is QuizAttemptHistoryItem => Boolean(attempt));
 
-        if (identity.source === "authenticated-convex") {
-          hydrateAuthenticatedQuizAttemptHistory(
-            attempts,
-            hasPendingLocalLearnerMigrationSource({ authenticatedEmail: primaryEmailAddress }),
-          );
-          return;
-        }
-
-        if (attempts.length > 0) {
-          mergeQuizAttemptHistory(attempts);
-        }
+        hydrateAuthenticatedQuizAttemptHistory(
+          attempts,
+          hasPendingLocalLearnerMigrationSource({ authenticatedEmail: primaryEmailAddress }),
+        );
       })
       .catch((error) => {
         if (cancelled) return;

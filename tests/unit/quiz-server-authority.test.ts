@@ -103,7 +103,7 @@ describe("quiz server authority", () => {
     expect(source).not.toContain("completedAt: args.completedAt");
   });
 
-  it("routes both web and protected native-mobile quiz surfaces through the secure player", () => {
+  it("routes authenticated Clerk+Convex quiz surfaces through protected Convex grading", () => {
     const pageSource = readFileSync(path.resolve(process.cwd(), "src/components/education/quiz-page-content.tsx"), "utf8");
     const playerSource = readFileSync(
       path.resolve(process.cwd(), "src/components/education/secure-quiz-player.tsx"),
@@ -117,7 +117,7 @@ describe("quiz server authority", () => {
     expect(playerSource).not.toContain("question.answerIndex");
   });
 
-  it("keeps the local production fallback server-authoritative and available as a mobile resilience path", () => {
+  it("uses the server-authoritative grader for local-profile modes even when Convex content is configured", () => {
     const routeSource = readFileSync(path.resolve(process.cwd(), "src/app/api/quiz-grading/route.ts"), "utf8");
     const playerSource = readFileSync(
       path.resolve(process.cwd(), "src/components/education/secure-quiz-player.tsx"),
@@ -132,6 +132,17 @@ describe("quiz server authority", () => {
     expect(routeSource).toContain("gradeQuizAnswers");
     expect(routeSource).toContain('"Cache-Control": "no-store, max-age=0"');
     expect(routeSource).toContain('"X-Content-Type-Options": "nosniff"');
+    expect(playerSource).toContain('getQuizGradingMode() === "server-fallback"');
     expect(playerSource).toContain('fetch("/api/quiz-grading"');
+    expect(playerSource).not.toContain("if (!convexEnv.isConfigured)");
+  });
+
+  it("keeps production Convex identity fail-closed instead of trusting browser local user keys", () => {
+    const identitySource = readFileSync(path.resolve(process.cwd(), "convex/lib/identity.ts"), "utf8");
+
+    expect(identitySource).toContain('env.CONVEX_DEPLOYMENT?.startsWith("prod:")');
+    expect(identitySource).toContain("return false");
+    expect(identitySource).toContain("Local userKey fallback is disabled for this environment");
+    expect(identitySource).not.toContain('ALLOW_LOCAL_USERKEY_FALLBACK = "true"');
   });
 });
