@@ -72,6 +72,7 @@ describe("Google Play release-readiness items 10-14", () => {
     expect(liveWorkflow).toContain("wait-for-live-production.mjs");
     expect(liveWorkflow).toContain("live-production-smoke.spec.ts");
     expect(liveSmokeSpec).toContain("release-health exposes only the expected release contract");
+    expect(liveSmokeSpec).toContain("live native Home exposes the selected course catalog");
     expect(liveSmokeSpec).toContain('["/admin", "/checkout", "/mobile-flashcards"]');
   });
 
