@@ -176,6 +176,29 @@ jobs:
             adb shell uiautomator dump /sdcard/intellectx-window.xml >/dev/null 2>&1 || true
             adb shell cat /sdcard/intellectx-window.xml > "$UI_DUMP" 2>/dev/null || true
 
+            # An IntellectX crash/ANR is a real product failure. Check it before
+            # matching the product name so an Android error dialog cannot count
+            # as a successful WebView render.
+            if grep -Eq "IntellectX (isn't responding|keeps stopping)" "$UI_DUMP"; then
+              echo "IntellectX exposed an Android crash/ANR dialog during WebView verification."
+              cat "$UI_DUMP" || true
+              adb logcat -d | tail -n 300 || true
+              exit 1
+            fi
+
+            # The headless Google-APIs emulator can occasionally surface a
+            # Pixel Launcher ANR over an otherwise healthy foreground app. Only
+            # recover from that known system-app dialog; never dismiss a generic
+            # ANR that could belong to IntellectX or another dependency.
+            if grep -Eq "Pixel Launcher (isn't responding|keeps stopping)" "$UI_DUMP"; then
+              echo "Pixel Launcher ANR obscured IntellectX; dismissing only the launcher failure and restoring the app."
+              adb shell am force-stop com.google.android.apps.nexuslauncher || true
+              adb shell input keyevent 4 || true
+              adb shell am start -n com.intellectx.app/.MainActivity >/dev/null || true
+              sleep 2
+              continue
+            fi
+
             if grep -Eq 'Continue on this device|Create a local learner profile|Choose your courses|Your courses|IntellectX' "$UI_DUMP"; then
               rendered=true
               break
@@ -185,7 +208,7 @@ jobs:
           done
 
           if [ "$rendered" != "true" ]; then
-            echo "The production remote WebView did not expose an IntellectX screen within 60 seconds."
+            echo "The production remote WebView did not expose an IntellectX screen within the verification retry window."
             cat "$UI_DUMP" || true
             adb logcat -d | tail -n 300 || true
             exit 1
