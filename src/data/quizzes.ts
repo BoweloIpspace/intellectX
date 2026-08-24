@@ -6,6 +6,8 @@ export type QuizQuestion = {
   choices: string[];
   answerIndex: number;
   explanation: string;
+  diagramPath?: string;
+  diagramAlt?: string;
 };
 
 export type Quiz = {
@@ -79,12 +81,12 @@ export const quizzes: Quiz[] = [
     questions: [
       {
         id: "q1",
-        prompt: "What is the main purpose of an argument map?",
+        prompt: "What is the best first step when mapping an argument?",
         choices: [
-          "To make an argument look more complex.",
-          "To separate claims, evidence, assumptions, and objections.",
-          "To remove uncertainty from a topic.",
-          "To replace source checking.",
+          "Identify the main conclusion and the claims offered to support it.",
+          "Decide whether you agree with the author.",
+          "Rewrite every sentence in simpler words.",
+          "Count how many examples appear.",
         ],
         answerIndex: -1,
         explanation: "",
@@ -118,25 +120,13 @@ export const quizzes: Quiz[] = [
   {
     id: "exam-accelerator-check",
     courseId: "exam-accelerator",
-    lessonId: "diagnostic-review",
+    lessonId: "retrieval-loops",
     title: "Exam Accelerator Check",
     difficulty: "Challenge",
     estimatedTime: "8 min",
     questions: [
       {
         id: "q1",
-        prompt: "Why start with a diagnostic before building an exam plan?",
-        choices: [
-          "It finds the highest-value gaps under realistic conditions.",
-          "It removes the need for revision.",
-          "It guarantees a perfect score.",
-          "It makes spaced repetition unnecessary.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
-      {
-        id: "q2",
         prompt: "What does active recall force you to do?",
         choices: [
           "Recognize familiar wording.",
@@ -148,13 +138,25 @@ export const quizzes: Quiz[] = [
         explanation: "",
       },
       {
-        id: "q3",
+        id: "q2",
         prompt: "What should you review after a timed practice set?",
         choices: [
           "Only the final score.",
           "Decisions, pacing, accuracy, and alternate paths.",
           "Nothing until exam day.",
           "Only questions you answered correctly.",
+        ],
+        answerIndex: -1,
+        explanation: "",
+      },
+      {
+        id: "q3",
+        prompt: "Which approach best improves weak topics after practice?",
+        choices: [
+          "Repeat the same easy questions until confidence rises.",
+          "Diagnose the error, repair the concept, then retest under retrieval.",
+          "Read the mark scheme without attempting again.",
+          "Switch topics whenever a mistake feels uncomfortable.",
         ],
         answerIndex: -1,
         explanation: "",
