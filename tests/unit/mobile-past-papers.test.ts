@@ -19,20 +19,25 @@ describe("native past paper flow", () => {
     expect(backend).toContain("export const getPastPaperAnswer");
   });
 
-  it("makes past-paper-only courses selectable and reachable from the native course flow", () => {
+  it("makes past-paper-only courses selectable and exposes learner-visible paper counts", () => {
+    const backend = source("convex/pastPapers.ts");
     const mobileCourses = source("src/components/education/mobile-quizzes-section.tsx");
 
-    expect(mobileCourses).toContain("convexApi.pastPapers.listPastPaperCourseIds");
-    expect(mobileCourses).toContain("pastPaperCourseIds.includes(course.id)");
+    expect(backend).toContain("export const listPastPaperCourseSummaries");
+    expect(backend).toContain("paperCount");
+    expect(mobileCourses).toContain("convexApi.pastPapers.listPastPaperCourseSummaries");
+    expect(mobileCourses).toContain("getCoursePaperCount");
     expect(mobileCourses).toContain("/mobile-past-papers?course=");
     expect(mobileCourses).toContain("Past Papers");
   });
 
-  it("reveals answers on demand and never navigates back to the web course surface", () => {
+  it("reveals answers on demand, persists paper position, and never navigates back to the web course surface", () => {
     const runner = source("src/components/education/mobile-past-papers.tsx");
 
     expect(runner).toContain("convexApi.pastPapers.getPastPaperAnswer");
     expect(runner).toContain(': "skip"');
+    expect(runner).toContain("readMobilePastPaperProgress");
+    expect(runner).toContain("writeMobilePastPaperProgress");
     expect(runner).toContain("/mobile-past-papers?course=");
     expect(runner).not.toContain("/courses/");
   });

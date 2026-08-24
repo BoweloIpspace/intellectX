@@ -11,6 +11,15 @@ on:
       - "capacitor.config.ts"
       - "package.json"
       - "package-lock.json"
+      - "convex/pastPapers.ts"
+      - "src/app/mobile-*/**"
+      - "src/app/quiz/**"
+      - "src/components/education/mobile-*.tsx"
+      - "src/components/education/quiz-page-content.tsx"
+      - "src/components/education/secure-quiz-player.tsx"
+      - "src/lib/mobile-*.ts"
+      - "src/lib/local-learner-profile-data.ts"
+      - "src/lib/feature-scope.ts"
 
 permissions:
   contents: read

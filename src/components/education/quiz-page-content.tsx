@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Quiz } from "@/data/quizzes";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
+import { writeMobileStudyActivity } from "@/lib/mobile-study-state";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -13,9 +14,17 @@ type QuizPageContentProps = {
   quiz: Quiz;
   courseId: string;
   mobileRequested: boolean;
+  mobileReturnHref?: string;
+  mobileReturnLabel?: string;
 };
 
-export function QuizPageContent({ quiz, courseId, mobileRequested }: QuizPageContentProps) {
+export function QuizPageContent({
+  quiz,
+  courseId,
+  mobileRequested,
+  mobileReturnHref,
+  mobileReturnLabel,
+}: QuizPageContentProps) {
   const [nativeMobile, setNativeMobile] = useState(false);
 
   useEffect(() => {
@@ -23,6 +32,23 @@ export function QuizPageContent({ quiz, courseId, mobileRequested }: QuizPageCon
   }, []);
 
   const mobileSurface = mobileRequested || nativeMobile;
+
+  useEffect(() => {
+    if (!mobileSurface) return;
+
+    writeMobileStudyActivity({
+      kind: "quiz",
+      href: `${window.location.pathname}${window.location.search}`,
+      title: quiz.title,
+      subtitle: "Continue your in-progress quiz",
+      courseId,
+      quizId: quiz.id,
+      updatedAt: Date.now(),
+    });
+  }, [courseId, mobileSurface, quiz.id, quiz.title]);
+
+  const returnHref = mobileSurface ? mobileReturnHref ?? `/mobile-quizzes?course=${encodeURIComponent(courseId)}` : `/courses/${courseId}`;
+  const returnLabel = mobileSurface ? mobileReturnLabel ?? "Back to course" : "Back to course";
 
   return (
     <PageShell surface={mobileSurface ? "mobile" : "web"}>
@@ -41,16 +67,14 @@ export function QuizPageContent({ quiz, courseId, mobileRequested }: QuizPageCon
         </h1>
         <p className={mobileSurface ? "text-muted-foreground mb-4 text-sm leading-5" : "text-muted-foreground mb-8 leading-6"}>
           {mobileSurface
-            ? "Choose an answer, check the explanation, then continue."
+            ? "Choose an answer, check the explanation, then continue. Your unfinished quiz is saved on this device."
             : "Select an answer, check your result, and use the feedback to close the learning loop. Completed attempts are saved so your scores and learning activity can appear across IntellectX."}
         </p>
         <div className={mobileSurface ? "mobile-quiz-player" : undefined}>
           <SecureQuizPlayer quiz={quiz} surface={mobileSurface ? "mobile" : "web"} />
         </div>
         <Button className="mt-4 min-h-11" variant="ghost" asChild>
-          <Link href={mobileSurface ? "/mobile-quizzes" : `/courses/${courseId}`}>
-            {mobileSurface ? "Back to mobile quizzes" : "Back to course"}
-          </Link>
+          <Link href={returnHref}>{returnLabel}</Link>
         </Button>
       </section>
     </PageShell>

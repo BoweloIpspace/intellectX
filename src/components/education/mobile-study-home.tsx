@@ -6,25 +6,66 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
 import { loadCourseSelection } from "@/lib/course-selection";
+import { convexApi } from "@/lib/convex-api";
+import { convexEnv } from "@/lib/education-data";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
-import { useLearnerCatalog } from "@/lib/learner-catalog-client";
+import { type LearnerCatalog, useLearnerCatalog } from "@/lib/learner-catalog-client";
 import { getLearnerSession } from "@/lib/learner-session";
 import {
+  MOBILE_STUDY_STATE_CHANGE_EVENT,
+  readMobilePastPaperProgresses,
+  readMobileQuizProgress,
+  readMobileStudyActivity,
+  type MobileStudyActivity,
+} from "@/lib/mobile-study-state";
+import { useQuery } from "convex/react";
+import {
   ArrowRightIcon,
+  BookOpenCheckIcon,
   BookOpenIcon,
   BookOpenTextIcon,
+  FileTextIcon,
   Layers3Icon,
+  PlayCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+type PastPaperCourseSummary = {
+  courseStableId: string;
+  paperCount: number;
+};
+
 export function MobileStudyHome() {
+  if (!convexEnv.isConfigured) {
+    return <MobileStudyHomeContent pastPaperSummaries={[]} />;
+  }
+
+  return <ConfiguredMobileStudyHome />;
+}
+
+function ConfiguredMobileStudyHome() {
+  const summaries = useQuery(convexApi.pastPapers.listPastPaperCourseSummaries, {}) as
+    | PastPaperCourseSummary[]
+    | undefined;
+
+  return <MobileStudyHomeContent pastPaperSummaries={summaries ?? []} pastPapersLoading={summaries === undefined} />;
+}
+
+function MobileStudyHomeContent({
+  pastPaperSummaries,
+  pastPapersLoading = false,
+}: {
+  pastPaperSummaries: PastPaperCourseSummary[];
+  pastPapersLoading?: boolean;
+}) {
   const router = useRouter();
   const auth = useLearnerAuthRuntime();
   const catalog = useLearnerCatalog();
   const [nativeAppSurface, setNativeAppSurface] = useState<boolean | null>(null);
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[] | null>(null);
+  const [lastActivity, setLastActivity] = useState<MobileStudyActivity | null>(null);
 
   useEffect(() => {
     const native = isMobileAppRuntime();
@@ -57,16 +98,66 @@ export function MobileStudyHome() {
     setSelectedCourseIds(selection.selectedCourseIds);
   }, [auth.isLoaded, auth.isSignedIn, router]);
 
+  useEffect(() => {
+    function syncActivity() {
+      setLastActivity(readMobileStudyActivity());
+    }
+
+    syncActivity();
+    window.addEventListener(MOBILE_STUDY_STATE_CHANGE_EVENT, syncActivity);
+    window.addEventListener("storage", syncActivity);
+    return () => {
+      window.removeEventListener(MOBILE_STUDY_STATE_CHANGE_EVENT, syncActivity);
+      window.removeEventListener("storage", syncActivity);
+    };
+  }, []);
+
+  const paperCountByCourse = useMemo(
+    () => new Map(pastPaperSummaries.map((summary) => [summary.courseStableId, summary.paperCount])),
+    [pastPaperSummaries],
+  );
   const selectedCourses = useMemo(() => {
     if (!selectedCourseIds) return [];
     return catalog.courses.filter((course) => selectedCourseIds.includes(course.id));
   }, [catalog.courses, selectedCourseIds]);
 
+  const resumableActivity = useMemo(() => {
+    if (!selectedCourseIds) return null;
+
+    if (lastActivity?.courseId && !selectedCourseIds.includes(lastActivity.courseId)) {
+      return null;
+    }
+
+    if (lastActivity?.kind === "quiz" && lastActivity.quizId) {
+      return readMobileQuizProgress(lastActivity.quizId) ? lastActivity : null;
+    }
+
+    if (lastActivity?.kind === "past-paper" && lastActivity.paperId) {
+      const progress = readMobilePastPaperProgresses().find((item) => item.paperId === lastActivity.paperId);
+      return progress && !progress.finished ? lastActivity : null;
+    }
+
+    const unfinishedPaper = readMobilePastPaperProgresses().find(
+      (progress) => !progress.finished && selectedCourseIds.includes(progress.courseId),
+    );
+    if (!unfinishedPaper) return null;
+
+    return {
+      kind: "past-paper" as const,
+      href: `/mobile-past-papers/${unfinishedPaper.paperId}`,
+      title: unfinishedPaper.title,
+      subtitle: `Resume at question ${unfinishedPaper.currentIndex + 1}`,
+      courseId: unfinishedPaper.courseId,
+      paperId: unfinishedPaper.paperId,
+      updatedAt: unfinishedPaper.updatedAt,
+    };
+  }, [lastActivity, selectedCourseIds]);
+
   if (nativeAppSurface === false) {
     return <WebMobileStudyPreview />;
   }
 
-  if (nativeAppSurface === null || catalog.isLoading || selectedCourseIds === null) {
+  if (nativeAppSurface === null || catalog.isLoading || pastPapersLoading || selectedCourseIds === null) {
     return (
       <div className="flex min-h-48 items-center justify-center">
         <AppLoadingSpinner label="Loading your courses" showLabel />
@@ -78,12 +169,13 @@ export function MobileStudyHome() {
     return (
       <section className="rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
         <BookOpenIcon className="mx-auto size-6" />
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Choose your courses</h1>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Selected courses are unavailable</h1>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Pick the courses you want on your mobile Home screen before starting quizzes.
+          Your saved courses are no longer available in the current learner catalog. Choose from the published study
+          content instead.
         </p>
         <Button asChild className="mt-5 w-full">
-          <Link href="/mobile-quizzes?setup=1">Choose courses</Link>
+          <Link href="/mobile-quizzes?setup=1">Choose available courses</Link>
         </Button>
       </section>
     );
@@ -97,13 +189,50 @@ export function MobileStudyHome() {
         </Badge>
         <h1 className="text-3xl leading-[1.08] font-medium tracking-tight">Your courses</h1>
         <p className="text-muted-foreground text-base leading-7">
-          Open a course, choose a topic, then pick a quiz for that topic.
+          Open a course to continue with quizzes, past papers, or both.
         </p>
       </section>
 
+      {resumableActivity ? (
+        <section className="mb-5 rounded-lg border border-primary/25 bg-primary/5 p-5 shadow-sm" aria-label="Resume study">
+          <div className="flex items-start gap-3">
+            <span className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-full">
+              <PlayCircleIcon className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Resume study</p>
+              <h2 className="mt-1 font-semibold tracking-tight">{resumableActivity.title}</h2>
+              {resumableActivity.subtitle ? (
+                <p className="text-muted-foreground mt-1 text-sm">{resumableActivity.subtitle}</p>
+              ) : null}
+            </div>
+          </div>
+          <Button asChild className="mt-4 min-h-11 w-full">
+            <Link href={resumableActivity.href}>Continue</Link>
+          </Button>
+        </section>
+      ) : null}
+
       <section className="grid gap-3">
         {selectedCourses.map((course) => {
-          const topicCount = catalog.lessons.filter((lesson) => lesson.courseId === course.id).length;
+          const topicIds = new Set(
+            catalog.lessons
+              .filter(
+                (lesson) =>
+                  lesson.courseId === course.id &&
+                  catalog.quizzes.some((quiz) => quiz.courseId === course.id && quiz.lessonId === lesson.id),
+              )
+              .map((lesson) => lesson.id),
+          );
+          const quizCount = catalog.quizzes.filter((quiz) => quiz.courseId === course.id).length;
+          const paperCount = paperCountByCourse.get(course.id) ?? 0;
+          const contentSummary = [
+            quizCount > 0 ? `${quizCount} ${quizCount === 1 ? "quiz" : "quizzes"}` : null,
+            paperCount > 0 ? `${paperCount} past ${paperCount === 1 ? "paper" : "papers"}` : null,
+          ]
+            .filter(Boolean)
+            .join(" · ");
+          const Icon = paperCount > 0 && quizCount === 0 ? FileTextIcon : quizCount > 0 ? BookOpenCheckIcon : BookOpenIcon;
 
           return (
             <Link
@@ -112,13 +241,14 @@ export function MobileStudyHome() {
               className="animate-widget flex min-h-36 items-center gap-4 rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-card/60"
             >
               <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-full">
-                <BookOpenIcon className="size-5" />
+                <Icon className="size-5" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-lg font-semibold tracking-tight text-foreground">{course.title}</span>
                 <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
                 <span className="text-muted-foreground mt-2 block text-xs">
-                  {topicCount} {topicCount === 1 ? "topic" : "topics"}
+                  {contentSummary || "No published study content"}
+                  {topicIds.size > 0 ? ` · ${topicIds.size} ${topicIds.size === 1 ? "topic" : "topics"}` : ""}
                 </span>
               </span>
               <ArrowRightIcon className="size-5 shrink-0" />

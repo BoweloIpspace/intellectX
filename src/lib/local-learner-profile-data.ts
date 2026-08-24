@@ -5,6 +5,9 @@ const PROFILE_DATA_KEYS = [
   "intellectx:academic-profile",
   "intellectx:quiz-attempt-history",
   "intellectx:lesson-progress-history",
+  "intellectx:mobile-study-activity",
+  "intellectx:past-paper-progress",
+  "intellectx:quiz-progress",
 ] as const;
 
 const PROFILE_DATA_EVENTS = [
@@ -12,6 +15,7 @@ const PROFILE_DATA_EVENTS = [
   "intellectx:academic-profile-change",
   "intellectx-quiz-attempt-history-change",
   "intellectx-lesson-progress-history-change",
+  "intellectx:mobile-study-state-change",
 ] as const;
 
 const PROFILE_SNAPSHOT_PREFIX = "intellectx:local-profile-data:";
