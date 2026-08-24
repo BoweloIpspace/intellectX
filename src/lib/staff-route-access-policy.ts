@@ -38,6 +38,11 @@ const staffRouteRequirements: Record<string, StaffRouteRequirement> = {
     allowedRoles: [ADMIN],
     knownRoute: true,
   },
+  "/admin/past-papers": {
+    area: "admin",
+    allowedRoles: [ADMIN],
+    knownRoute: true,
+  },
   "/admin/instructors": {
     area: "admin",
     allowedRoles: [ADMIN],
