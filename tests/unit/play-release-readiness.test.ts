@@ -23,6 +23,7 @@ const mobileProgressPageSource = readSource("src/app/mobile-progress/page.tsx");
 const mobileProfilePageSource = readSource("src/app/mobile-profile/page.tsx");
 const featureScopeSource = readSource("src/lib/feature-scope.ts");
 const androidBuildSource = readSource("android/app/build.gradle");
+const androidReleaseWorkflowSource = readSource(".github/workflows/android-release-aab.yml");
 const gitignoreSource = readSource(".gitignore");
 
 describe("Google Play release-readiness contracts", () => {
@@ -78,6 +79,12 @@ describe("Google Play release-readiness contracts", () => {
     expect(androidBuildSource).toContain("!uploadStoreFileRef.isFile()");
     expect(androidBuildSource).toContain("signingConfig signingConfigs.release");
     expect(androidBuildSource).not.toContain("signingConfig signingConfigs.debug");
+
+    expect(androidReleaseWorkflowSource).toContain("Verify signed release fails closed without credentials");
+    expect(androidReleaseWorkflowSource).toContain('INTELLECTX_REQUIRE_RELEASE_SIGNING: "true"');
+    expect(androidReleaseWorkflowSource).toContain(
+      "Signed Android release required, but upload-key credentials are not fully configured.",
+    );
 
     expect(gitignoreSource).toContain("*.jks");
     expect(gitignoreSource).toContain("*.keystore");
