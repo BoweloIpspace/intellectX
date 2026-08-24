@@ -1,5 +1,3 @@
-"use client";
-
 export const MOBILE_SHELL_VERSION_STORAGE_KEY = "intellectx:native-shell-version";
 export const MOBILE_MIN_SUPPORTED_SHELL_VERSION = "1.0.0";
 
