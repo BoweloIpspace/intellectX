@@ -1,6 +1,7 @@
 import { internalMutationGeneric } from "convex/server";
 import { v } from "convex/values";
 
+export const BIOLOGY_COURSE_STABLE_ID = "bgcse-biology";
 export const BIOLOGY_2019_PAPER_STABLE_ID = "bgcse-biology-2019-paper-3";
 export const BIOLOGY_2019_QUESTION_STABLE_IDS = [
   "bgcse-bio-2019-p3-q1",
@@ -25,7 +26,12 @@ export const reconcile = internalMutationGeneric({
   args: { reset: v.optional(v.boolean()) },
   handler: async (ctx, args) => {
     const result = {
-      paper: { markedSeedManaged: 0, duplicateRowsRemoved: 0 },
+      paper: {
+        markedSeedManaged: 0,
+        duplicateRowsRemoved: 0,
+        staleRowsRemoved: 0,
+        staleRowsProtectedByManualQuestions: 0,
+      },
       questions: { markedSeedManaged: 0, duplicateRowsRemoved: 0, staleRowsRemoved: 0 },
     };
 
@@ -74,12 +80,42 @@ export const reconcile = internalMutationGeneric({
       for (const question of allQuestionsForPaper) {
         const looksLikeLegacyBiologySeed = question.stableId.startsWith("bgcse-bio-2019-p3-");
         const isObsoleteSeedRow = question.seedManaged === true && !expectedQuestionIds.has(question.stableId);
-        const isObsoleteLegacySeedRow = looksLikeLegacyBiologySeed && !expectedQuestionIds.has(question.stableId);
+        const isObsoleteLegacySeedRow =
+          question.seedManaged !== false && looksLikeLegacyBiologySeed && !expectedQuestionIds.has(question.stableId);
 
         if (isObsoleteSeedRow || isObsoleteLegacySeedRow) {
           await ctx.db.delete(question._id);
           result.questions.staleRowsRemoved += 1;
         }
+      }
+
+      const allBiologyPapers = await ctx.db
+        .query("pastPapers")
+        .withIndex("by_course_stable_id", (q: any) => q.eq("courseStableId", BIOLOGY_COURSE_STABLE_ID))
+        .collect();
+
+      for (const paper of allBiologyPapers) {
+        if (paper.stableId === BIOLOGY_2019_PAPER_STABLE_ID || paper.seedManaged !== true) continue;
+
+        const childQuestions = await ctx.db
+          .query("pastPaperQuestions")
+          .withIndex("by_paper_stable_id", (q: any) => q.eq("paperStableId", paper.stableId))
+          .collect();
+        const hasManualQuestions = childQuestions.some((question: any) => question.seedManaged === false);
+
+        if (hasManualQuestions) {
+          result.paper.staleRowsProtectedByManualQuestions += 1;
+          continue;
+        }
+
+        for (const question of childQuestions) {
+          if (question.seedManaged === true) {
+            await ctx.db.delete(question._id);
+            result.questions.staleRowsRemoved += 1;
+          }
+        }
+        await ctx.db.delete(paper._id);
+        result.paper.staleRowsRemoved += 1;
       }
     }
 
