@@ -16,11 +16,16 @@ export type QuizQuestionResult = {
   correct: boolean;
 };
 
+export function isStructuredQuizQuestion(question: Pick<AuthoritativeQuizQuestionRecord, "choices">) {
+  return question.choices.length === 0;
+}
+
 export function toLearnerQuizQuestionPayload(question: AuthoritativeQuizQuestionRecord) {
   return {
     stableId: question.stableId,
     prompt: question.prompt,
     choices: [...question.choices],
+    questionType: isStructuredQuizQuestion(question) ? ("structured" as const) : ("mcq" as const),
     order: question.order,
   };
 }
@@ -44,11 +49,34 @@ export function validateQuizAnswer(question: AuthoritativeQuizQuestionRecord, an
     throw new Error(`Quiz answer for ${question.stableId} must be an integer.`);
   }
 
+  if (isStructuredQuizQuestion(question)) {
+    if (answer !== -1) {
+      throw new Error(`Structured quiz question ${question.stableId} does not accept an MCQ answer index.`);
+    }
+    return -1;
+  }
+
   if (answer < -1 || answer >= question.choices.length) {
     throw new Error(`Quiz answer for ${question.stableId} is out of range.`);
   }
 
   return answer;
+}
+
+export function revealStructuredQuizAnswer(question: AuthoritativeQuizQuestionRecord) {
+  if (!isStructuredQuizQuestion(question)) {
+    throw new Error("This quiz question is multiple choice and does not have a revealable model answer.");
+  }
+
+  const modelAnswer = question.explanation.trim();
+  if (!modelAnswer) {
+    throw new Error("A model answer has not been published for this structured question.");
+  }
+
+  return {
+    questionId: question.stableId,
+    modelAnswer,
+  };
 }
 
 export function gradeQuizAnswers(questions: readonly AuthoritativeQuizQuestionRecord[], answers: readonly number[]) {
@@ -61,13 +89,17 @@ export function gradeQuizAnswers(questions: readonly AuthoritativeQuizQuestionRe
   }
 
   const normalizedAnswers = questions.map((question, index) => validateQuizAnswer(question, answers[index]));
-  const score = normalizedAnswers.reduce(
-    (total, answer, index) => total + (answer === questions[index].answerIndex ? 1 : 0),
+  const gradableQuestions = questions
+    .map((question, index) => ({ question, index }))
+    .filter(({ question }) => !isStructuredQuizQuestion(question));
+
+  const score = gradableQuestions.reduce(
+    (total, { question, index }) => total + (normalizedAnswers[index] === question.answerIndex ? 1 : 0),
     0,
   );
-  const totalQuestions = questions.length;
-  const percentage = Math.round((score / totalQuestions) * 100);
-  const questionResults: QuizQuestionResult[] = questions.map((question, index) => ({
+  const totalQuestions = gradableQuestions.length;
+  const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+  const questionResults: QuizQuestionResult[] = gradableQuestions.map(({ question, index }) => ({
     questionId: question.stableId,
     answerIndex: question.answerIndex,
     explanation: question.explanation,
