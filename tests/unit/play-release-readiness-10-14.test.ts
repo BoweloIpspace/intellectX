@@ -53,7 +53,7 @@ describe("Google Play release-readiness items 10-14", () => {
 
   it("exposes a minimal public release-health contract without accepting an invalid build SHA", () => {
     const validSha = "a".repeat(40);
-    expect(getPublicReleaseHealth({ VERCEL_GIT_COMMIT_SHA: validSha } as NodeJS.ProcessEnv)).toEqual({
+    expect(getPublicReleaseHealth({ ...process.env, VERCEL_GIT_COMMIT_SHA: validSha })).toEqual({
       status: "ok",
       app: "IntellectX",
       commitSha: validSha,
@@ -61,7 +61,7 @@ describe("Google Play release-readiness items 10-14", () => {
       mobileArchitecture: "remote-webview",
       mobileCommerceEnabled: false,
     });
-    expect(getPublicReleaseHealth({ VERCEL_GIT_COMMIT_SHA: "not-a-sha" } as NodeJS.ProcessEnv).commitSha).toBeNull();
+    expect(getPublicReleaseHealth({ ...process.env, VERCEL_GIT_COMMIT_SHA: "not-a-sha" }).commitSha).toBeNull();
   });
 
   it("adds an exact-SHA live production smoke gate without starting a local server", () => {
