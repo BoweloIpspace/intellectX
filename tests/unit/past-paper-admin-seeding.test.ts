@@ -42,12 +42,15 @@ describe("Past Paper admin and release seeding", () => {
     }
   });
 
-  it("cascade-deletes questions with a paper and records append-only audit events", () => {
+  it("cascade-deletes questions with a paper and records every destructive audit event", () => {
     const admin = source("convex/adminPastPapers.ts");
     const deleteSection = admin.slice(admin.indexOf("export const deletePastPaper"), admin.indexOf("export const createPastPaperQuestion"));
 
     expect(deleteSection).toContain('query("pastPaperQuestions")');
-    expect(deleteSection).toContain("for (const question of questions) await ctx.db.delete(question._id)");
+    expect(deleteSection).toContain("for (const question of questions)");
+    expect(deleteSection).toContain('eventType: "past_paper_question.deleted"');
+    expect(deleteSection).toContain("before: questionSnapshot(question)");
+    expect(deleteSection).toContain("await ctx.db.delete(question._id)");
     expect(deleteSection).toContain("await ctx.db.delete(paper._id)");
     expect(admin).toContain('eventType: "past_paper.created"');
     expect(admin).toContain('eventType: "past_paper.updated"');
@@ -57,7 +60,16 @@ describe("Past Paper admin and release seeding", () => {
     expect(admin).toContain('eventType: "past_paper_question.deleted"');
   });
 
-  it("provides a deterministic release seed with explicit reset cleanup", () => {
+  it("rejects unsafe or inaccessible stimulus asset references at the admin backend", () => {
+    const admin = source("convex/adminPastPapers.ts");
+
+    expect(admin).toContain('stimulusAssetPath.startsWith("//")');
+    expect(admin).toContain('stimulusAssetPath.includes("\\\\")');
+    expect(admin).toContain('stimulusAssetPath.split("/").includes("..")');
+    expect(admin).toContain("Stimulus asset accessibility description is required when an asset path is provided.");
+  });
+
+  it("provides a deterministic release seed with explicitly scoped reset cleanup", () => {
     const releaseSeed = source("convex/seedBiologyPastPaperRelease.ts");
     const reconcile = source("convex/seedBiologyPastPaperReconcile.ts");
 
@@ -70,6 +82,7 @@ describe("Past Paper admin and release seeding", () => {
     expect(reconcile).toContain("duplicateRowsRemoved");
     expect(reconcile).toContain("staleRowsRemoved");
     expect(reconcile).toContain('question.stableId.startsWith("bgcse-bio-2019-p3-")');
+    expect(reconcile).toContain("isBiology2019Paper3ResetCandidate(paper)");
   });
 
   it("keeps learner paper payloads answer-free until Reveal answer", () => {
