@@ -12,9 +12,8 @@ import {
   loadCourseSelection,
   toggleSelectedCourse,
 } from "@/lib/course-selection";
-import { convexEnv } from "@/lib/education-data";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
-import { buildLearnerCatalog, type LearnerCatalog, useLearnerCatalog } from "@/lib/learner-catalog-client";
+import { type LearnerCatalog, useLearnerCatalog } from "@/lib/learner-catalog-client";
 import { getLearnerSession } from "@/lib/learner-session";
 import {
   QUIZ_ATTEMPT_HISTORY_CHANGE_EVENT,
@@ -36,7 +35,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 export function MobileQuizzesSection() {
-  const catalog = convexEnv.isConfigured ? useLearnerCatalog() : buildLearnerCatalog();
+  const catalog = useLearnerCatalog();
   const [nativeAppSurface, setNativeAppSurface] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -108,7 +107,7 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   const selectedCourses = catalog.courses.filter((course) => selection.selectedCourseIds.includes(course.id));
 
   function toggleCourse(courseId: string) {
-    const update = toggleSelectedCourse(courseId, selection);
+    const update = toggleSelectedCourse(courseId, selection ?? undefined);
     setSelection(update.selection);
     setSelectionError(update.error ?? null);
   }
