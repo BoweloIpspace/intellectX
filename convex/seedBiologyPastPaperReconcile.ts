@@ -1,17 +1,17 @@
 import { internalMutationGeneric } from "convex/server";
 import { v } from "convex/values";
+import {
+  BIOLOGY_2019_PAPER_STABLE_ID,
+  BIOLOGY_2019_QUESTION_STABLE_IDS,
+  BIOLOGY_COURSE_STABLE_ID,
+  isBiology2019Paper3ResetCandidate,
+} from "./lib/biologyPastPaperSeedPolicy";
 
-export const BIOLOGY_COURSE_STABLE_ID = "bgcse-biology";
-export const BIOLOGY_2019_PAPER_STABLE_ID = "bgcse-biology-2019-paper-3";
-export const BIOLOGY_2019_QUESTION_STABLE_IDS = [
-  "bgcse-bio-2019-p3-q1",
-  "bgcse-bio-2019-p3-q2",
-  "bgcse-bio-2019-p3-q3",
-  "bgcse-bio-2019-p3-q4",
-  "bgcse-bio-2019-p3-q5",
-  "bgcse-bio-2019-p3-q6",
-  "bgcse-bio-2019-p3-q7",
-] as const;
+export {
+  BIOLOGY_2019_PAPER_STABLE_ID,
+  BIOLOGY_2019_QUESTION_STABLE_IDS,
+  BIOLOGY_COURSE_STABLE_ID,
+} from "./lib/biologyPastPaperSeedPolicy";
 
 const expectedQuestionIds = new Set<string>(BIOLOGY_2019_QUESTION_STABLE_IDS);
 
@@ -95,7 +95,7 @@ export const reconcile = internalMutationGeneric({
         .collect();
 
       for (const paper of allBiologyPapers) {
-        if (paper.stableId === BIOLOGY_2019_PAPER_STABLE_ID || paper.seedManaged !== true) continue;
+        if (!isBiology2019Paper3ResetCandidate(paper)) continue;
 
         const childQuestions = await ctx.db
           .query("pastPaperQuestions")
