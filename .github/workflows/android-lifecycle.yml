@@ -153,6 +153,34 @@ jobs:
           printf '%s\n' "$START_OUTPUT" | grep -q "Status: ok"
           adb shell dumpsys activity activities | grep -q "com.intellectx.app"
 
+      - name: Verify production WebView renders
+        shell: bash
+        run: |
+          set -euo pipefail
+          UI_DUMP="$RUNNER_TEMP/intellectx-window.xml"
+          rendered=false
+
+          for attempt in $(seq 1 30); do
+            adb shell uiautomator dump /sdcard/intellectx-window.xml >/dev/null 2>&1 || true
+            adb shell cat /sdcard/intellectx-window.xml > "$UI_DUMP" 2>/dev/null || true
+
+            if grep -Eq 'Continue on this device|Create a local learner profile|Choose your courses|Your courses|IntellectX' "$UI_DUMP"; then
+              rendered=true
+              break
+            fi
+
+            sleep 2
+          done
+
+          if [ "$rendered" != "true" ]; then
+            echo "The production remote WebView did not expose an IntellectX screen within 60 seconds."
+            cat "$UI_DUMP" || true
+            adb logcat -d | tail -n 300 || true
+            exit 1
+          fi
+
+          echo "Production IntellectX WebView rendered successfully."
+
       - name: Exercise Android Back and relaunch
         shell: bash
         run: |
@@ -171,5 +199,6 @@ jobs:
             android/app/build/reports/androidTests/**
             android/app/build/outputs/androidTest-results/**
             ${{ runner.temp }}/intellectx-emulator.log
+            ${{ runner.temp }}/intellectx-window.xml
           if-no-files-found: warn
           retention-days: 14
