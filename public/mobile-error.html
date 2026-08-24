@@ -4,138 +4,54 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
-    <title>IntellectX is temporarily unavailable</title>
+    <title>intellectX - offline</title>
     <style>
       :root {
         color-scheme: light dark;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #f3f3f3;
-        color: #111111;
+        --bg:#f8fafc;--text:#0f172a;--muted:#64748b;--accent:#0f172a;--accent-text:#fff;
       }
-      * { box-sizing: border-box; }
-      body {
-        min-height: 100dvh;
-        margin: 0;
-        display: grid;
-        place-items: center;
-        padding: calc(1.5rem + env(safe-area-inset-top)) calc(1.25rem + env(safe-area-inset-right)) calc(1.5rem + env(safe-area-inset-bottom)) calc(1.25rem + env(safe-area-inset-left));
-        background: #f3f3f3;
-        color: #111111;
-      }
-      main {
-        width: min(100%, 28rem);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 1rem;
-        background: rgba(255, 255, 255, 0.88);
-        padding: 1.5rem;
-        box-shadow: 0 1.5rem 4rem rgba(15, 23, 42, 0.1);
-        text-align: center;
-      }
-      .mark {
-        width: 3rem;
-        height: 3rem;
-        margin: 0 auto 1rem;
-        border-radius: 999px;
-        display: grid;
-        place-items: center;
-        background: #111111;
-        color: #ffffff;
-        font-size: 1.25rem;
-        font-weight: 700;
-      }
-      h1 { margin: 0; font-size: 1.75rem; line-height: 1.1; letter-spacing: -0.04em; }
-      p { margin: 1rem 0 0; color: #666666; font-size: 0.95rem; line-height: 1.6; }
-      button {
-        width: 100%;
-        min-height: 3rem;
-        margin-top: 1.5rem;
-        border: 0;
-        border-radius: 0.75rem;
-        background: #111111;
-        color: #ffffff;
-        font: inherit;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      button:disabled { cursor: progress; opacity: 0.72; }
-      @media (prefers-color-scheme: dark) {
-        :root, body { background: #252525; color: #f7f7f7; }
-        main { border-color: rgba(255, 255, 255, 0.1); background: rgba(33, 33, 33, 0.94); }
-        .mark, button { background: #f7f7f7; color: #191919; }
-        p { color: #b8b8b8; }
-      }
+      *{box-sizing:border-box} body{min-height:100dvh;margin:0;display:flex;flex-direction:column;padding:calc(1.25rem + env(safe-area-inset-top)) calc(1.25rem + env(safe-area-inset-right)) calc(1.5rem + env(safe-area-inset-bottom)) calc(1.25rem + env(safe-area-inset-left));background:radial-gradient(circle at 85% 12%,rgba(34,211,238,.17),transparent 32%),var(--bg);color:var(--text)}
+      header{min-height:2.75rem;display:flex;align-items:center;font-size:1.25rem;font-weight:750;letter-spacing:-.04em} main{width:min(100%,28rem);margin:auto;padding:1.5rem 0}.icon{width:3.5rem;height:3.5rem;display:grid;place-items:center;border-radius:1.1rem;background:var(--accent);color:var(--accent-text)}svg{width:1.6rem;height:1.6rem}h1{margin:1.5rem 0 0;font-size:clamp(2rem,9vw,2.75rem);line-height:1.02;letter-spacing:-.055em}p{margin:1rem 0 0;color:var(--muted);font-size:.95rem;line-height:1.65}.local-note{margin-top:1.25rem;border-left:2px solid #22d3ee;padding-left:.9rem;font-size:.82rem}button{width:100%;min-height:3.15rem;margin-top:1.75rem;border:0;border-radius:1rem;background:var(--accent);color:var(--accent-text);font:inherit;font-weight:700;cursor:pointer}button:disabled{cursor:progress;opacity:.66}
+      @media(prefers-color-scheme:dark){:root{--bg:#0b1120;--text:#f8fafc;--muted:#94a3b8;--accent:#f8fafc;--accent-text:#0f172a}}
     </style>
   </head>
   <body>
+    <header>intellectX</header>
     <main>
-      <div class="mark" aria-hidden="true">IX</div>
-      <h1>IntellectX is temporarily unavailable</h1>
-      <p id="status" aria-live="polite">Check your internet connection and try again. Your local study data remains on this device while the app reconnects.</p>
+      <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 9a9 9 0 0 1 13 0"/><path d="M8.5 12a5 5 0 0 1 7 0"/><path d="M11.5 15.2a1 1 0 0 1 1 0"/><path d="m4 4 16 16"/></svg></div>
+      <h1>You're offline.</h1>
+      <p id="status" aria-live="polite">Check your connection, then try again. intellectX will reconnect without clearing your study progress.</p>
+      <p class="local-note">Your selected courses, quiz progress, and local learner profile remain on this device.</p>
       <button id="retry" type="button">Try again</button>
     </main>
     <script>
-      (() => {
-        const productionOrigin = "https://intellectx-lovat.vercel.app";
-        const errorParams = new URLSearchParams(window.location.search);
-        const shellVersion = errorParams.get("nativeShellVersion")?.trim();
-        const productionMobileUrl = new URL("/mobile-study", productionOrigin);
-        if (shellVersion) {
-          productionMobileUrl.searchParams.set("nativeShellVersion", shellVersion);
+      (()=>{
+        const productionOrigin="https://intellectx-lovat.vercel.app";
+        const errorParams=new URLSearchParams(window.location.search);
+        const shellVersion=errorParams.get("nativeShellVersion")?.trim();
+        const productionLoginUrl=new URL("/login",productionOrigin);
+        if(shellVersion)productionLoginUrl.searchParams.set("nativeShellVersion",shellVersion);
+        const retryButton=document.getElementById("retry");
+        const status=document.getElementById("status");
+        const maxProbeAttempts=5,probeTimeoutMs=3500,probeDelayMs=1500;
+        const delay=(milliseconds)=>new Promise((resolve)=>window.setTimeout(resolve,milliseconds));
+        async function productionIsReachable(attempt){
+          const controller=new AbortController();
+          const timeout=window.setTimeout(()=>controller.abort(),probeTimeoutMs);
+          const probeUrl=new URL("/robots.txt",productionOrigin);
+          probeUrl.searchParams.set("intellectxReconnect",`${Date.now()}-${attempt}`);
+          try{await fetch(probeUrl,{method:"GET",mode:"no-cors",cache:"no-store",credentials:"omit",signal:controller.signal});return true}catch{return false}finally{window.clearTimeout(timeout)}
         }
-
-        const retryButton = document.getElementById("retry");
-        const status = document.getElementById("status");
-        const maxProbeAttempts = 5;
-        const probeTimeoutMs = 3500;
-        const probeDelayMs = 1500;
-
-        const delay = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
-
-        async function productionIsReachable(attempt) {
-          const controller = new AbortController();
-          const timeout = window.setTimeout(() => controller.abort(), probeTimeoutMs);
-          const probeUrl = new URL("/robots.txt", productionOrigin);
-          probeUrl.searchParams.set("intellectxReconnect", `${Date.now()}-${attempt}`);
-
-          try {
-            await fetch(probeUrl, {
-              method: "GET",
-              mode: "no-cors",
-              cache: "no-store",
-              credentials: "omit",
-              signal: controller.signal,
-            });
-            return true;
-          } catch {
-            return false;
-          } finally {
-            window.clearTimeout(timeout);
+        async function retry(){
+          retryButton.disabled=true;status.textContent="Reconnecting to intellectX...";
+          for(let attempt=1;attempt<=maxProbeAttempts;attempt+=1){
+            if(await productionIsReachable(attempt)){status.textContent="Connection restored. Returning to login...";window.location.replace(productionLoginUrl.toString());return}
+            if(attempt<maxProbeAttempts)await delay(probeDelayMs);
           }
+          status.textContent="Still offline. Check Wi-Fi or mobile data, then try again.";retryButton.disabled=false;
         }
-
-        async function retry() {
-          retryButton.disabled = true;
-          status.textContent = "Reconnecting to IntellectX…";
-
-          for (let attempt = 1; attempt <= maxProbeAttempts; attempt += 1) {
-            if (await productionIsReachable(attempt)) {
-              status.textContent = "Connection restored. Reopening IntellectX…";
-              window.location.replace(productionMobileUrl.toString());
-              return;
-            }
-
-            if (attempt < maxProbeAttempts) {
-              await delay(probeDelayMs);
-            }
-          }
-
-          status.textContent = "IntellectX is still offline. Check your connection, then try again.";
-          retryButton.disabled = false;
-        }
-
-        retryButton.addEventListener("click", () => {
-          void retry();
-        });
+        retryButton.addEventListener("click",()=>void retry());
       })();
     </script>
   </body>
