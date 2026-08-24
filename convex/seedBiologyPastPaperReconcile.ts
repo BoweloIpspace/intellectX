@@ -109,7 +109,10 @@ export const reconcile = internalMutationGeneric({
         }
 
         for (const question of childQuestions) {
-          if (question.seedManaged === true) {
+          // Rows from before seed provenance existed have seedManaged undefined.
+          // Once the parent is positively identified as a stale 2019 seed row,
+          // every non-manual child must be removed with it to avoid orphans.
+          if (question.seedManaged !== false) {
             await ctx.db.delete(question._id);
             result.questions.staleRowsRemoved += 1;
           }
