@@ -69,6 +69,7 @@ jobs:
             "build-tools;36.0.0" \
             "system-images;android-35;google_apis;x86_64"
           echo "AVDMANAGER=$AVDMANAGER" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
 
       - name: Sync Capacitor Android project
         run: npx cap sync android
