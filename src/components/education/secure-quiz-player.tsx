@@ -9,6 +9,11 @@ import type { Quiz } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
 import { getCurrentConvexLearnerArgs } from "@/lib/convex-learner-identity";
 import { convexEnv } from "@/lib/education-data";
+import {
+  clearMobileQuizProgress,
+  readMobileQuizProgress,
+  writeMobileQuizProgress,
+} from "@/lib/mobile-study-state";
 import { readQuizAttemptHistory, writeQuizAttemptHistory } from "@/lib/quiz-attempt-history";
 import { cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
@@ -184,7 +189,9 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
   const [checking, setChecking] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [resumeHydrated, setResumeHydrated] = useState(surface !== "mobile");
   const submissionIdRef = useRef(createSubmissionId());
+  const deadlineAtRef = useRef(Date.now() + initialTimeInSeconds * 1000);
   const completionGuardRef = useRef(false);
   const questionHeadingRef = useRef<HTMLHeadingElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -195,13 +202,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
   const progress = hasQuestions ? ((currentIndex + (results ? 1 : 0)) / quiz.questions.length) * 100 : 0;
   const questionHeadingId = question ? `quiz-${quiz.id}-question-${question.id}` : undefined;
   const timerAnnouncement =
-    surface === "web"
-      ? timeLeft === 60
-        ? "One minute remaining"
-        : timeLeft === 10
-          ? "Ten seconds remaining"
-          : ""
-      : "";
+    timeLeft === 60 ? "One minute remaining" : timeLeft === 10 ? "Ten seconds remaining" : "";
 
   const completeQuiz = useCallback(
     async (nextAnswers: number[], timedOut = false) => {
@@ -224,6 +225,9 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
         };
 
         writeQuizAttemptHistory([historyItem, ...readQuizAttemptHistory()]);
+        if (surface === "mobile") {
+          clearMobileQuizProgress();
+        }
         setResults({ ...authoritativeResult, timedOut });
       } catch (error) {
         completionGuardRef.current = false;
@@ -232,37 +236,79 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
         setCompleting(false);
       }
     },
-    [hasQuestions, onComplete, quiz.questions, results],
+    [hasQuestions, onComplete, quiz.questions, results, surface],
   );
 
   useEffect(() => {
+    setResumeHydrated(false);
     setCurrentIndex(0);
     setSelectedIndex(null);
     setSubmitted(false);
     setAnswers([]);
     setFeedback(null);
     setResults(null);
-    setTimeLeft(initialTimeInSeconds);
     setChecking(false);
     setCompleting(false);
     setErrorMessage(null);
     submissionIdRef.current = createSubmissionId();
+    deadlineAtRef.current = Date.now() + initialTimeInSeconds * 1000;
+    setTimeLeft(initialTimeInSeconds);
     completionGuardRef.current = false;
     shouldFocusQuestionRef.current = false;
-  }, [initialTimeInSeconds, quiz.id]);
+
+    if (surface === "mobile" && hasQuestions) {
+      const saved = readMobileQuizProgress(quiz.id);
+      if (saved && saved.currentIndex >= 0 && saved.currentIndex < quiz.questions.length) {
+        const savedQuestion = quiz.questions[saved.currentIndex];
+        const validSelectedIndex =
+          saved.selectedIndex !== null && saved.selectedIndex >= 0 && saved.selectedIndex < savedQuestion.choices.length
+            ? saved.selectedIndex
+            : null;
+        setCurrentIndex(saved.currentIndex);
+        setSelectedIndex(validSelectedIndex);
+        setSubmitted(saved.submitted && validSelectedIndex !== null);
+        setAnswers(saved.answers.slice(0, quiz.questions.length));
+        setFeedback(saved.submitted && validSelectedIndex !== null ? saved.feedback : null);
+        submissionIdRef.current = saved.submissionId;
+        deadlineAtRef.current = saved.deadlineAt;
+        setTimeLeft(Math.max(0, Math.ceil((saved.deadlineAt - Date.now()) / 1000)));
+        shouldFocusQuestionRef.current = true;
+      }
+    }
+
+    setResumeHydrated(true);
+  }, [hasQuestions, initialTimeInSeconds, quiz.id, quiz.questions, surface]);
 
   useEffect(() => {
-    if (!hasQuestions || results) return;
+    if (!resumeHydrated || !hasQuestions || results) return;
 
-    const timer = window.setInterval(() => {
-      setTimeLeft((value) => Math.max(value - 1, 0));
-    }, 1000);
+    const updateRemainingTime = () => {
+      setTimeLeft(Math.max(0, Math.ceil((deadlineAtRef.current - Date.now()) / 1000)));
+    };
 
+    updateRemainingTime();
+    const timer = window.setInterval(updateRemainingTime, 1000);
     return () => window.clearInterval(timer);
-  }, [hasQuestions, results]);
+  }, [hasQuestions, results, resumeHydrated]);
 
   useEffect(() => {
-    if (!hasQuestions || timeLeft !== 0 || results || completing) return;
+    if (surface !== "mobile" || !resumeHydrated || !hasQuestions || results) return;
+
+    writeMobileQuizProgress({
+      quizId: quiz.id,
+      currentIndex,
+      selectedIndex,
+      submitted,
+      answers,
+      feedback,
+      deadlineAt: deadlineAtRef.current,
+      submissionId: submissionIdRef.current,
+      updatedAt: Date.now(),
+    });
+  }, [answers, currentIndex, feedback, hasQuestions, quiz.id, results, resumeHydrated, selectedIndex, submitted, surface]);
+
+  useEffect(() => {
+    if (!resumeHydrated || !hasQuestions || timeLeft !== 0 || results || completing) return;
 
     const timedAnswers = [...answers];
 
@@ -271,22 +317,22 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
     }
 
     void completeQuiz(timedAnswers, true);
-  }, [answers, completeQuiz, completing, currentIndex, hasQuestions, results, selectedIndex, submitted, timeLeft]);
+  }, [answers, completeQuiz, completing, currentIndex, hasQuestions, results, resumeHydrated, selectedIndex, submitted, timeLeft]);
 
   useEffect(() => {
-    if (surface !== "web" || results || !shouldFocusQuestionRef.current) return;
+    if (results || !shouldFocusQuestionRef.current) return;
 
     shouldFocusQuestionRef.current = false;
     const frame = window.requestAnimationFrame(() => questionHeadingRef.current?.focus());
     return () => window.cancelAnimationFrame(frame);
-  }, [currentIndex, results, surface]);
+  }, [currentIndex, results]);
 
   useEffect(() => {
-    if (surface !== "web" || !results) return;
+    if (!results) return;
 
     const frame = window.requestAnimationFrame(() => resultsHeadingRef.current?.focus());
     return () => window.cancelAnimationFrame(frame);
-  }, [results, surface]);
+  }, [results]);
 
   async function submitAnswer() {
     if (!question || selectedIndex === null || checking || completing) return;
@@ -317,10 +363,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
       return;
     }
 
-    if (surface === "web") {
-      shouldFocusQuestionRef.current = true;
-    }
-
+    shouldFocusQuestionRef.current = true;
     setCurrentIndex((value) => value + 1);
     setSelectedIndex(null);
     setSubmitted(false);
@@ -329,22 +372,23 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
   }
 
   function restartQuiz() {
-    if (surface === "web") {
-      shouldFocusQuestionRef.current = true;
-    }
-
+    shouldFocusQuestionRef.current = true;
     setCurrentIndex(0);
     setSelectedIndex(null);
     setSubmitted(false);
     setAnswers([]);
     setFeedback(null);
     setResults(null);
+    deadlineAtRef.current = Date.now() + initialTimeInSeconds * 1000;
     setTimeLeft(initialTimeInSeconds);
     setChecking(false);
     setCompleting(false);
     setErrorMessage(null);
     submissionIdRef.current = createSubmissionId();
     completionGuardRef.current = false;
+    if (surface === "mobile") {
+      clearMobileQuizProgress();
+    }
   }
 
   function selectChoice(index: number) {
@@ -354,7 +398,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
   }
 
   function handleChoiceKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
-    if (surface !== "web" || submitted || checking || completing || !question) return;
+    if (submitted || checking || completing || !question) return;
 
     const lastIndex = question.choices.length - 1;
     let nextIndex: number | null = null;
@@ -453,17 +497,12 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
             <span>
               Question {currentIndex + 1} of {quiz.questions.length}
             </span>
-            <span
-              {...(surface === "mobile" ? { "aria-live": "polite" as const } : {})}
-              className={cn("shrink-0 font-medium", timeLeft <= 60 && "text-destructive")}
-            >
+            <span className={cn("shrink-0 font-medium", timeLeft <= 60 && "text-destructive")}>
               Time left: {formatQuizTime(timeLeft)}
             </span>
-            {surface === "web" ? (
-              <span className="sr-only" aria-live="polite" aria-atomic="true">
-                {timerAnnouncement}
-              </span>
-            ) : null}
+            <span className="sr-only" aria-live="polite" aria-atomic="true">
+              {timerAnnouncement}
+            </span>
           </div>
           <ProgressBar value={progress} />
         </div>
@@ -477,23 +516,11 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
         </h2>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div
-          className="grid gap-3"
-          {...(surface === "web" ? { role: "radiogroup", "aria-labelledby": questionHeadingId } : {})}
-        >
+        <div className="grid gap-3" role="radiogroup" aria-labelledby={questionHeadingId}>
           {question.choices.map((choice, index) => {
             const selected = selectedIndex === index;
             const correct = submitted && feedback?.answerIndex === index;
             const incorrect = submitted && selected && feedback?.answerIndex !== index;
-            const webRadioProps =
-              surface === "web"
-                ? {
-                    role: "radio" as const,
-                    "aria-checked": selected,
-                    "aria-disabled": submitted || checking || completing || undefined,
-                    tabIndex: selectedIndex === null ? (index === 0 ? 0 : -1) : selected ? 0 : -1,
-                  }
-                : {};
 
             return (
               <button
@@ -502,9 +529,12 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
                   choiceRefs.current[index] = element;
                 }}
                 type="button"
+                role="radio"
+                aria-checked={selected}
+                aria-disabled={submitted || checking || completing || undefined}
+                tabIndex={selectedIndex === null ? (index === 0 ? 0 : -1) : selected ? 0 : -1}
                 onClick={() => selectChoice(index)}
                 onKeyDown={(event) => handleChoiceKeyDown(event, index)}
-                {...webRadioProps}
                 className={cn(
                   "flex min-h-14 w-full touch-manipulation items-center gap-3 rounded-lg border bg-white/70 px-4 py-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 dark:bg-card/70",
                   selected && "border-primary bg-secondary/70",
