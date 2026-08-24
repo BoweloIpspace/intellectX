@@ -9,6 +9,14 @@ import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
 import { getLearnerSession } from "@/lib/learner-session";
+import {
+  MOBILE_STUDY_STATE_CHANGE_EVENT,
+  clearMobilePastPaperProgress,
+  readMobilePastPaperProgress,
+  readMobilePastPaperProgresses,
+  writeMobilePastPaperProgress,
+  writeMobileStudyActivity,
+} from "@/lib/mobile-study-state";
 import { useQuery } from "convex/react";
 import {
   ArrowLeftIcon,
@@ -107,6 +115,17 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
   const papers = useQuery(convexApi.pastPapers.getPastPapersByCourse, { courseStableId: courseId }) as
     | PastPaperSummary[]
     | undefined;
+  const [, setProgressRevision] = useState(0);
+
+  useEffect(() => {
+    const syncProgress = () => setProgressRevision((value) => value + 1);
+    window.addEventListener(MOBILE_STUDY_STATE_CHANGE_EVENT, syncProgress);
+    window.addEventListener("storage", syncProgress);
+    return () => {
+      window.removeEventListener(MOBILE_STUDY_STATE_CHANGE_EVENT, syncProgress);
+      window.removeEventListener("storage", syncProgress);
+    };
+  }, []);
 
   if (!ready || papers === undefined) {
     return (
@@ -115,6 +134,8 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
       </div>
     );
   }
+
+  const progressByPaperId = new Map(readMobilePastPaperProgresses().map((progress) => [progress.paperId, progress]));
 
   return (
     <section className="space-y-4">
@@ -129,7 +150,8 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
         <Badge variant="secondary">Past Papers</Badge>
         <h1 className="mt-4 text-2xl font-semibold tracking-tight">Exam practice</h1>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Work through a paper one question at a time, then reveal the model answer when you are ready.
+          Work through a paper one question at a time, then reveal the model answer when you are ready. Unfinished papers
+          resume on this device.
         </p>
       </div>
 
@@ -139,26 +161,36 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
         </div>
       ) : (
         <div className="grid gap-3">
-          {papers.map((paper) => (
-            <Link
-              key={paper.stableId}
-              href={`/mobile-past-papers/${paper.stableId}`}
-              className="animate-widget flex min-h-32 items-center gap-4 rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-card/60"
-            >
-              <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-full">
-                <FileTextIcon className="size-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-lg font-semibold tracking-tight">{paper.title}</span>
-                <span className="text-muted-foreground mt-1 block text-sm">{paper.paperCode}</span>
-                <span className="text-muted-foreground mt-2 block text-xs">
-                  {paper.session ?? paper.year}
-                  {paper.estimatedTime ? ` · ${paper.estimatedTime}` : ""}
+          {papers.map((paper) => {
+            const savedProgress = progressByPaperId.get(paper.stableId);
+            const progressLabel = savedProgress
+              ? savedProgress.finished
+                ? "Completed on this device"
+                : `Resume at question ${savedProgress.currentIndex + 1}`
+              : null;
+
+            return (
+              <Link
+                key={paper.stableId}
+                href={`/mobile-past-papers/${paper.stableId}`}
+                className="animate-widget flex min-h-32 items-center gap-4 rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-card/60"
+              >
+                <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-full">
+                  <FileTextIcon className="size-5" />
                 </span>
-              </span>
-              <ArrowRightIcon className="size-5 shrink-0" />
-            </Link>
-          ))}
+                <span className="min-w-0 flex-1">
+                  <span className="block text-lg font-semibold tracking-tight">{paper.title}</span>
+                  <span className="text-muted-foreground mt-1 block text-sm">{paper.paperCode}</span>
+                  <span className="text-muted-foreground mt-2 block text-xs">
+                    {paper.session ?? paper.year}
+                    {paper.estimatedTime ? ` · ${paper.estimatedTime}` : ""}
+                  </span>
+                  {progressLabel ? <span className="mt-2 block text-xs font-medium text-primary">{progressLabel}</span> : null}
+                </span>
+                <ArrowRightIcon className="size-5 shrink-0" />
+              </Link>
+            );
+          })}
         </div>
       )}
     </section>
@@ -179,6 +211,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState<Set<string>>(() => new Set());
   const [finished, setFinished] = useState(false);
+  const [progressHydrated, setProgressHydrated] = useState(false);
   const current = paper?.questions[currentIndex];
   const isRevealed = current ? revealed.has(current.stableId) : false;
   const answer = useQuery(
@@ -191,7 +224,51 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
     [paper?.questions, revealed],
   );
 
-  if (!ready || paper === undefined) {
+  useEffect(() => {
+    if (!paper) return;
+
+    const saved = readMobilePastPaperProgress(paper.stableId);
+    if (saved) {
+      const maxIndex = Math.max(0, paper.questions.length - 1);
+      setCurrentIndex(Math.min(Math.max(0, saved.currentIndex), maxIndex));
+      const validQuestionIds = new Set(paper.questions.map((question) => question.stableId));
+      setRevealed(new Set(saved.revealedQuestionIds.filter((questionId) => validQuestionIds.has(questionId))));
+      setFinished(saved.finished && paper.questions.length > 0);
+    } else {
+      setCurrentIndex(0);
+      setRevealed(new Set());
+      setFinished(false);
+    }
+    setProgressHydrated(true);
+  }, [paper]);
+
+  useEffect(() => {
+    if (!paper || !progressHydrated || paper.questions.length === 0) return;
+
+    writeMobilePastPaperProgress({
+      paperId: paper.stableId,
+      courseId: paper.courseStableId,
+      title: paper.title,
+      currentIndex,
+      revealedQuestionIds: Array.from(revealed),
+      finished,
+      updatedAt: Date.now(),
+    });
+
+    if (!finished) {
+      writeMobileStudyActivity({
+        kind: "past-paper",
+        href: `/mobile-past-papers/${paper.stableId}`,
+        title: paper.title,
+        subtitle: `Question ${currentIndex + 1} of ${paper.questions.length}`,
+        courseId: paper.courseStableId,
+        paperId: paper.stableId,
+        updatedAt: Date.now(),
+      });
+    }
+  }, [currentIndex, finished, paper, progressHydrated, revealed]);
+
+  if (!ready || paper === undefined || (paper && !progressHydrated)) {
     return (
       <div className="flex min-h-48 items-center justify-center">
         <AppLoadingSpinner label="Loading paper" showLabel />
@@ -222,6 +299,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
   }
 
   function restart() {
+    clearMobilePastPaperProgress(paper.stableId);
     setCurrentIndex(0);
     setRevealed(new Set());
     setFinished(false);
@@ -234,7 +312,8 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
           <CheckCircle2Icon className="mx-auto size-10" />
           <h1 className="mt-4 text-2xl font-semibold tracking-tight">Paper complete</h1>
           <p className="text-muted-foreground mt-2 text-sm leading-6">
-            You worked through all {paper.questions.length} questions and revealed {revealedCount} model answers.
+            You worked through all {paper.questions.length} questions and revealed {revealedCount} model answers. This
+            completion is saved on this device.
           </p>
         </div>
         <Button className="min-h-12 w-full" onClick={restart}>
