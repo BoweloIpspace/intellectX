@@ -12,7 +12,7 @@ import {
 } from "@/lib/convex-learner-identity";
 import { LEARNER_SESSION_CHANGE_EVENT } from "@/lib/learner-session";
 import { usesAuthenticatedConvexQuizGrading } from "@/lib/mobile-quiz-grading-mode";
-import { mergeQuizAttemptHistory, type QuizAttemptHistoryItem } from "@/lib/quiz-attempt-history";
+import type { QuizAttemptHistoryItem } from "@/lib/quiz-attempt-history";
 import { useConvex } from "convex/react";
 import { useEffect, useState } from "react";
 
