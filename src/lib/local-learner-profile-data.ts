@@ -53,7 +53,10 @@ export function saveLocalLearnerProfileData(userKey: string, storage: Storage = 
   }
 
   storage.setItem(getLocalLearnerProfileSnapshotKey(userKey), JSON.stringify(snapshot));
-  clearActiveLocalLearnerData(storage);
+  // Do not emit individual data-change events during a profile transition.
+  // The learner-session change is the authoritative transition signal and
+  // prevents sync components from observing cleared data under the old user.
+  clearActiveLocalLearnerData(storage, { dispatch: false });
 }
 
 export function restoreLocalLearnerProfileData(userKey: string, storage: Storage = window.localStorage) {
@@ -61,7 +64,6 @@ export function restoreLocalLearnerProfileData(userKey: string, storage: Storage
   const serialized = storage.getItem(getLocalLearnerProfileSnapshotKey(userKey));
 
   if (!serialized) {
-    dispatchProfileDataChanged();
     return;
   }
 
@@ -81,12 +83,9 @@ export function restoreLocalLearnerProfileData(userKey: string, storage: Storage
   } catch {
     storage.removeItem(getLocalLearnerProfileSnapshotKey(userKey));
   }
-
-  dispatchProfileDataChanged();
 }
 
 export function deleteLocalLearnerProfileData(userKey: string, storage: Storage = window.localStorage) {
   clearActiveLocalLearnerData(storage, { dispatch: false });
   storage.removeItem(getLocalLearnerProfileSnapshotKey(userKey));
-  dispatchProfileDataChanged();
 }
