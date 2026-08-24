@@ -70,6 +70,21 @@ test("fresh native production launch reaches device-local learner login", async 
   await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
 });
 
+test("live native Home exposes the selected course catalog", async ({ page }) => {
+  await simulateNativeAndroid(page);
+  await seedLocalLearner(page);
+
+  await page.goto("/mobile-study");
+  await expect(page).toHaveURL(/\/mobile-study$/);
+  await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
+  const selectedCourse = page.getByRole("link", { name: /AI Study Systems/i });
+  await expect(selectedCourse).toBeVisible();
+  await selectedCourse.click();
+  await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems$/);
+  await expect(page.getByRole("heading", { name: "AI Study Systems", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Prompting for Learning/i })).toBeVisible();
+});
+
 test("live native progress and profile remain inside the learner product", async ({ page }) => {
   await simulateNativeAndroid(page);
   await seedLocalLearner(page);
