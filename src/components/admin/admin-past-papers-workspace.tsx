@@ -461,10 +461,12 @@ function ConvexAdminPastPapersWorkspace() {
           <CardTitle className="flex items-center gap-2"><FilePlus2Icon className="size-5" /> Create Past Paper</CardTitle>
         </CardHeader>
         <CardContent>
-          <PaperFormFields form={createForm} setForm={setCreateForm} courses={courses} stableIdEditable />
-          <Button type="button" className="mt-4" disabled={busy || courses.length === 0} onClick={(event) => void handleCreatePaper(event as unknown as FormEvent)}>
-            Create paper
-          </Button>
+          <form onSubmit={handleCreatePaper} className="grid gap-4">
+            <PaperFormFields form={createForm} setForm={setCreateForm} courses={courses} stableIdEditable />
+            <Button type="submit" className="w-fit" disabled={busy || courses.length === 0}>
+              Create paper
+            </Button>
+          </form>
         </CardContent>
       </Card>
 
@@ -611,6 +613,8 @@ function QuestionFormFields({
     setForm({ ...form, [key]: value });
   }
 
+  const stimulusAssetRequiresAlt = form.stimulusAssetPath.trim().length > 0;
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Field label="Stable ID"><input className={inputClassName} value={form.stableId} disabled={!stableIdEditable} onChange={(event) => patch("stableId", event.target.value)} required /></Field>
@@ -627,7 +631,7 @@ function QuestionFormFields({
       <Field label="Stimulus title"><input className={inputClassName} value={form.stimulusTitle} onChange={(event) => patch("stimulusTitle", event.target.value)} /></Field>
       <Field label="Stimulus asset path"><input className={inputClassName} placeholder="/past-papers/.../figure.svg" value={form.stimulusAssetPath} onChange={(event) => patch("stimulusAssetPath", event.target.value)} /></Field>
       <div className="md:col-span-2"><Field label="Stimulus text"><textarea className={textareaClassName} value={form.stimulusText} onChange={(event) => patch("stimulusText", event.target.value)} /></Field></div>
-      <div className="md:col-span-2"><Field label="Stimulus accessibility description"><textarea className={textareaClassName} value={form.stimulusAssetAlt} onChange={(event) => patch("stimulusAssetAlt", event.target.value)} /></Field></div>
+      <div className="md:col-span-2"><Field label="Stimulus accessibility description"><textarea className={textareaClassName} value={form.stimulusAssetAlt} onChange={(event) => patch("stimulusAssetAlt", event.target.value)} required={stimulusAssetRequiresAlt} /></Field></div>
       <div className="md:col-span-2"><Field label="Model answer"><textarea className={textareaClassName} value={form.modelAnswer} onChange={(event) => patch("modelAnswer", event.target.value)} required /></Field></div>
       <div className="md:col-span-2"><Field label="Explanation"><textarea className={textareaClassName} value={form.explanation} onChange={(event) => patch("explanation", event.target.value)} /></Field></div>
     </div>
