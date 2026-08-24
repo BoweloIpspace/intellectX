@@ -43,6 +43,7 @@ export function resolveCapacitorServerUrl(
 const nativeShellVersion = process.env.INTELLECTX_VERSION_NAME?.trim() || "1.0.0";
 const capacitorEnvironment = resolveCapacitorEnvironment();
 const serverUrl = resolveCapacitorServerUrl(capacitorEnvironment);
+const encodedNativeShellVersion = encodeURIComponent(nativeShellVersion);
 
 const config: CapacitorConfig = {
   appId: INTELLECTX_APP_ID,
@@ -51,8 +52,8 @@ const config: CapacitorConfig = {
   server: {
     url: serverUrl,
     cleartext: false,
-    appStartPath: `/mobile-study?nativeShellVersion=${encodeURIComponent(nativeShellVersion)}`,
-    errorPath: "mobile-error.html",
+    appStartPath: `/mobile-study?nativeShellVersion=${encodedNativeShellVersion}`,
+    errorPath: `mobile-error.html?nativeShellVersion=${encodedNativeShellVersion}`,
   },
 };
 
