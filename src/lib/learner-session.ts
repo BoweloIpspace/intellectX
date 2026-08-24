@@ -91,7 +91,7 @@ export function createLearnerSession(session: LearnerSession) {
   } else {
     // Invalid/legacy orphaned state must never be inherited by a newly entered
     // email address. A previous valid session is snapshotted above.
-    clearActiveLocalLearnerData();
+    clearActiveLocalLearnerData(window.localStorage, { dispatch: false });
   }
 
   window.localStorage.setItem(LEARNER_SESSION_KEY, JSON.stringify(normalizedSession));
@@ -143,7 +143,7 @@ export function clearLearnerSession(options: { deleteLocalData?: boolean } = {})
       saveLocalLearnerProfileData(userKey);
     }
   } else if (options.deleteLocalData) {
-    clearActiveLocalLearnerData();
+    clearActiveLocalLearnerData(window.localStorage, { dispatch: false });
   }
 
   window.localStorage.removeItem(LEARNER_SESSION_KEY);
