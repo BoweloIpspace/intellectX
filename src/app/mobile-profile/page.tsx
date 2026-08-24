@@ -18,7 +18,7 @@ export default function MobileProfilePage() {
         <Badge variant="secondary" className="uppercase">
           Profile
         </Badge>
-        <h1 className="text-2xl leading-[1.08] font-medium tracking-tight">Learner profile</h1>
+        <h1 className="text-2xl leading-[1.08] font-medium tracking-tight">Quiz learner profile</h1>
         <p className="text-muted-foreground text-sm leading-6">
           Review this learner&apos;s session, saved practice, study preferences, and app build information.
         </p>
