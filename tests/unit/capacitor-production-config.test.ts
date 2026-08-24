@@ -13,9 +13,19 @@ describe("Capacitor production configuration", () => {
   it("keeps the production shell pinned to the IntellectX package and HTTPS production host", () => {
     expect(INTELLECTX_APP_ID).toBe("com.intellectx.app");
     expect(config.appId).toBe(INTELLECTX_APP_ID);
+    expect(config.webDir).toBe("public");
     expect(config.server?.url).toBe(INTELLECTX_PRODUCTION_SERVER_URL);
     expect(config.server?.cleartext).toBe(false);
     expect(config.server?.appStartPath).toMatch(/^\/mobile-study\?nativeShellVersion=/);
+    expect(config.server?.errorPath).toMatch(/^mobile-error\.html\?nativeShellVersion=/);
+
+    const startShellVersion = new URL(config.server?.appStartPath ?? "", INTELLECTX_PRODUCTION_SERVER_URL).searchParams.get(
+      "nativeShellVersion",
+    );
+    const errorShellVersion = new URL(config.server?.errorPath ?? "", "https://localhost/").searchParams.get(
+      "nativeShellVersion",
+    );
+    expect(errorShellVersion).toBe(startShellVersion);
   });
 
   it("defaults to production and rejects unknown environment names", () => {

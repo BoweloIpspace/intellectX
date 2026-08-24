@@ -1,0 +1,43 @@
+name: Release candidate engineering gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/release-candidate-gate.yml"
+      - ".github/workflows/build-test.yml"
+      - ".github/workflows/android-debug-apk.yml"
+      - ".github/workflows/android-release-aab.yml"
+      - ".github/workflows/android-lifecycle.yml"
+      - "scripts/check-android-manifest.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  web-and-tests:
+    uses: ./.github/workflows/build-test.yml
+
+  debug-apk:
+    uses: ./.github/workflows/android-debug-apk.yml
+
+  unsigned-release-aab:
+    uses: ./.github/workflows/android-release-aab.yml
+
+  android-lifecycle:
+    uses: ./.github/workflows/android-lifecycle.yml
+
+  engineering-gate-green:
+    needs:
+      - web-and-tests
+      - debug-apk
+      - unsigned-release-aab
+      - android-lifecycle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm engineering release gate
+        run: |
+          echo "Exact-ref engineering gates 1-11 are green."
+          echo "A signed release AAB and real-device QA remain separate release gates."

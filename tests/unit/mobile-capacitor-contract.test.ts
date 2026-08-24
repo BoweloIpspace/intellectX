@@ -15,18 +15,23 @@ describe("Capacitor mobile launch contract", () => {
     );
     expect(capacitor).toContain("resolveCapacitorServerUrl");
     expect(capacitor).toContain("url: serverUrl");
-    expect(capacitor).toContain("nativeShellVersion");
-    expect(capacitor).toContain('errorPath: "mobile-error.html"');
+    expect(capacitor).toContain("appStartPath: `/mobile-study?nativeShellVersion=${encodedNativeShellVersion}`");
+    expect(capacitor).toContain("errorPath: `mobile-error.html?nativeShellVersion=${encodedNativeShellVersion}`");
     expect(capacitor).toContain("cleartext: false");
     expect(capacitor).not.toContain("_vercel_share");
     expect(capacitor).not.toContain("wary-meerkat-937");
   });
 
-  it("packages a network-failure screen that retries the native Home route", () => {
+  it("packages a bounded network-failure retry that returns to native Home", () => {
     const errorPage = source("public/mobile-error.html");
 
     expect(errorPage).toContain("IntellectX is temporarily unavailable");
-    expect(errorPage).toContain("https://intellectx-lovat.vercel.app/mobile-study");
+    expect(errorPage).toContain('const productionOrigin = "https://intellectx-lovat.vercel.app"');
+    expect(errorPage).toContain('new URL("/mobile-study", productionOrigin)');
+    expect(errorPage).toContain('errorParams.get("nativeShellVersion")');
+    expect(errorPage).toContain("const maxProbeAttempts = 5");
+    expect(errorPage).toContain("await fetch(probeUrl");
+    expect(errorPage).toContain("window.location.replace(productionMobileUrl.toString())");
     expect(errorPage).toContain("Try again");
   });
 });

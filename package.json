@@ -7,7 +7,7 @@
     "prebuild": "npm run check:mobile-prod-env:strict",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "verify": "npm run typecheck && npm run lint && npm run test:unit && npm run build && npm run test:e2e",
