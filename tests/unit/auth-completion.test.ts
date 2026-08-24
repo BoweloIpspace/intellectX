@@ -2,7 +2,10 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { requireClerkJwtIssuerDomain } from "../../convex/lib/authConfigPolicy";
+import {
+  getConvexAuthProviders,
+  requireClerkJwtIssuerDomain,
+} from "../../convex/lib/authConfigPolicy";
 import { isLocalUserKeyFallbackAllowed } from "../../convex/lib/identity";
 
 const learnerOwnedModules = [
@@ -51,11 +54,21 @@ describe("authentication completion contract", () => {
     ).toThrow("CLERK_JWT_ISSUER_DOMAIN must be a valid https URL.");
   });
 
-  it("keeps Convex auth config bound to the validated Clerk issuer and convex audience", () => {
-    const source = readFileSync(path.resolve(process.cwd(), "convex/auth.config.ts"), "utf8");
+  it("keeps optional Convex auth config bound to the validated Clerk issuer and convex audience", () => {
+    expect(getConvexAuthProviders({})).toEqual([]);
+    expect(
+      getConvexAuthProviders({
+        CLERK_JWT_ISSUER_DOMAIN: " https://example.clerk.accounts.dev ",
+      }),
+    ).toEqual([
+      {
+        domain: "https://example.clerk.accounts.dev",
+        applicationID: "convex",
+      },
+    ]);
 
-    expect(source).toContain("requireClerkJwtIssuerDomain()");
-    expect(source).toContain('applicationID: "convex"');
+    const source = readFileSync(path.resolve(process.cwd(), "convex/auth.config.ts"), "utf8");
+    expect(source).toContain("getConvexAuthProviders()");
   });
 
   it("keeps Clerk and Convex wired through ConvexProviderWithClerk", () => {
