@@ -1,6 +1,7 @@
 name: Android debug APK
 
 on:
+  workflow_call:
   workflow_dispatch:
   push:
     branches:
@@ -12,6 +13,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "public/**"
+      - "scripts/check-android-manifest.mjs"
       - "src/**"
   pull_request:
     branches:
@@ -23,6 +25,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "public/**"
+      - "scripts/check-android-manifest.mjs"
       - "src/**"
 
 permissions:
@@ -84,6 +87,22 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon --console=plain assembleDebug
+
+      - name: Verify merged Android manifest policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          MERGED_MANIFEST=""
+          while IFS= read -r candidate; do
+            case "$candidate" in
+              *merged_manifest*|*merged_manifests*|*packaged_manifests*)
+                MERGED_MANIFEST="$candidate"
+                break
+                ;;
+            esac
+          done < <(find android/app/build/intermediates -type f -name AndroidManifest.xml -path '*debug*' | sort)
+          test -n "$MERGED_MANIFEST"
+          node scripts/check-android-manifest.mjs "$MERGED_MANIFEST"
 
       - name: Verify APK
         shell: bash

@@ -1,6 +1,7 @@
 name: Build and test
 
 on:
+  workflow_call:
   push:
     branches:
       - main
@@ -46,7 +47,7 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Lint
+      - name: Lint with zero-warning budget
         run: npm run lint
 
       - name: Unit tests
