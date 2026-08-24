@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { ConvexClientProvider } from "@/components/providers/convex-client-provider";
 import { NativeMobileSurfaceBoundary } from "@/components/providers/native-mobile-surface-boundary";
 import { GlobalNavigationLoader } from "@/components/ui/global-navigation-loader";
+import { INTELLECTX_PUBLIC_SITE_URL } from "@/lib/site-config";
 import { Suspense } from "react";
 import "./globals.css";
 
@@ -19,7 +20,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://intellect-x-coral.vercel.app"),
+  metadataBase: new URL(INTELLECTX_PUBLIC_SITE_URL),
   applicationName: "IntellectX",
   title: {
     default: "IntellectX",
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
   publisher: "IntellectX",
   openGraph: {
     type: "website",
-    url: "https://intellect-x-coral.vercel.app",
+    url: INTELLECTX_PUBLIC_SITE_URL,
     siteName: "IntellectX",
     title: "IntellectX",
     description: "Premium learning paths, course lessons, quizzes, and progress tracking for focused study.",
