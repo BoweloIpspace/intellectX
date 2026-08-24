@@ -33,26 +33,35 @@ async function getVisiblePaper(ctx: any, paperId: string) {
   return course ? paper : null;
 }
 
+async function collectVisiblePastPaperCourseSummaries(ctx: any) {
+  const papers = await ctx.db.query("pastPapers").collect();
+  const counts = new Map<string, number>();
+
+  for (const paper of papers) {
+    if (!paper.published || !hasFreeLearnerAccess(paper)) continue;
+    counts.set(paper.courseStableId, (counts.get(paper.courseStableId) ?? 0) + 1);
+  }
+
+  const summaries: Array<{ courseStableId: string; paperCount: number }> = [];
+  for (const [courseStableId, paperCount] of counts) {
+    if (await getVisibleCourse(ctx, courseStableId)) {
+      summaries.push({ courseStableId, paperCount });
+    }
+  }
+
+  return summaries.sort((left, right) => left.courseStableId.localeCompare(right.courseStableId));
+}
+
+export const listPastPaperCourseSummaries = queryGeneric({
+  args: {},
+  handler: async (ctx) => await collectVisiblePastPaperCourseSummaries(ctx),
+});
+
 export const listPastPaperCourseIds = queryGeneric({
   args: {},
   handler: async (ctx) => {
-    const papers = await ctx.db.query("pastPapers").collect();
-    const candidateCourseIds = Array.from(
-      new Set(
-        papers
-          .filter((paper: any) => paper.published && hasFreeLearnerAccess(paper))
-          .map((paper: any) => paper.courseStableId),
-      ),
-    );
-
-    const visibleCourseIds: string[] = [];
-    for (const courseStableId of candidateCourseIds) {
-      if (await getVisibleCourse(ctx, courseStableId)) {
-        visibleCourseIds.push(courseStableId);
-      }
-    }
-
-    return visibleCourseIds;
+    const summaries = await collectVisiblePastPaperCourseSummaries(ctx);
+    return summaries.map((summary) => summary.courseStableId);
   },
 });
 
