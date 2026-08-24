@@ -94,7 +94,7 @@ describe("Past Paper admin and release seeding", () => {
     expect(learner).toContain("export const getPastPaperAnswer");
   });
 
-  it("wires an admin-only Past Papers workspace to real Convex mutations", () => {
+  it("wires an admin-only Past Papers workspace to real Convex mutations and validated forms", () => {
     const page = source("src/app/admin/past-papers/page.tsx");
     const workspace = source("src/components/admin/admin-past-papers-workspace.tsx");
     const api = source("src/lib/convex-api.ts");
@@ -107,6 +107,9 @@ describe("Past Paper admin and release seeding", () => {
     expect(workspace).toContain("convexApi.adminPastPapers.createPastPaperQuestion");
     expect(workspace).toContain("convexApi.adminPastPapers.updatePastPaperQuestion");
     expect(workspace).toContain("convexApi.adminPastPapers.deletePastPaperQuestion");
+    expect(workspace).toContain('<form onSubmit={handleCreatePaper}');
+    expect(workspace).toContain('type="submit" className="w-fit" disabled={busy || courses.length === 0}');
+    expect(workspace).toContain("required={stimulusAssetRequiresAlt}");
     expect(api).toContain("adminPastPapers:");
     expect(nav).toContain('href="/admin/past-papers"');
   });
