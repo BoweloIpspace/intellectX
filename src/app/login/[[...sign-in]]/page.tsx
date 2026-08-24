@@ -12,12 +12,16 @@ export const metadata: Metadata = {
   description: "Learner login for IntellectX.",
 };
 
-export default async function LoginPage() {
-  // Local-only demo entry into the staff UI. Only ever rendered when Clerk
-  // authentication is not configured and the app is not a production build.
+type LoginPageProps = {
+  searchParams: Promise<{ native?: string; nativeShellVersion?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const nativeLaunch = params.native === "1" || Boolean(params.nativeShellVersion);
   const staffDemoEnabled = isStaffDemoModeEnabled();
 
-  if (isClerkAuthEnabled()) {
+  if (isClerkAuthEnabled() && !nativeLaunch) {
     let authState: Awaited<ReturnType<typeof auth>> | null = null;
 
     try {
