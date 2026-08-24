@@ -12,7 +12,7 @@ import {
   LEARNER_SESSION_CHANGE_EVENT,
   type LearnerSession,
 } from "@/lib/learner-session";
-import { LogOutIcon, MonitorCheckIcon } from "lucide-react";
+import { LogOutIcon, MonitorCheckIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -68,6 +68,7 @@ function ClerkProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
 
 function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
   const [session, setSession] = useState<LearnerSession | null | undefined>(undefined);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   useEffect(() => {
     function syncSession() {
@@ -84,9 +85,21 @@ function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
     };
   }, []);
 
-  function handleLogout() {
-    clearLearnerSession();
+  function goToLogin() {
     window.location.replace(isMobileAppRuntime() ? "/login" : "/");
+  }
+
+  function handleLogout() {
+    // Logging out snapshots this learner's local course/profile/progress state.
+    // Entering the same normalized email later restores that profile without
+    // exposing it to a different local learner on the same device.
+    clearLearnerSession();
+    goToLogin();
+  }
+
+  function handleDeleteProfile() {
+    clearLearnerSession({ deleteLocalData: true });
+    goToLogin();
   }
 
   return (
@@ -106,15 +119,50 @@ function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
               <p className="text-foreground font-medium">{session.name}</p>
               <p>{session.email}</p>
               <p className="capitalize">Role: {session.role}</p>
+              <p className="mt-2 text-xs leading-5">
+                This is a device-local profile. Logging out keeps this profile&apos;s study data isolated on this device;
+                entering the same email later resumes it.
+              </p>
             </div>
-            <Button type="button" variant="outline" className="w-fit" onClick={handleLogout}>
-              <LogOutIcon className="size-4" />
-              Logout
-            </Button>
+            <div className="grid gap-3">
+              <Button type="button" variant="outline" className="w-fit" onClick={handleLogout}>
+                <LogOutIcon className="size-4" />
+                Logout
+              </Button>
+
+              {confirmingDelete ? (
+                <div className="border-destructive/30 bg-destructive/5 grid gap-3 rounded-lg border p-4">
+                  <p className="text-destructive font-medium">Delete this local profile and its study data?</p>
+                  <p>
+                    This removes this profile&apos;s course selection, study profile, quiz history, and lesson progress from
+                    this device. Other local learner profiles are not deleted.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="destructive" onClick={handleDeleteProfile}>
+                      <Trash2Icon className="size-4" />
+                      Delete profile
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => setConfirmingDelete(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive w-fit"
+                  onClick={() => setConfirmingDelete(true)}
+                >
+                  <Trash2Icon className="size-4" />
+                  Delete local profile & data
+                </Button>
+              )}
+            </div>
           </>
         ) : (
           <>
-            <p>No local learner session is active. Login or signup will create one in this browser only.</p>
+            <p>No local learner session is active. Login or signup will create one on this device.</p>
             <Button asChild className="w-fit">
               <Link href="/login">Login</Link>
             </Button>
