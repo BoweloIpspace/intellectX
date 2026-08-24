@@ -9,7 +9,7 @@ import { loadCourseSelection } from "@/lib/course-selection";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
-import { type LearnerCatalog, useLearnerCatalog } from "@/lib/learner-catalog-client";
+import { useLearnerCatalog } from "@/lib/learner-catalog-client";
 import { getLearnerSession } from "@/lib/learner-session";
 import {
   MOBILE_STUDY_STATE_CHANGE_EVENT,
@@ -290,7 +290,8 @@ function WebMobileStudyPreview() {
         </Badge>
         <h1 className="text-3xl leading-[1.08] font-medium tracking-tight">Free mobile study tools</h1>
         <p className="text-muted-foreground text-base leading-7">
-          Browser preview tools for quizzes and flashcards. The native IntellectX app itself is quiz-only.
+          Browser preview tools include quizzes and flashcards. The native IntellectX learner app uses selected courses,
+          quizzes, past papers, Progress, and Profile.
         </p>
       </section>
 
