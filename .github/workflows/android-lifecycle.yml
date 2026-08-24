@@ -304,28 +304,14 @@ jobs:
             exit 1
           fi
 
-          RETRY_POINT="$(python3 - "$OFFLINE_DUMP" <<'PY'
-import re
-import sys
-import xml.etree.ElementTree as ET
-
-root = ET.parse(sys.argv[1]).getroot()
-for node in root.iter("node"):
-    if node.attrib.get("text") != "Try again":
-        continue
-    match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
-    if not match:
-        continue
-    left, top, right, bottom = map(int, match.groups())
-    print(f"{(left + right) // 2} {(top + bottom) // 2}")
-    break
-else:
-    raise SystemExit("Try again button bounds were not found in the offline UI dump")
-PY
-)"
-          read -r RETRY_X RETRY_Y <<< "$RETRY_POINT"
-          test -n "$RETRY_X"
-          test -n "$RETRY_Y"
+          RETRY_BOUNDS="$(sed -n 's/.*text="Try again"[^>]*bounds="\[\([0-9][0-9]*\),\([0-9][0-9]*\)\]\[\([0-9][0-9]*\),\([0-9][0-9]*\)\]".*/\1 \2 \3 \4/p' "$OFFLINE_DUMP")"
+          read -r RETRY_LEFT RETRY_TOP RETRY_RIGHT RETRY_BOTTOM <<< "$RETRY_BOUNDS"
+          test -n "$RETRY_LEFT"
+          test -n "$RETRY_TOP"
+          test -n "$RETRY_RIGHT"
+          test -n "$RETRY_BOTTOM"
+          RETRY_X=$(( (RETRY_LEFT + RETRY_RIGHT) / 2 ))
+          RETRY_Y=$(( (RETRY_TOP + RETRY_BOTTOM) / 2 ))
           adb shell input tap "$RETRY_X" "$RETRY_Y"
 
           recovered=false
