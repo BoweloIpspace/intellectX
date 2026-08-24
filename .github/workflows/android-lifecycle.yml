@@ -77,11 +77,17 @@ jobs:
       - name: Create Android virtual device
         shell: bash
         run: |
+          set -euo pipefail
+          export ANDROID_AVD_HOME="$RUNNER_TEMP/intellectx-avd"
+          mkdir -p "$ANDROID_AVD_HOME"
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
           echo no | "$AVDMANAGER" create avd \
             --force \
             --name intellectx-ci \
             --package "system-images;android-35;google_apis;x86_64" \
             --device pixel_6
+          test -f "$ANDROID_AVD_HOME/intellectx-ci.ini"
+          ls -la "$ANDROID_AVD_HOME"
 
       - name: Boot Android emulator
         shell: bash
@@ -91,6 +97,7 @@ jobs:
           EMULATOR="$ANDROID_HOME/emulator/emulator"
           EMULATOR_LOG="$RUNNER_TEMP/intellectx-emulator.log"
           test -x "$EMULATOR"
+          "$EMULATOR" -list-avds | grep -qx "intellectx-ci"
           nohup "$EMULATOR" \
             -avd intellectx-ci \
             -no-window \
