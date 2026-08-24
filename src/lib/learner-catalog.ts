@@ -39,6 +39,8 @@ export type ConvexQuestionRecord = {
   prompt?: unknown;
   choices?: unknown;
   questionType?: unknown;
+  diagramPath?: unknown;
+  diagramAlt?: unknown;
   order?: unknown;
 };
 
@@ -200,6 +202,8 @@ function normalizeLearnerQuizQuestion(question: ConvexQuestionRecord): QuizQuest
     choices: question.choices,
     answerIndex: -1,
     explanation: "",
+    diagramPath: typeof question.diagramPath === "string" ? question.diagramPath : undefined,
+    diagramAlt: typeof question.diagramAlt === "string" ? question.diagramAlt : undefined,
   };
 }
 
