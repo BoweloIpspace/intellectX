@@ -10,12 +10,13 @@ export const checks = [
   "NEXT_PUBLIC_PAYMENTS_ENABLED",
 ];
 
-export const criticalChecks = [
-  "NEXT_PUBLIC_CONVEX_URL",
+export const clerkChecks = [
   "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
   "CLERK_SECRET_KEY",
   "CLERK_JWT_ISSUER_DOMAIN",
 ];
+
+export const criticalChecks = ["NEXT_PUBLIC_CONVEX_URL", ...clerkChecks];
 
 function hasValue(env, name) {
   const value = env[name];
@@ -79,17 +80,30 @@ export function evaluateProductionEnv(env = process.env) {
 
 export function evaluateMobileLocalProductionEnv(env = process.env) {
   const safety = sharedSafetyErrors(env);
-  const configuredCritical = criticalChecks.filter((name) => hasValue(env, name));
+  const convexConfigured = hasValue(env, "NEXT_PUBLIC_CONVEX_URL");
+  const configuredClerk = clerkChecks.filter((name) => hasValue(env, name));
+  const clerkFullyConfigured = configuredClerk.length === clerkChecks.length;
   const errors = [...safety.errors];
 
-  if (configuredCritical.length > 0 && configuredCritical.length < criticalChecks.length) {
-    const missing = criticalChecks.filter((name) => !hasValue(env, name));
-    errors.push(
-      `production auth/backend configuration must be fully configured or fully absent for local-only mobile mode; missing ${missing.join(", ")}`,
-    );
+  if (configuredClerk.length > 0 && !clerkFullyConfigured) {
+    const missing = clerkChecks.filter((name) => !hasValue(env, name));
+    errors.push(`production Clerk configuration is partial; missing ${missing.join(", ")}`);
   }
 
-  return reportFor(env, errors, safety.warnings, configuredCritical.length === 0 ? "mobile-local" : "full-cloud");
+  if (clerkFullyConfigured && !convexConfigured) {
+    errors.push("full-cloud Clerk mode requires NEXT_PUBLIC_CONVEX_URL");
+  }
+
+  const mode =
+    errors.length > safety.errors.length
+      ? "invalid-partial"
+      : clerkFullyConfigured && convexConfigured
+        ? "full-cloud"
+        : convexConfigured
+          ? "mobile-local-convex"
+          : "mobile-local";
+
+  return reportFor(env, errors, safety.warnings, mode);
 }
 
 export function printProductionEnvReport(report) {
@@ -102,6 +116,8 @@ export function printProductionEnvReport(report) {
   if (report.mode === "full-cloud") {
     console.log("Clerk Convex JWT template: verify manually in Clerk Dashboard; expected template name is convex.");
     console.log("Trusted staff role claim paths: staff.role, metadata.role, publicMetadata.role, appMetadata.role.");
+  } else if (report.mode === "mobile-local-convex") {
+    console.log("Convex-backed mobile mode: learning content uses Convex while learner identity and progress remain device-local.");
   } else {
     console.log("Local-only mobile mode: quiz grading uses the server fallback and learner state remains device-local.");
   }
