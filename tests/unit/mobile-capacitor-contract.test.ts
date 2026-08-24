@@ -7,7 +7,7 @@ function source(file: string) {
 }
 
 describe("Capacitor mobile launch contract", () => {
-  it("launches the production mobile surface with a versioned Android shell", () => {
+  it("launches the production mobile surface at authentication with a versioned Android shell", () => {
     const capacitor = source("capacitor.config.ts");
 
     expect(capacitor).toContain(
@@ -15,23 +15,24 @@ describe("Capacitor mobile launch contract", () => {
     );
     expect(capacitor).toContain("resolveCapacitorServerUrl");
     expect(capacitor).toContain("url: serverUrl");
-    expect(capacitor).toContain("appStartPath: `/mobile-study?nativeShellVersion=${encodedNativeShellVersion}`");
+    expect(capacitor).toContain("appStartPath: `/login?nativeShellVersion=${encodedNativeShellVersion}`");
     expect(capacitor).toContain("errorPath: `mobile-error.html?nativeShellVersion=${encodedNativeShellVersion}`");
     expect(capacitor).toContain("cleartext: false");
     expect(capacitor).not.toContain("_vercel_share");
     expect(capacitor).not.toContain("wary-meerkat-937");
   });
 
-  it("packages a bounded network-failure retry that returns to native Home", () => {
+  it("packages a bounded themed network-failure retry that returns to authentication", () => {
     const errorPage = source("public/mobile-error.html");
 
-    expect(errorPage).toContain("IntellectX is temporarily unavailable");
-    expect(errorPage).toContain('const productionOrigin = "https://intellectx-lovat.vercel.app"');
-    expect(errorPage).toContain('new URL("/mobile-study", productionOrigin)');
+    expect(errorPage).toContain("You're offline.");
+    expect(errorPage).toContain("intellectX");
+    expect(errorPage).toContain('const productionOrigin="https://intellectx-lovat.vercel.app"');
+    expect(errorPage).toContain('new URL("/login",productionOrigin)');
     expect(errorPage).toContain('errorParams.get("nativeShellVersion")');
-    expect(errorPage).toContain("const maxProbeAttempts = 5");
+    expect(errorPage).toContain("const maxProbeAttempts=5");
     expect(errorPage).toContain("await fetch(probeUrl");
-    expect(errorPage).toContain("window.location.replace(productionMobileUrl.toString())");
+    expect(errorPage).toContain("window.location.replace(productionLoginUrl.toString())");
     expect(errorPage).toContain("Try again");
   });
 });
