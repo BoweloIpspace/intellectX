@@ -1,0 +1,62 @@
+name: Live production smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Optional exact production Git SHA to verify
+        required: false
+        type: string
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-production-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      CI: true
+      NEXT_TELEMETRY_DISABLED: 1
+      PLAYWRIGHT_BASE_URL: https://intellectx-lovat.vercel.app
+      LIVE_PRODUCTION_SMOKE: "true"
+      EXPECTED_DEPLOYMENT_SHA: ${{ github.event.inputs.expected_sha || github.sha }}
+      INTELLECTX_PRODUCTION_URL: https://intellectx-lovat.vercel.app
+      INTELLECTX_PRODUCTION_WAIT_MS: "900000"
+
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@df199fb7be9f65074067a9eb93f12bb4c5547cf2
+        with:
+          egress-policy: audit
+
+      - name: Checkout exact expected ref
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ env.EXPECTED_DEPLOYMENT_SHA }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npm exec playwright install --with-deps chromium
+
+      - name: Wait for exact production deployment
+        run: node scripts/wait-for-live-production.mjs
+
+      - name: Smoke exact live production learner boundary
+        run: npx playwright test tests/e2e/live-production-smoke.spec.ts --project=chromium
