@@ -26,8 +26,12 @@ The native IntellectX app is a **free learner practice experience** with Home, Q
 - Mobile Progress now combines quiz results with completed and in-progress past-paper practice instead of reporting quizzes alone.
 - Mobile Profile now summarizes selected courses, quiz attempts, past-paper completion/in-progress state, study preferences, learner-session behavior, and Android build information.
 - BGCSE Biology 0572/03 October/November 2019 is represented as seven ordered questions totaling 70 marks, with its 1h15 duration and 8-page metadata recorded in the database contract.
-- Visual/source-dependent Biology 2019 questions now include accessible digital source material before **Reveal answer** rather than relying on missing examination figures.
+- Visual/source-dependent Biology 2019 questions include accessible digital source material before **Reveal answer** rather than relying on missing examination figures.
 - Biology 2019 reconstructed artwork is explicitly labelled as an IntellectX study reconstruction; the app does not present reconstructed Q3/Q6 artwork or instructional model answers as an official examination facsimile/mark scheme.
+- Past Papers now have an admin-only CRUD workspace for paper metadata, publication state, question ordering, marks, source material, model answers, and explanations.
+- Past Paper create/update/delete operations are protected by trusted Convex admin RBAC and recorded in the append-only audit log; paper deletion cascades to its question rows.
+- Past Paper records distinguish repository-controlled seed data from manual admin data using `seedManaged` provenance. Admin edits intentionally become manual records.
+- Biology 2019 has an explicit deterministic release-seed entrypoint. Normal reconciliation is non-destructive; deliberate `reset: true` reconciliation removes canonical duplicates and stale seed-managed/legacy Biology seed rows while protecting unrelated manual content.
 - Production environment validation supports intentional local-only, `mobile-local-convex`, or fully configured Clerk + Convex modes while rejecting partial Clerk configuration.
 - Payments must remain disabled for the free mobile product.
 - CI runs typecheck, lint, unit tests, a production dependency audit, a production build, and Playwright against `next start` rather than `next dev`.
@@ -55,13 +59,14 @@ All Clerk + Convex production variables are configured together. Partial configu
 ## Still requires external setup or physical-device work
 
 - Promote the desired verified `main` commit to the intended Vercel production deployment when release deployment work resumes.
-- Configure Clerk + Convex only if cloud accounts/sync are desired.
+- Run the deterministic Past Paper release seed against the intended production Convex deployment only as an explicit content-release operation; this repository change does not mutate production data automatically.
+- Configure Clerk + Convex only if cloud accounts/sync are desired. The admin Past Paper workspace requires a trusted authenticated admin identity when used outside non-production demo tooling.
 - Create and securely store the Android upload key / configure Play App Signing before a Play upload.
 - Complete Play Console app listing, Data Safety, content rating, app access, target audience, and policy declarations.
 - Replace or approve final launcher/splash/store branding assets.
 - Run real-device QA for Android back/predictive back, cold start, resume, process death, slow/offline networking, interrupted quiz submissions, safe areas, keyboard, and multiple Android versions/screen sizes.
 - Keep the current remote-WebView release architecture decision explicit. The APK currently loads the production Vercel app through Capacitor `server.url`; moving to a bundled frontend would be a separate architecture change.
-- If exact licensed/source-authenticated Biology 2019 Q3/Q6 examination artwork or an official marking scheme becomes available, replace the disclosed study adaptations through the past-paper content-management workflow rather than silently changing provenance.
+- If exact licensed/source-authenticated Biology 2019 Q3/Q6 examination artwork or an official marking scheme becomes available, replace the disclosed study adaptations through the Past Paper content-management workflow rather than silently changing provenance.
 
 ## Release-candidate gate
 
