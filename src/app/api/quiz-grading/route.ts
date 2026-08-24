@@ -1,9 +1,13 @@
 import "server-only";
 
 import { getQuiz } from "@/data/quizzes";
+import { convexApi } from "@/lib/convex-api";
+import { convexEnv } from "@/lib/education-data";
+import { ConvexHttpClient } from "convex/browser";
 import {
   gradeQuizAnswers,
   normalizeQuizSubmissionId,
+  revealStructuredQuizAnswer,
   validateQuizAnswer,
   type AuthoritativeQuizQuestionRecord,
 } from "../../../../convex/lib/quizIntegrity";
@@ -29,6 +33,10 @@ function errorResponse(error: unknown, status = 400) {
     { error: error instanceof Error ? error.message : "Unable to grade this quiz request." },
     status,
   );
+}
+
+function getConvexClient() {
+  return convexEnv.url ? new ConvexHttpClient(convexEnv.url) : null;
 }
 
 function getAuthoritativeFallbackQuiz(quizId: string) {
@@ -83,36 +91,64 @@ export async function POST(request: Request) {
     return errorResponse(new Error("Quiz ID is required."));
   }
 
-  const authoritative = getAuthoritativeFallbackQuiz(payload.quizId);
-
-  if (!authoritative) {
-    return errorResponse(new Error("Quiz is not available."), 404);
-  }
-
   try {
+    const authoritative = getAuthoritativeFallbackQuiz(payload.quizId);
+    const convexClient = authoritative ? null : getConvexClient();
+
+    if (payload.action === "reveal") {
+      if (typeof payload.questionId !== "string") {
+        throw new Error("Question ID is required.");
+      }
+
+      if (authoritative) {
+        const question = authoritative.questions.find((item) => item.stableId === payload.questionId);
+        if (!question) throw new Error("Quiz question does not exist.");
+        return jsonResponse(revealStructuredQuizAnswer(question));
+      }
+
+      if (convexClient) {
+        return jsonResponse(
+          await convexClient.query(convexApi.quizzes.revealLocalStructuredQuizAnswer, {
+            quizId: payload.quizId,
+            questionId: payload.questionId,
+          }),
+        );
+      }
+
+      return errorResponse(new Error("Quiz is not available."), 404);
+    }
+
     if (payload.action === "check") {
       if (typeof payload.questionId !== "string" || typeof payload.answer !== "number") {
         throw new Error("Question ID and numeric answer are required.");
       }
 
-      const question = authoritative.questions.find((item) => item.stableId === payload.questionId);
+      if (authoritative) {
+        const question = authoritative.questions.find((item) => item.stableId === payload.questionId);
+        if (!question) throw new Error("Quiz question does not exist.");
 
-      if (!question) {
-        throw new Error("Quiz question does not exist.");
+        const answer = validateQuizAnswer(question, payload.answer);
+        if (answer < 0) throw new Error("A multiple-choice check requires a selected answer.");
+
+        return jsonResponse({
+          questionId: question.stableId,
+          answerIndex: question.answerIndex,
+          explanation: question.explanation,
+          correct: answer === question.answerIndex,
+        });
       }
 
-      const answer = validateQuizAnswer(question, payload.answer);
-
-      if (answer < 0) {
-        throw new Error("A question check requires a selected answer.");
+      if (convexClient) {
+        return jsonResponse(
+          await convexClient.query(convexApi.quizzes.checkLocalQuizAnswer, {
+            quizId: payload.quizId,
+            questionId: payload.questionId,
+            answer: payload.answer,
+          }),
+        );
       }
 
-      return jsonResponse({
-        questionId: question.stableId,
-        answerIndex: question.answerIndex,
-        explanation: question.explanation,
-        correct: answer === question.answerIndex,
-      });
+      return errorResponse(new Error("Quiz is not available."), 404);
     }
 
     if (payload.action === "submit") {
@@ -124,20 +160,34 @@ export async function POST(request: Request) {
         throw new Error("Quiz answers must be numeric indexes.");
       }
 
-      const submissionId = normalizeQuizSubmissionId(payload.submissionId);
-      const grading = gradeQuizAnswers(authoritative.questions, payload.answers as number[]);
+      if (authoritative) {
+        const submissionId = normalizeQuizSubmissionId(payload.submissionId);
+        const grading = gradeQuizAnswers(authoritative.questions, payload.answers as number[]);
 
-      return jsonResponse({
-        attemptId: `local:${submissionId}`,
-        quizId: authoritative.quiz.id,
-        quizTitle: authoritative.quiz.title,
-        score: grading.score,
-        totalQuestions: grading.totalQuestions,
-        percentage: grading.percentage,
-        completedAt: Date.now(),
-        answers: grading.answers,
-        questionResults: grading.questionResults,
-      });
+        return jsonResponse({
+          attemptId: `local:${submissionId}`,
+          quizId: authoritative.quiz.id,
+          quizTitle: authoritative.quiz.title,
+          score: grading.score,
+          totalQuestions: grading.totalQuestions,
+          percentage: grading.percentage,
+          completedAt: Date.now(),
+          answers: grading.answers,
+          questionResults: grading.questionResults,
+        });
+      }
+
+      if (convexClient) {
+        return jsonResponse(
+          await convexClient.query(convexApi.quizzes.submitLocalQuizAttempt, {
+            quizId: payload.quizId,
+            submissionId: payload.submissionId,
+            answers: payload.answers as number[],
+          }),
+        );
+      }
+
+      return errorResponse(new Error("Quiz is not available."), 404);
     }
 
     throw new Error("Unsupported quiz grading action.");
