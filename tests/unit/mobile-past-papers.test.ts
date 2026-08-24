@@ -28,10 +28,11 @@ describe("native past paper flow", () => {
     expect(mobileCourses).toContain("Past Papers");
   });
 
-  it("device-test runner reveals the already-deployed answer payload and stays inside mobile routes", () => {
+  it("device-test runner reveals answers on demand and stays inside mobile routes", () => {
     const runner = source("src/components/education/mobile-past-papers.tsx");
 
-    expect(runner).toContain("current.modelAnswer");
+    expect(runner).toContain("convexApi.pastPapers.getPastPaperAnswer");
+    expect(runner).toContain("answer.modelAnswer");
     expect(runner).toContain("Reveal answer");
     expect(runner).toContain("/mobile-past-papers?course=");
     expect(runner).not.toContain("/courses/");
