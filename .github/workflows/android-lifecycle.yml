@@ -86,8 +86,10 @@ jobs:
       - name: Boot Android emulator
         shell: bash
         run: |
+          set -euo pipefail
           sudo chmod 666 /dev/kvm 2>/dev/null || true
           EMULATOR="$ANDROID_HOME/emulator/emulator"
+          EMULATOR_LOG="$RUNNER_TEMP/intellectx-emulator.log"
           test -x "$EMULATOR"
           nohup "$EMULATOR" \
             -avd intellectx-ci \
@@ -95,10 +97,32 @@ jobs:
             -no-audio \
             -no-boot-anim \
             -no-snapshot \
+            -accel on \
             -gpu swiftshader_indirect \
-            > "$RUNNER_TEMP/intellectx-emulator.log" 2>&1 &
-          adb wait-for-device
-          timeout 240 bash -c 'until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 2; done'
+            > "$EMULATOR_LOG" 2>&1 &
+          EMULATOR_PID=$!
+
+          sleep 5
+          if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+            echo "Android emulator exited before registering with adb."
+            cat "$EMULATOR_LOG"
+            exit 1
+          fi
+
+          if ! timeout 120 adb wait-for-device; then
+            echo "Android emulator did not register with adb within 120 seconds."
+            adb devices || true
+            cat "$EMULATOR_LOG"
+            exit 1
+          fi
+
+          if ! timeout 240 bash -c 'until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 2; done'; then
+            echo "Android emulator registered but did not finish booting within 240 seconds."
+            adb devices || true
+            cat "$EMULATOR_LOG"
+            exit 1
+          fi
+
           adb shell input keyevent 82
           adb devices
 
@@ -134,5 +158,6 @@ jobs:
           path: |
             android/app/build/reports/androidTests/**
             android/app/build/outputs/androidTest-results/**
+            ${{ runner.temp }}/intellectx-emulator.log
           if-no-files-found: warn
           retention-days: 14
