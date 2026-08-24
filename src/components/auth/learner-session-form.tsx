@@ -7,6 +7,7 @@ import { isAcademicProfileComplete, loadAcademicProfile } from "@/lib/academic-p
 import { getSafeMobileReturnTo, withMobileReturnTo } from "@/lib/auth-return-route";
 import { getLearnerHomeRouteForCurrentRuntime, isMobileAppRuntime } from "@/lib/feature-scope";
 import { createLearnerSession, getLearnerSession, type LearnerSession } from "@/lib/learner-session";
+import { authorizeNativeLaunch } from "@/lib/native-launch-auth";
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon, MailIcon, SparklesIcon } from "lucide-react";
 import Link from "next/link";
@@ -42,24 +43,23 @@ const webContentByMode = {
 
 const nativeContentByMode = {
   login: {
-    eyebrow: "Local learner profile",
-    title: "Continue on this device",
-    description:
-      "Enter your learner email to continue with the profile stored on this device. The mobile local mode does not create an online account or use a password.",
-    submitLabel: "Continue",
+    eyebrow: "intellectX",
+    title: "Sign in to continue",
+    description: "Confirm your learner email each time you open the app before entering your study space.",
+    submitLabel: "Log in",
   },
   signup: {
-    eyebrow: "Local learner profile",
+    eyebrow: "intellectX",
     title: "Create a local learner profile",
     description: "Add your learner details, then choose the courses you want to practice.",
-    submitLabel: "Choose courses",
+    submitLabel: "Sign up and choose courses",
   },
   "forgot-password": {
-    eyebrow: "Local learner profile",
+    eyebrow: "intellectX",
     title: "No password is required",
     description:
       "The mobile app currently uses a device-local learner profile, so there is no password to recover. Return to learner access to continue.",
-    submitLabel: "Return to local profile",
+    submitLabel: "Return to login",
   },
 } satisfies Record<LearnerSessionMode, { eyebrow: string; title: string; description: string; submitLabel: string }>;
 
@@ -87,13 +87,21 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     const shouldResumeInterruptedWebSignup =
       Boolean(existingSession) && isSignup && !native && !isAcademicProfileComplete(loadAcademicProfile());
 
-    if (!isForgotPassword && existingSession && !shouldResumeInterruptedWebSignup) {
-      window.location.replace(returnTo ?? (native ? "/mobile-study" : getLearnerHomeRouteForCurrentRuntime()));
+    // Native launches intentionally stay on the authentication surface even
+    // when a device-local learner profile exists. The learner must explicitly
+    // press Log in or Sign up before any study route becomes available.
+    if (!native && !isForgotPassword && existingSession && !shouldResumeInterruptedWebSignup) {
+      window.location.replace(returnTo ?? getLearnerHomeRouteForCurrentRuntime());
       return;
     }
 
+    if (native && mode === "login" && existingSession) {
+      setName(existingSession.name);
+      setEmail(existingSession.email);
+    }
+
     setHydrated(true);
-  }, [isForgotPassword, isSignup, returnTo]);
+  }, [isForgotPassword, isSignup, mode, returnTo]);
 
   useEffect(() => {
     if (!isSignup || !hydrated || nativeMobile) return;
@@ -118,8 +126,14 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     const normalizedEmail = submittedEmail.trim().toLowerCase();
     if (!normalizedEmail) return;
 
+    const existingSession = getLearnerSession();
     const nextSession: LearnerSession = {
-      name: isSignup ? submittedName.trim() || "Learner" : normalizedEmail.split("@")[0] || "Learner",
+      name:
+        isSignup
+          ? submittedName.trim() || "Learner"
+          : existingSession?.email === normalizedEmail
+            ? existingSession.name
+            : normalizedEmail.split("@")[0] || "Learner",
       email: normalizedEmail,
       role: "student",
     };
@@ -127,6 +141,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     if (isSignup) {
       if (nativeMobile) {
         createLearnerSession(nextSession);
+        authorizeNativeLaunch();
         window.location.replace("/mobile-quizzes?setup=1");
         return;
       }
@@ -136,6 +151,9 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
     }
 
     createLearnerSession(nextSession);
+    if (nativeMobile) {
+      authorizeNativeLaunch();
+    }
     window.location.replace(destination);
   }
 
@@ -151,7 +169,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
       <Card className="border-white/70 bg-white/85 shadow-3xl backdrop-blur dark:border-white/10 dark:bg-card/85">
         <CardContent className="flex min-h-48 items-center justify-center py-6">
           <p className="text-muted-foreground text-sm" role="status">
-            Checking your learner session...
+            Preparing learner access...
           </p>
         </CardContent>
       </Card>
@@ -269,9 +287,9 @@ function AuthFooter({
     if (nativeMobile) {
       return (
         <p className="text-muted-foreground mt-4 text-center text-sm sm:mt-6">
-          Need a new local profile?{" "}
+          New to intellectX?{" "}
           <Link href={withMobileReturnTo("/signup", returnTo)} className="text-foreground font-medium underline underline-offset-4">
-            Create one
+            Sign up
           </Link>
         </p>
       );
@@ -295,11 +313,11 @@ function AuthFooter({
   if (mode === "signup") {
     return (
       <div className="text-muted-foreground mt-4 grid gap-2 text-center text-sm sm:mt-6">
-        <p>{nativeMobile ? "After creating the local profile, choose your courses and start practicing." : "After signup, complete your study profile to continue."}</p>
+        <p>{nativeMobile ? "After signup, choose your courses and start studying." : "After signup, complete your study profile to continue."}</p>
         <p>
           {nativeMobile ? "Already have a local learner profile?" : "Already have a learner session?"}{" "}
           <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
-            {nativeMobile ? "Continue" : "Log in"}
+            Log in
           </Link>
         </p>
       </div>
@@ -309,7 +327,7 @@ function AuthFooter({
   return (
     <p className="text-muted-foreground mt-4 text-center text-sm sm:mt-6">
       <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">
-        {nativeMobile ? "Back to local learner profile" : "Back to login"}
+        Back to login
       </Link>
     </p>
   );
