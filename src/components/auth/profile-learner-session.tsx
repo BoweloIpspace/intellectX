@@ -134,8 +134,8 @@ function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
                 <div className="border-destructive/30 bg-destructive/5 grid gap-3 rounded-lg border p-4">
                   <p className="text-destructive font-medium">Delete this local profile and its study data?</p>
                   <p>
-                    This removes this profile&apos;s course selection, study profile, quiz history, and lesson progress from
-                    this device. Other local learner profiles are not deleted.
+                    This removes this profile&apos;s course selection, study profile, quiz history, unfinished quiz state,
+                    past-paper progress, and lesson progress from this device. Other local learner profiles are not deleted.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button type="button" variant="destructive" onClick={handleDeleteProfile}>
