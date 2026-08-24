@@ -1,6 +1,5 @@
 import "server-only";
 
-import { getMobileTopicQuiz } from "@/data/mobile-topic-quizzes";
 import { getQuiz } from "@/data/quizzes";
 import {
   gradeQuizAnswers,
@@ -33,7 +32,7 @@ function errorResponse(error: unknown, status = 400) {
 }
 
 function getAuthoritativeFallbackQuiz(quizId: string) {
-  const quiz = getQuiz(quizId) ?? getMobileTopicQuiz(quizId);
+  const quiz = getQuiz(quizId);
 
   if (!quiz) {
     return null;
@@ -56,12 +55,6 @@ function getAuthoritativeFallbackQuiz(quizId: string) {
 }
 
 export async function POST(request: Request) {
-  // This route is an intentional resilience path for the bundled free quizzes.
-  // The browser chooses Convex when the Convex client is actually available;
-  // otherwise this server-only endpoint grades the same seed-backed questions.
-  // Keeping it available even when the server has a Convex URL prevents a
-  // build/runtime environment mismatch from making the installed mobile app
-  // unable to submit answers.
   const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
   if (!contentType.includes("application/json")) {
     return errorResponse(new Error("Quiz grading requests must use application/json."), 415);
