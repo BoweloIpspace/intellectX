@@ -1,6 +1,7 @@
 name: Android lifecycle instrumentation
 
 on:
+  workflow_call:
   workflow_dispatch:
   pull_request:
     branches:
@@ -15,6 +16,8 @@ on:
       - "convex/pastPapers.ts"
       - "convex/adminPastPapers.ts"
       - "convex/seedBiologyPastPaper*.ts"
+      - "public/mobile-error.html"
+      - "scripts/check-android-manifest.mjs"
       - "src/app/mobile-*/**"
       - "src/app/quiz/**"
       - "src/components/education/mobile-*.tsx"
@@ -151,6 +154,22 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-daemon --console=plain :app:connectedDebugAndroidTest
 
+      - name: Verify merged Android manifest policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          MERGED_MANIFEST=""
+          while IFS= read -r candidate; do
+            case "$candidate" in
+              *merged_manifest*|*merged_manifests*|*packaged_manifests*)
+                MERGED_MANIFEST="$candidate"
+                break
+                ;;
+            esac
+          done < <(find android/app/build/intermediates -type f -name AndroidManifest.xml -path '*debug*' | sort)
+          test -n "$MERGED_MANIFEST"
+          node scripts/check-android-manifest.mjs "$MERGED_MANIFEST"
+
       - name: Verify cold process restart
         shell: bash
         run: |
@@ -176,9 +195,6 @@ jobs:
             adb shell uiautomator dump /sdcard/intellectx-window.xml >/dev/null 2>&1 || true
             adb shell cat /sdcard/intellectx-window.xml > "$UI_DUMP" 2>/dev/null || true
 
-            # An IntellectX crash/ANR is a real product failure. Check it before
-            # matching the product name so an Android error dialog cannot count
-            # as a successful WebView render.
             if grep -Eq "IntellectX (isn't responding|keeps stopping)" "$UI_DUMP"; then
               echo "IntellectX exposed an Android crash/ANR dialog during WebView verification."
               cat "$UI_DUMP" || true
@@ -186,10 +202,6 @@ jobs:
               exit 1
             fi
 
-            # The headless Google-APIs emulator can occasionally surface a
-            # Pixel Launcher ANR over an otherwise healthy foreground app. Only
-            # recover from that known system-app dialog; never dismiss a generic
-            # ANR that could belong to IntellectX or another dependency.
             if grep -Eq "Pixel Launcher (isn't responding|keeps stopping)" "$UI_DUMP"; then
               echo "Pixel Launcher ANR obscured IntellectX; dismissing only the launcher failure and restoring the app."
               adb shell am force-stop com.google.android.apps.nexuslauncher || true
@@ -216,6 +228,101 @@ jobs:
 
           echo "Production IntellectX WebView rendered successfully."
 
+      - name: Verify offline fallback and network recovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          OFFLINE_DUMP="$RUNNER_TEMP/intellectx-offline-window.xml"
+          RECOVERY_DUMP="$RUNNER_TEMP/intellectx-recovery-window.xml"
+
+          restore_network() {
+            adb shell cmd connectivity airplane-mode disable >/dev/null 2>&1 || true
+          }
+          trap restore_network EXIT
+
+          adb shell am force-stop com.intellectx.app
+          adb shell pm clear com.intellectx.app | grep -q 'Success'
+          adb shell cmd connectivity airplane-mode enable
+
+          for attempt in $(seq 1 15); do
+            if [ "$(adb shell settings get global airplane_mode_on | tr -d '\r')" = "1" ]; then
+              break
+            fi
+            sleep 1
+          done
+          test "$(adb shell settings get global airplane_mode_on | tr -d '\r')" = "1"
+
+          OFFLINE_START="$(adb shell am start -W -n com.intellectx.app/.MainActivity)"
+          printf '%s\n' "$OFFLINE_START"
+          printf '%s\n' "$OFFLINE_START" | grep -q "Status: ok"
+
+          offline_fallback=false
+          for attempt in $(seq 1 30); do
+            adb shell uiautomator dump /sdcard/intellectx-offline-window.xml >/dev/null 2>&1 || true
+            adb shell cat /sdcard/intellectx-offline-window.xml > "$OFFLINE_DUMP" 2>/dev/null || true
+
+            if grep -Eq "IntellectX (isn't responding|keeps stopping)" "$OFFLINE_DUMP"; then
+              echo "IntellectX crashed or ANR'd while offline."
+              cat "$OFFLINE_DUMP" || true
+              exit 1
+            fi
+
+            if grep -Fq 'IntellectX is temporarily unavailable' "$OFFLINE_DUMP"; then
+              offline_fallback=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$offline_fallback" != "true" ]; then
+            echo "The packaged Capacitor offline fallback did not render."
+            cat "$OFFLINE_DUMP" || true
+            adb logcat -d | tail -n 300 || true
+            exit 1
+          fi
+
+          adb shell cmd connectivity airplane-mode disable
+          for attempt in $(seq 1 15); do
+            if [ "$(adb shell settings get global airplane_mode_on | tr -d '\r')" = "0" ]; then
+              break
+            fi
+            sleep 1
+          done
+          test "$(adb shell settings get global airplane_mode_on | tr -d '\r')" = "0"
+
+          adb shell am force-stop com.intellectx.app
+          RECOVERY_START="$(adb shell am start -W -n com.intellectx.app/.MainActivity)"
+          printf '%s\n' "$RECOVERY_START"
+          printf '%s\n' "$RECOVERY_START" | grep -q "Status: ok"
+
+          recovered=false
+          for attempt in $(seq 1 45); do
+            adb shell uiautomator dump /sdcard/intellectx-recovery-window.xml >/dev/null 2>&1 || true
+            adb shell cat /sdcard/intellectx-recovery-window.xml > "$RECOVERY_DUMP" 2>/dev/null || true
+
+            if grep -Eq "IntellectX (isn't responding|keeps stopping)" "$RECOVERY_DUMP"; then
+              echo "IntellectX crashed or ANR'd during network recovery."
+              cat "$RECOVERY_DUMP" || true
+              exit 1
+            fi
+
+            if grep -Eq 'Continue on this device|Create a local learner profile|Choose your courses|Your courses' "$RECOVERY_DUMP"; then
+              recovered=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$recovered" != "true" ]; then
+            echo "IntellectX did not recover to a production learner screen after connectivity returned."
+            cat "$RECOVERY_DUMP" || true
+            adb logcat -d | tail -n 300 || true
+            exit 1
+          fi
+
+          trap - EXIT
+          echo "Offline fallback and network recovery verified."
+
       - name: Exercise Android Back and relaunch
         shell: bash
         run: |
@@ -235,5 +342,7 @@ jobs:
             android/app/build/outputs/androidTest-results/**
             ${{ runner.temp }}/intellectx-emulator.log
             ${{ runner.temp }}/intellectx-window.xml
+            ${{ runner.temp }}/intellectx-offline-window.xml
+            ${{ runner.temp }}/intellectx-recovery-window.xml
           if-no-files-found: warn
           retention-days: 14

@@ -9,6 +9,7 @@ function readSource(relativePath: string) {
 const productionUrl = "https://intellectx-lovat.vercel.app";
 const staleProductionUrl = "https://intellect-x-coral.vercel.app";
 
+const packageSource = readSource("package.json");
 const siteConfigSource = readSource("src/lib/site-config.ts");
 const capacitorSource = readSource("capacitor.config.ts");
 const layoutSource = readSource("src/app/layout.tsx");
@@ -24,6 +25,12 @@ const mobileProfilePageSource = readSource("src/app/mobile-profile/page.tsx");
 const featureScopeSource = readSource("src/lib/feature-scope.ts");
 const androidBuildSource = readSource("android/app/build.gradle");
 const androidReleaseWorkflowSource = readSource(".github/workflows/android-release-aab.yml");
+const signedReleaseWorkflowSource = readSource(".github/workflows/android-signed-release-aab.yml");
+const candidateGateWorkflowSource = readSource(".github/workflows/release-candidate-gate.yml");
+const lifecycleWorkflowSource = readSource(".github/workflows/android-lifecycle.yml");
+const manifestCheckerSource = readSource("scripts/check-android-manifest.mjs");
+const mobileErrorSource = readSource("public/mobile-error.html");
+const dataSafetySource = readSource("docs/google-play-data-safety.md");
 const gitignoreSource = readSource(".gitignore");
 
 describe("Google Play release-readiness contracts", () => {
@@ -49,6 +56,8 @@ describe("Google Play release-readiness contracts", () => {
     expect(mobileQuizzesPageSource).toContain("Practice quizzes and past papers");
     expect(mobileProgressPageSource).not.toContain(">Quiz progress<");
     expect(mobileProfilePageSource).not.toContain(">Quiz learner profile<");
+    expect(mobileErrorSource).toContain("Your local study data remains on this device");
+    expect(mobileErrorSource).not.toContain("Your local quiz data remains on this device");
   });
 
   it("keeps the Android privacy policy tied to the shipped data flow", () => {
@@ -90,5 +99,51 @@ describe("Google Play release-readiness contracts", () => {
     expect(gitignoreSource).toContain("*.keystore");
     expect(gitignoreSource).toContain("android/keystore.properties");
     expect(gitignoreSource).toContain("android/signing.properties");
+  });
+
+  it("provides a manual signed-AAB path without putting signing material in source", () => {
+    expect(signedReleaseWorkflowSource).toContain("workflow_dispatch");
+    expect(signedReleaseWorkflowSource).not.toContain("pull_request:");
+    expect(signedReleaseWorkflowSource).not.toContain("push:");
+    expect(signedReleaseWorkflowSource).toContain("secrets.INTELLECTX_UPLOAD_KEYSTORE_BASE64");
+    expect(signedReleaseWorkflowSource).toContain("secrets.INTELLECTX_UPLOAD_STORE_PASSWORD");
+    expect(signedReleaseWorkflowSource).toContain("secrets.INTELLECTX_UPLOAD_KEY_ALIAS");
+    expect(signedReleaseWorkflowSource).toContain("secrets.INTELLECTX_UPLOAD_KEY_PASSWORD");
+    expect(signedReleaseWorkflowSource).toContain('INTELLECTX_REQUIRE_RELEASE_SIGNING: "true"');
+    expect(signedReleaseWorkflowSource).toContain("base64 --decode");
+    expect(signedReleaseWorkflowSource).toContain("keytool -list");
+    expect(signedReleaseWorkflowSource).toContain("jarsigner -verify -strict");
+    expect(signedReleaseWorkflowSource).toContain("Remove temporary upload keystore");
+    expect(signedReleaseWorkflowSource).not.toContain("signingConfigs.debug");
+  });
+
+  it("orchestrates engineering gates and enforces a zero-warning lint budget", () => {
+    expect(packageSource).toContain('"lint": "eslint . --max-warnings=0"');
+    expect(candidateGateWorkflowSource).toContain("./.github/workflows/build-test.yml");
+    expect(candidateGateWorkflowSource).toContain("./.github/workflows/android-debug-apk.yml");
+    expect(candidateGateWorkflowSource).toContain("./.github/workflows/android-release-aab.yml");
+    expect(candidateGateWorkflowSource).toContain("./.github/workflows/android-lifecycle.yml");
+    expect(candidateGateWorkflowSource).toContain("Exact-ref engineering gates 1-11 are green.");
+  });
+
+  it("checks merged Android permissions and exercises offline recovery", () => {
+    expect(manifestCheckerSource).toContain('new Set(["android.permission.INTERNET"])');
+    expect(manifestCheckerSource).toContain("unexpected permission(s)");
+    expect(androidReleaseWorkflowSource).toContain("Verify merged Android manifest policy");
+    expect(lifecycleWorkflowSource).toContain("Verify offline fallback and network recovery");
+    expect(lifecycleWorkflowSource).toContain("airplane-mode enable");
+    expect(lifecycleWorkflowSource).toContain("airplane-mode disable");
+    expect(lifecycleWorkflowSource).toContain("IntellectX is temporarily unavailable");
+  });
+
+  it("keeps Data Safety documentation evidence-based instead of claiming submission is complete", () => {
+    expect(dataSafetySource).toContain("not a completed or submitted Google Play Data Safety declaration");
+    expect(dataSafetySource).toContain("mobile-local-convex");
+    expect(dataSafetySource).toContain("Vercel");
+    expect(dataSafetySource).toContain("Convex");
+    expect(dataSafetySource).toContain("provider request/log retention");
+    expect(dataSafetySource).toContain("android.permission.INTERNET");
+    expect(dataSafetySource).toContain("exact signed artifact");
+    expect(dataSafetySource).toContain("support.google.com/googleplay/android-developer/answer/10787469");
   });
 });
