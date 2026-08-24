@@ -113,7 +113,8 @@ describe("Google Play release-readiness contracts", () => {
     expect(signedReleaseWorkflowSource).toContain("base64 --decode");
     expect(signedReleaseWorkflowSource).toContain("keytool -list");
     expect(signedReleaseWorkflowSource).toContain("jarsigner -verify -strict");
-    expect(signedReleaseWorkflowSource).toContain("Remove temporary upload keystore");
+    expect(signedReleaseWorkflowSource).toContain("Remove temporary signing files");
+    expect(signedReleaseWorkflowSource).toContain('rm -f "$RUNNER_TEMP/intellectx-upload.jks"');
     expect(signedReleaseWorkflowSource).not.toContain("signingConfigs.debug");
   });
 
@@ -137,7 +138,8 @@ describe("Google Play release-readiness contracts", () => {
   });
 
   it("keeps Data Safety documentation evidence-based instead of claiming submission is complete", () => {
-    expect(dataSafetySource).toContain("not a completed or submitted Google Play Data Safety declaration");
+    expect(dataSafetySource).toContain("engineering evidence inventory");
+    expect(dataSafetySource).toContain("not** a completed or submitted Google Play Data Safety declaration");
     expect(dataSafetySource).toContain("mobile-local-convex");
     expect(dataSafetySource).toContain("Vercel");
     expect(dataSafetySource).toContain("Convex");
