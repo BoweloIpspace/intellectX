@@ -8,12 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Quiz } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
 import { getCurrentConvexLearnerArgs } from "@/lib/convex-learner-identity";
-import { convexEnv } from "@/lib/education-data";
 import {
   clearMobileQuizProgress,
   readMobileQuizProgress,
   writeMobileQuizProgress,
 } from "@/lib/mobile-study-state";
+import { getQuizGradingMode } from "@/lib/mobile-quiz-grading-mode";
 import { readQuizAttemptHistory, writeQuizAttemptHistory } from "@/lib/quiz-attempt-history";
 import { cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
@@ -50,6 +50,9 @@ type SecureQuizResults = AuthoritativeQuizAttemptResult & {
   timedOut?: boolean;
 };
 
+const LOCAL_GRADING_MAX_ATTEMPTS = 3;
+const LOCAL_GRADING_RETRY_DELAY_MS = 250;
+
 function parseEstimatedTimeInSeconds(value: string) {
   const minutes = value.match(/(\d+(?:\.\d+)?)\s*(?:m|min|minute|minutes)/i);
 
@@ -82,23 +85,60 @@ function createSubmissionId() {
   return `quiz-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-async function postLocalQuizGrading<TResult>(body: Record<string, unknown>): Promise<TResult> {
-  const response = await fetch("/api/quiz-grading", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const payload = (await response.json()) as { error?: unknown } & TResult;
+function waitForQuizRetry(attempt: number) {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, LOCAL_GRADING_RETRY_DELAY_MS * attempt));
+}
 
-  if (!response.ok) {
-    throw new Error(typeof payload.error === "string" ? payload.error : "Unable to grade this quiz request.");
+async function postLocalQuizGrading<TResult>(body: Record<string, unknown>): Promise<TResult> {
+  for (let attempt = 1; attempt <= LOCAL_GRADING_MAX_ATTEMPTS; attempt += 1) {
+    let response: Response;
+
+    try {
+      response = await fetch("/api/quiz-grading", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    } catch {
+      if (attempt === LOCAL_GRADING_MAX_ATTEMPTS) {
+        throw new Error(
+          "Connection problem. Your selected answer and quiz progress are still saved. Reconnect and try again.",
+        );
+      }
+
+      await waitForQuizRetry(attempt);
+      continue;
+    }
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: unknown } & TResult;
+
+    if (response.ok) {
+      return payload;
+    }
+
+    const retryable = response.status === 429 || response.status >= 500;
+    const serverMessage = typeof payload.error === "string" ? payload.error : null;
+
+    if (!retryable) {
+      throw new Error(serverMessage ?? "Unable to grade this quiz request.");
+    }
+
+    if (attempt === LOCAL_GRADING_MAX_ATTEMPTS) {
+      throw new Error(
+        response.status === 429
+          ? "Quiz grading is busy right now. Your quiz progress is still saved. Try again in a moment."
+          : "Quiz grading is temporarily unavailable. Your quiz progress is still saved. Try again.",
+      );
+    }
+
+    await waitForQuizRetry(attempt);
   }
 
-  return payload;
+  throw new Error("Unable to grade this quiz request.");
 }
 
 export function SecureQuizPlayer({ quiz, surface = "web" }: SecureQuizPlayerProps) {
-  if (!convexEnv.isConfigured) {
+  if (getQuizGradingMode() === "server-fallback") {
     return <LocalServerSecureQuizPlayer quiz={quiz} surface={surface} />;
   }
 
@@ -489,6 +529,9 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
     );
   }
 
+  const retryingAnswerCheck = Boolean(errorMessage && !submitted);
+  const retryingFinalSave = Boolean(errorMessage && submitted && currentIndex === quiz.questions.length - 1);
+
   return (
     <Card className={`rounded-lg ${elevatedGlassCardClassName}`}>
       <CardHeader>
@@ -575,14 +618,16 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
               disabled={selectedIndex === null || checking || completing}
               onClick={() => void submitAnswer()}
             >
-              {checking ? "Checking..." : "Submit answer"}
+              {checking ? "Checking..." : retryingAnswerCheck ? "Try answer again" : "Submit answer"}
             </Button>
           ) : (
             <Button className="min-h-12 w-full sm:w-auto" disabled={completing} onClick={nextQuestion}>
               {completing
                 ? "Saving result..."
                 : currentIndex === quiz.questions.length - 1
-                  ? "See results"
+                  ? retryingFinalSave
+                    ? "Try saving again"
+                    : "See results"
                   : "Next question"}
             </Button>
           )}
