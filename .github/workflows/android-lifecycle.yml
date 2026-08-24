@@ -267,7 +267,7 @@ jobs:
               exit 1
             fi
 
-            if grep -Fq 'IntellectX is temporarily unavailable' "$OFFLINE_DUMP"; then
+            if grep -Fq 'IntellectX is temporarily unavailable' "$OFFLINE_DUMP" && grep -Fq 'text="Try again"' "$OFFLINE_DUMP"; then
               offline_fallback=true
               break
             fi
@@ -275,7 +275,7 @@ jobs:
           done
 
           if [ "$offline_fallback" != "true" ]; then
-            echo "The packaged Capacitor offline fallback did not render."
+            echo "The packaged Capacitor offline fallback did not render with its retry control."
             cat "$OFFLINE_DUMP" || true
             adb logcat -d | tail -n 300 || true
             exit 1
@@ -290,10 +290,43 @@ jobs:
           done
           test "$(adb shell settings get global airplane_mode_on | tr -d '\r')" = "0"
 
-          adb shell am force-stop com.intellectx.app
-          RECOVERY_START="$(adb shell am start -W -n com.intellectx.app/.MainActivity)"
-          printf '%s\n' "$RECOVERY_START"
-          printf '%s\n' "$RECOVERY_START" | grep -q "Status: ok"
+          network_ready=false
+          for attempt in $(seq 1 30); do
+            if adb shell dumpsys connectivity | grep -q 'VALIDATED'; then
+              network_ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$network_ready" != "true" ]; then
+            echo "Android connectivity did not become validated after airplane mode was disabled."
+            adb shell dumpsys connectivity || true
+            exit 1
+          fi
+
+          RETRY_POINT="$(python3 - "$OFFLINE_DUMP" <<'PY'
+import re
+import sys
+import xml.etree.ElementTree as ET
+
+root = ET.parse(sys.argv[1]).getroot()
+for node in root.iter("node"):
+    if node.attrib.get("text") != "Try again":
+        continue
+    match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
+    if not match:
+        continue
+    left, top, right, bottom = map(int, match.groups())
+    print(f"{(left + right) // 2} {(top + bottom) // 2}")
+    break
+else:
+    raise SystemExit("Try again button bounds were not found in the offline UI dump")
+PY
+)"
+          read -r RETRY_X RETRY_Y <<< "$RETRY_POINT"
+          test -n "$RETRY_X"
+          test -n "$RETRY_Y"
+          adb shell input tap "$RETRY_X" "$RETRY_Y"
 
           recovered=false
           for attempt in $(seq 1 45); do
@@ -314,14 +347,14 @@ jobs:
           done
 
           if [ "$recovered" != "true" ]; then
-            echo "IntellectX did not recover to a production learner screen after connectivity returned."
+            echo "IntellectX did not recover after connectivity returned and the user retry control was activated."
             cat "$RECOVERY_DUMP" || true
             adb logcat -d | tail -n 300 || true
             exit 1
           fi
 
           trap - EXIT
-          echo "Offline fallback and network recovery verified."
+          echo "Offline fallback and user-triggered network recovery verified."
 
       - name: Exercise Android Back and relaunch
         shell: bash
