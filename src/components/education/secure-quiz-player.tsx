@@ -191,7 +191,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resumeHydrated, setResumeHydrated] = useState(surface !== "mobile");
   const submissionIdRef = useRef(createSubmissionId());
-  const deadlineAtRef = useRef(Date.now() + initialTimeInSeconds * 1000);
+  const deadlineAtRef = useRef<number>(0);
   const completionGuardRef = useRef(false);
   const questionHeadingRef = useRef<HTMLHeadingElement>(null);
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
