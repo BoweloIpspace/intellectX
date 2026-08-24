@@ -1,5 +1,12 @@
 ﻿"use client";
 
+import {
+  clearActiveLocalLearnerData,
+  deleteLocalLearnerProfileData,
+  restoreLocalLearnerProfileData,
+  saveLocalLearnerProfileData,
+} from "@/lib/local-learner-profile-data";
+
 export const LEARNER_SESSION_KEY = "intellectx:learner-session";
 const LEGACY_LEARNER_SESSION_KEY = "intellectx-demo-session";
 export const LEARNER_SESSION_CHANGE_EVENT = "intellectx:learner-session-change";
@@ -78,8 +85,18 @@ export function createLearnerSession(session: LearnerSession) {
     return;
   }
 
+  const existingSession = getLearnerSession();
+  if (existingSession) {
+    saveLocalLearnerProfileData(getLearnerUserKey(existingSession));
+  } else {
+    // Invalid/legacy orphaned state must never be inherited by a newly entered
+    // email address. A previous valid session is snapshotted above.
+    clearActiveLocalLearnerData();
+  }
+
   window.localStorage.setItem(LEARNER_SESSION_KEY, JSON.stringify(normalizedSession));
   window.localStorage.removeItem(LEGACY_LEARNER_SESSION_KEY);
+  restoreLocalLearnerProfileData(getLearnerUserKey(normalizedSession));
   window.dispatchEvent(new Event(LEARNER_SESSION_CHANGE_EVENT));
 }
 
@@ -115,7 +132,20 @@ export function getLearnerSession(): LearnerSession | null {
   }
 }
 
-export function clearLearnerSession() {
+export function clearLearnerSession(options: { deleteLocalData?: boolean } = {}) {
+  const session = getLearnerSession();
+
+  if (session) {
+    const userKey = getLearnerUserKey(session);
+    if (options.deleteLocalData) {
+      deleteLocalLearnerProfileData(userKey);
+    } else {
+      saveLocalLearnerProfileData(userKey);
+    }
+  } else if (options.deleteLocalData) {
+    clearActiveLocalLearnerData();
+  }
+
   window.localStorage.removeItem(LEARNER_SESSION_KEY);
   window.localStorage.removeItem(LEGACY_LEARNER_SESSION_KEY);
   window.dispatchEvent(new Event(LEARNER_SESSION_CHANGE_EVENT));
