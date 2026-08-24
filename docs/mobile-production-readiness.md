@@ -42,7 +42,7 @@ The native IntellectX app is a **free learner practice experience** with Home, Q
 - Android version code/name can be supplied by CI properties instead of being permanently hardcoded.
 - CI builds and validates an unsigned release AAB in addition to the debug APK.
 - Android emulator lifecycle instrumentation verifies activity recreation, orientation, cold process restart, production WebView rendering, Android Back, and relaunch behavior.
-- Release workflows verify the Gradle-merged Android manifest against the explicit one-permission policy rather than trusting only the source manifest.
+- Release workflows verify the Gradle-merged Android manifest against the explicit platform-permission policy, including the AndroidX app-private receiver permission only when it remains signature-protected.
 - A manual signed-release workflow is present and requires secret-backed upload-key material, explicit version code/name, Gradle fail-closed signing, signature verification, and keystore cleanup. It cannot produce a signed artifact until the upload key secrets are configured.
 - A reusable release-candidate engineering workflow orchestrates web/test, debug APK, unsigned release AAB, and Android emulator lifecycle gates on the same Git ref.
 - Android lifecycle automation also exercises the packaged offline error screen and recovery back to the production learner experience after connectivity returns.

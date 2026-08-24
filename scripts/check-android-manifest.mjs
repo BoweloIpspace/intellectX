@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const ALLOWED_PERMISSIONS = new Set(["android.permission.INTERNET"]);
+const PLATFORM_PERMISSIONS = new Set(["android.permission.INTERNET"]);
+const ANDROIDX_PRIVATE_RECEIVER_PERMISSION = "com.intellectx.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION";
+const ALLOWED_USES_PERMISSIONS = new Set([...PLATFORM_PERMISSIONS, ANDROIDX_PRIVATE_RECEIVER_PERMISSION]);
 
 function fail(message) {
   throw new Error(`Android manifest policy violation: ${message}`);
@@ -25,9 +27,22 @@ export function inspectAndroidManifest(xml) {
     fail("android.permission.INTERNET is required for the production remote WebView.");
   }
 
-  const unexpectedPermissions = uniquePermissions.filter((permission) => !ALLOWED_PERMISSIONS.has(permission));
+  const unexpectedPermissions = uniquePermissions.filter((permission) => !ALLOWED_USES_PERMISSIONS.has(permission));
   if (unexpectedPermissions.length > 0) {
     fail(`unexpected permission(s): ${unexpectedPermissions.join(", ")}.`);
+  }
+
+  if (uniquePermissions.includes(ANDROIDX_PRIVATE_RECEIVER_PERMISSION)) {
+    const permissionDeclarations = [...xml.matchAll(/<permission\b[^>]*>/g)].map((match) => match[0]);
+    const privateReceiverDeclaration = permissionDeclarations.find((tag) =>
+      new RegExp(
+        `android:name\\s*=\\s*["']${ANDROIDX_PRIVATE_RECEIVER_PERMISSION.replaceAll(".", "\\.")}["']`,
+      ).test(tag),
+    );
+    if (!privateReceiverDeclaration) {
+      fail(`${ANDROIDX_PRIVATE_RECEIVER_PERMISSION} must have an explicit permission declaration.`);
+    }
+    requireAttribute(privateReceiverDeclaration, "android:protectionLevel", "signature");
   }
 
   const applicationTag = xml.match(/<application\b[^>]*>/)?.[0];

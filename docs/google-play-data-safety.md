@@ -48,9 +48,11 @@ Logging out preserves the same learner's local snapshot. **Delete local profile 
 
 ## Android permissions and platform storage
 
-The release policy currently allows only:
+The source manifest requests one Android platform permission:
 
 - `android.permission.INTERNET` — required for the production remote WebView and backend requests.
+
+AndroidX Core also adds the app-private `com.intellectx.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` to the Gradle-merged manifest, together with a `signature`-level declaration. This is an application-scoped compatibility permission used for non-exported dynamic receivers; it is not a request for camera, location, contacts, microphone, storage, or another Android platform capability. CI allowlists it only when the expected signature-level declaration is present.
 
 The release contract also requires:
 
@@ -59,7 +61,7 @@ The release contract also requires:
 - a network-security policy with `cleartextTrafficPermitted="false"`
 - `FileProvider` not exported
 
-CI checks both the source manifest and the Gradle-merged manifest so an SDK or dependency cannot silently add a new Android permission without failing the release gate.
+CI checks both the source manifest and the Gradle-merged manifest so an SDK or dependency cannot silently add a new platform permission without failing the release gate.
 
 ## Third-party / service-provider review
 
@@ -110,5 +112,6 @@ Repository evidence:
 External policy reference to re-check at submission time:
 
 - Google Play Data Safety guidance: `https://support.google.com/googleplay/android-developer/answer/10787469`
+- AndroidX Core merged-manifest source for the private receiver permission: `https://android.googlesource.com/platform/prebuilts/sdk/+/refs/heads/main/current/androidx/manifests/androidx.core_core/AndroidManifest.xml`
 
 Because Google Play policy and provider behavior can change independently of this repository, this document must remain an evidence input rather than a substitute for final Play Console verification.
