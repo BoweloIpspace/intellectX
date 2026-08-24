@@ -21,6 +21,17 @@ export const convexApi = {
     listAdminCourses: makeFunctionReference<"query">("adminCourses:listAdminCourses"),
     getAdminCourseReview: makeFunctionReference<"query">("adminCourses:getAdminCourseReview"),
   },
+  adminPastPapers: {
+    listAdminPastPaperCourses: makeFunctionReference<"query">("adminPastPapers:listAdminPastPaperCourses"),
+    listAdminPastPapers: makeFunctionReference<"query">("adminPastPapers:listAdminPastPapers"),
+    getAdminPastPaper: makeFunctionReference<"query">("adminPastPapers:getAdminPastPaper"),
+    createPastPaper: makeFunctionReference<"mutation">("adminPastPapers:createPastPaper"),
+    updatePastPaper: makeFunctionReference<"mutation">("adminPastPapers:updatePastPaper"),
+    deletePastPaper: makeFunctionReference<"mutation">("adminPastPapers:deletePastPaper"),
+    createPastPaperQuestion: makeFunctionReference<"mutation">("adminPastPapers:createPastPaperQuestion"),
+    updatePastPaperQuestion: makeFunctionReference<"mutation">("adminPastPapers:updatePastPaperQuestion"),
+    deletePastPaperQuestion: makeFunctionReference<"mutation">("adminPastPapers:deletePastPaperQuestion"),
+  },
   staffMedia: {
     generateStaffMediaUploadUrl: makeFunctionReference<"mutation">("staffMedia:generateStaffMediaUploadUrl"),
     registerStaffMediaUpload: makeFunctionReference<"mutation">("staffMedia:registerStaffMediaUpload"),
