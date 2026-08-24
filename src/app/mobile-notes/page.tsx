@@ -24,8 +24,8 @@ export default function MobileNotesPage() {
           Lesson notes stay with the full lesson experience
         </h1>
         <p className="text-muted-foreground mt-4 max-w-sm text-base leading-7">
-          The free mobile app focuses on quizzes and flashcards. Instructor-provided notes remain attached to full
-          lessons in the web experience.
+          Notes remain attached to full lessons in the web experience. The native learner app uses selected courses,
+          quizzes, past papers, Progress, and Profile instead.
         </p>
         <Button className="mt-6" asChild>
           <Link href="/mobile-flashcards">Open flashcards</Link>

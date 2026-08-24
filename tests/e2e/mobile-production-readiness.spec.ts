@@ -267,7 +267,7 @@ test("native profile logout goes straight to login without visiting the public l
   expect(navigatedPaths).not.toContain("/");
 });
 
-test("native direct quiz deep links resolve to the quiz-only mobile shell", async ({ page }) => {
+test("native direct quiz deep links resolve to the native mobile shell", async ({ page }) => {
   await simulateNativeAndroid(page);
   await seedLocalLearner(page);
   await page.goto("/quiz/ai-study-systems-check", { waitUntil: "domcontentloaded" });
@@ -291,15 +291,15 @@ test("native app redirects flashcards and other web-only routes back through mob
   await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
 });
 
-test("native progress and profile routes remain inside the quiz product", async ({ page }) => {
+test("native progress and profile routes remain inside the learner product", async ({ page }) => {
   await simulateNativeAndroid(page);
   await seedLocalLearner(page);
 
   await page.goto("/mobile-progress");
-  await expect(page.getByRole("heading", { name: "Quiz progress" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Study progress" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Mobile study navigation" }).getByRole("link", { name: "Progress" })).toHaveAttribute("aria-current", "page");
 
   await page.goto("/mobile-profile");
-  await expect(page.getByRole("heading", { name: "Quiz learner profile" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Learner profile" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Mobile study navigation" }).getByRole("link", { name: "Profile" })).toHaveAttribute("aria-current", "page");
 });

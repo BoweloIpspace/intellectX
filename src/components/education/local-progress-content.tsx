@@ -93,7 +93,7 @@ export function LocalProgressContent() {
     };
   }, []);
 
-  const selectedCourseIds = selection?.selectedCourseIds ?? [];
+  const selectedCourseIds = useMemo(() => selection?.selectedCourseIds ?? [], [selection]);
   const selectionReady = selection !== null;
 
   const selectedCourses = useMemo(

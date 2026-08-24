@@ -2,9 +2,9 @@ export type AppSurface = "web" | "mobile";
 
 export type StudyFeature = "quizzes" | "flashcards" | "notes";
 
-// The native IntellectX app is a free quiz product. Flashcards and notes remain
-// available to the broader web application but are intentionally excluded from
-// the native mobile surface.
+// The native IntellectX learner app supports course practice through quizzes
+// and Past Papers. Flashcards and notes remain available to the broader web
+// application but are intentionally excluded from the native mobile surface.
 const mobileStudyFeatures = ["quizzes"] as const satisfies readonly StudyFeature[];
 
 // Commerce remains a web concern. Native mobile must never expose checkout,

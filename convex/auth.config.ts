@@ -1,5 +1,7 @@
 import { getConvexAuthProviders } from "./lib/authConfigPolicy";
 
-export default {
+const authConfig = {
   providers: getConvexAuthProviders(),
 };
+
+export default authConfig;

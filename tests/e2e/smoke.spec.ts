@@ -101,9 +101,9 @@ const coreRoutes = [
 ];
 const globalLoadingCompletionRoutes = ["/", "/courses", "/dashboard", "/learn/prompting-for-learning"];
 const legalRoutes = [
-  { route: "/privacy-policy", heading: "Privacy Policy" },
-  { route: "/terms-and-conditions", heading: "Terms and Conditions" },
-  { route: "/refund-policy", heading: "Refund Policy" },
+  { route: "/privacy-policy", heading: "Privacy Policy", effectiveDate: "August 24, 2026" },
+  { route: "/terms-and-conditions", heading: "Terms and Conditions", effectiveDate: "June 28, 2026" },
+  { route: "/refund-policy", heading: "Refund Policy", effectiveDate: "June 28, 2026" },
 ];
 
 test.describe("core routes", () => {
@@ -128,12 +128,12 @@ test.describe("core routes", () => {
 });
 
 test.describe("production support routes", () => {
-  for (const { route, heading } of legalRoutes) {
+  for (const { route, heading, effectiveDate } of legalRoutes) {
     test(`${route} loads`, async ({ page }) => {
       await page.goto(route);
 
       await expect(page.getByRole("heading", { name: heading })).toBeVisible();
-      await expect(page.getByText("Effective date: June 28, 2026")).toBeVisible();
+      await expect(page.getByText(`Effective date: ${effectiveDate}`)).toBeVisible();
       await expect(page.locator("body")).not.toContainText("Application error");
     });
   }
@@ -152,13 +152,13 @@ test.describe("production support routes", () => {
     expect(robots.ok()).toBeTruthy();
     const robotsText = await robots.text();
     expect(robotsText).toContain("User-Agent: *");
-    expect(robotsText).toContain("Sitemap: https://intellect-x-coral.vercel.app/sitemap.xml");
+    expect(robotsText).toContain("Sitemap: https://intellectx-lovat.vercel.app/sitemap.xml");
 
     const sitemap = await request.get("/sitemap.xml");
     expect(sitemap.ok()).toBeTruthy();
     const sitemapText = await sitemap.text();
-    expect(sitemapText).toContain("https://intellect-x-coral.vercel.app/courses");
-    expect(sitemapText).toContain("https://intellect-x-coral.vercel.app/quiz/ai-study-systems-check");
+    expect(sitemapText).toContain("https://intellectx-lovat.vercel.app/courses");
+    expect(sitemapText).toContain("https://intellectx-lovat.vercel.app/quiz/ai-study-systems-check");
   });
 
   test("low-risk security headers are present", async ({ request }) => {
@@ -261,7 +261,7 @@ test.describe("global loading indicator", () => {
   });
 });
 
-test("native app restores logged-in learners from home to the free mobile quiz hub", async ({ page }) => {
+test("native app restores logged-in learners from home to the free mobile practice hub", async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
       "intellectx:learner-session",
@@ -285,13 +285,13 @@ test("native app restores logged-in learners from home to the free mobile quiz h
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/\/mobile-quizzes$/);
-  await expect(page.getByRole("heading", { name: "Practice with focused quizzes" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Practice quizzes and past papers" })).toBeVisible();
 });
 
-test("mobile quiz hub loads and exposes quiz links", async ({ page }) => {
+test("mobile practice hub loads and exposes quiz links", async ({ page }) => {
   await page.goto("/mobile-quizzes");
 
-  await expect(page.getByRole("heading", { name: "Practice with focused quizzes" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Practice quizzes and past papers" })).toBeVisible();
   await expect(page.getByText("AI Study Systems Check")).toBeVisible();
   await expect(page.getByRole("link", { name: /Start quiz/i }).first()).toHaveAttribute(
     "href",
@@ -304,7 +304,8 @@ test("mobile notes and flashcards entry routes load", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Lesson notes stay with the full lesson experience" }),
   ).toBeVisible();
-  await expect(page.getByText("The free mobile app focuses on quizzes and flashcards.")).toBeVisible();
+  await expect(page.getByText(/Notes remain attached to full lessons in the web experience\./)).toBeVisible();
+  await expect(page.getByText(/The native learner app uses selected courses, quizzes, past papers, Progress, and Profile instead\./)).toBeVisible();
   await expect(page.getByRole("link", { name: "Open flashcards" })).toHaveAttribute("href", "/mobile-flashcards");
   await expect(page.getByRole("link", { name: "Browse lessons" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Open lesson notes" })).toHaveCount(0);
@@ -615,7 +616,7 @@ test.describe("mobile smoke", () => {
 
   const mobileRoutes = [
     { route: "/", text: "IntellectX" },
-    { route: "/mobile-quizzes", text: "Practice with focused quizzes" },
+    { route: "/mobile-quizzes", text: "Practice quizzes and past papers" },
     { route: "/mobile-flashcards", text: "Flashcards from lesson cards" },
     { route: "/mobile-notes", text: "Lesson notes stay with the full lesson experience" },
     { route: "/courses", text: "Choose your next intelligent learning path" },

@@ -3,6 +3,44 @@ apply plugin: 'com.android.application'
 def intellectXVersionCode = (project.findProperty('INTELLECTX_VERSION_CODE') ?: System.getenv('INTELLECTX_VERSION_CODE') ?: '1').toString().toInteger()
 def intellectXVersionName = (project.findProperty('INTELLECTX_VERSION_NAME') ?: System.getenv('INTELLECTX_VERSION_NAME') ?: '1.0.0').toString()
 
+def readReleaseSetting = { String name ->
+    def value = project.findProperty(name) ?: System.getenv(name)
+    if (value == null) {
+        return null
+    }
+
+    def normalized = value.toString().trim()
+    return normalized.isEmpty() ? null : normalized
+}
+
+def uploadStoreFile = readReleaseSetting('INTELLECTX_UPLOAD_STORE_FILE')
+def uploadStorePassword = readReleaseSetting('INTELLECTX_UPLOAD_STORE_PASSWORD')
+def uploadKeyAlias = readReleaseSetting('INTELLECTX_UPLOAD_KEY_ALIAS')
+def uploadKeyPassword = readReleaseSetting('INTELLECTX_UPLOAD_KEY_PASSWORD')
+def requireReleaseSigningValue = readReleaseSetting('INTELLECTX_REQUIRE_RELEASE_SIGNING')
+
+if (requireReleaseSigningValue != null && !['true', 'false'].contains(requireReleaseSigningValue.toLowerCase())) {
+    throw new GradleException('INTELLECTX_REQUIRE_RELEASE_SIGNING must be true or false when provided.')
+}
+
+def requireReleaseSigning = requireReleaseSigningValue?.toBoolean() ?: false
+def releaseSigningValues = [uploadStoreFile, uploadStorePassword, uploadKeyAlias, uploadKeyPassword]
+def anyReleaseSigningValue = releaseSigningValues.any { it != null }
+def releaseSigningConfigured = releaseSigningValues.every { it != null }
+
+if (anyReleaseSigningValue && !releaseSigningConfigured) {
+    throw new GradleException('Android release signing is partially configured. Provide all INTELLECTX_UPLOAD_* signing values or none of them.')
+}
+
+if (requireReleaseSigning && !releaseSigningConfigured) {
+    throw new GradleException('Signed Android release required, but upload-key credentials are not fully configured.')
+}
+
+def uploadStoreFileRef = releaseSigningConfigured ? file(uploadStoreFile) : null
+if (releaseSigningConfigured && !uploadStoreFileRef.isFile()) {
+    throw new GradleException('Configured Android upload keystore file does not exist.')
+}
+
 android {
     namespace = "com.intellectx.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -19,9 +57,22 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (releaseSigningConfigured) {
+            release {
+                storeFile uploadStoreFileRef
+                storePassword uploadStorePassword
+                keyAlias uploadKeyAlias
+                keyPassword uploadKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
             debuggable false
+            if (releaseSigningConfigured) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

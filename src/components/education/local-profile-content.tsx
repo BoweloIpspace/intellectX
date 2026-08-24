@@ -122,7 +122,7 @@ export function LocalProfileContent() {
   }, []);
 
   const selectionReady = selection !== null;
-  const selectedCourseIds = selection?.selectedCourseIds ?? [];
+  const selectedCourseIds = useMemo(() => selection?.selectedCourseIds ?? [], [selection]);
   const selectedCourses = useMemo(
     () =>
       selectedCourseIds

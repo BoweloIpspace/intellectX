@@ -87,7 +87,7 @@ test("mobile Progress combines quiz scores with completed and resumable past-pap
   await seedLearnerPractice(page);
   await page.goto("/mobile-progress");
 
-  await expect(page.getByRole("heading", { name: "Quiz progress" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Study progress" })).toBeVisible();
   const overview = page.getByRole("region", { name: "Practice overview" });
   await expect(overview.getByText("75%", { exact: true })).toBeVisible();
   await expect(overview.getByText("2 attempts", { exact: true })).toBeVisible();
@@ -112,7 +112,7 @@ test("mobile Profile reports only the current learner profile's saved study data
   await seedLearnerPractice(page);
   await page.goto("/mobile-profile");
 
-  await expect(page.getByRole("heading", { name: "Quiz learner profile" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Learner profile" })).toBeVisible();
   await expect(page.getByText("Study data on this device", { exact: true })).toBeVisible();
   await expect(page.getByText("Selected courses", { exact: true })).toBeVisible();
   await expect(page.getByText("Quiz attempts · 75% avg", { exact: true })).toBeVisible();

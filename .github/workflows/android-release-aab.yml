@@ -78,6 +78,28 @@ jobs:
       - name: Sync Capacitor Android project
         run: npx cap sync android
 
+      - name: Verify signed release fails closed without credentials
+        working-directory: android
+        shell: bash
+        env:
+          INTELLECTX_REQUIRE_RELEASE_SIGNING: "true"
+        run: |
+          chmod +x gradlew
+          set +e
+          SIGNING_CHECK_OUTPUT="$(./gradlew --no-daemon --console=plain help 2>&1)"
+          SIGNING_CHECK_STATUS=$?
+          set -e
+
+          if [ "$SIGNING_CHECK_STATUS" -eq 0 ]; then
+            echo "Expected required release signing to fail without upload-key credentials." >&2
+            exit 1
+          fi
+
+          if ! grep -Fq "Signed Android release required, but upload-key credentials are not fully configured." <<<"$SIGNING_CHECK_OUTPUT"; then
+            echo "Release signing guard failed for an unexpected reason." >&2
+            exit 1
+          fi
+
       - name: Build unsigned release AAB
         working-directory: android
         run: |

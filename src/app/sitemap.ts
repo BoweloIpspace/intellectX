@@ -1,9 +1,8 @@
 import { courses } from "@/data/courses";
 import { lessons } from "@/data/lessons";
 import { quizzes } from "@/data/quizzes";
+import { INTELLECTX_PUBLIC_SITE_URL } from "@/lib/site-config";
 import type { MetadataRoute } from "next";
-
-const siteUrl = "https://intellect-x-coral.vercel.app";
 
 const staticRoutes = [
   "/",
@@ -26,7 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   return routes.map((route) => ({
-    url: `${siteUrl}${route}`,
+    url: `${INTELLECTX_PUBLIC_SITE_URL}${route}`,
     lastModified: new Date(),
   }));
 }
