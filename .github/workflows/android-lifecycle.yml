@@ -137,7 +137,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --console=plain connectedDebugAndroidTest
+          ./gradlew --no-daemon --console=plain :app:connectedDebugAndroidTest
 
       - name: Verify cold process restart
         shell: bash
