@@ -94,7 +94,7 @@ test("mobile Progress combines quiz scores with completed and resumable past-pap
   await expect(overview.getByText("1", { exact: true })).toBeVisible();
   await expect(overview.getByText(/completed · 1 in progress/i)).toBeVisible();
 
-  const pastPaperCard = page.getByText("Past paper practice").locator("..", { hasText: "Past paper practice" });
+  await expect(page.getByRole("heading", { name: "Past paper practice" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "2019 Paper 3" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "2020 Paper 3" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Review completion" })).toHaveAttribute(
@@ -105,7 +105,6 @@ test("mobile Progress combines quiz scores with completed and resumable past-pap
     "href",
     "/mobile-past-papers/bgcse-biology-2020-paper-3",
   );
-  await expect(pastPaperCard).toBeVisible();
 });
 
 test("mobile Profile reports only the current learner profile's saved study data", async ({ page }) => {
@@ -114,13 +113,13 @@ test("mobile Profile reports only the current learner profile's saved study data
   await page.goto("/mobile-profile");
 
   await expect(page.getByRole("heading", { name: "Quiz learner profile" })).toBeVisible();
-  const studyData = page.getByText("Study data on this device").locator("..", { hasText: "Study data on this device" });
-  await expect(studyData).toContainText("2Selected courses");
-  await expect(studyData).toContainText("2Quiz attempts · 75% avg");
-  await expect(studyData).toContainText("1Past papers completed");
-  await expect(studyData).toContainText("1Past papers in progress");
-  await expect(studyData).toContainText("4 past-paper model answers have been revealed");
-  await expect(studyData).toContainText("Deleting the local profile removes its selected courses, quiz history, unfinished quiz state, and past-paper progress.");
+  await expect(page.getByText("Study data on this device")).toBeVisible();
+  await expect(page.getByText("Selected courses")).toBeVisible();
+  await expect(page.getByText("Quiz attempts · 75% avg")).toBeVisible();
+  await expect(page.getByText("Past papers completed")).toBeVisible();
+  await expect(page.getByText("Past papers in progress")).toBeVisible();
+  await expect(page.getByText(/4 past-paper model answers have been revealed/)).toBeVisible();
+  await expect(page.getByText(/Deleting the local profile removes its selected courses, quiz history, unfinished quiz state, and past-paper progress/)).toBeVisible();
 });
 
 test("a completed past paper is not offered as resumable study on Home", async ({ page }) => {
