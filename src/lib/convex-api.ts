@@ -60,6 +60,7 @@ export const convexApi = {
     submitQuizAttempt: makeFunctionReference<"mutation">("quizzes:submitQuizAttempt"),
   },
   pastPapers: {
+    listPastPaperCourseSummaries: makeFunctionReference<"query">("pastPapers:listPastPaperCourseSummaries"),
     listPastPaperCourseIds: makeFunctionReference<"query">("pastPapers:listPastPaperCourseIds"),
     getPastPapersByCourse: makeFunctionReference<"query">("pastPapers:getPastPapersByCourse"),
     getPastPaperById: makeFunctionReference<"query">("pastPapers:getPastPaperById"),
