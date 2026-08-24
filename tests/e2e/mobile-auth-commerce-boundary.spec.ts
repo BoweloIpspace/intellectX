@@ -62,8 +62,28 @@ test("native learner session survives a full reload", async ({ page }) => {
 
 test("native logout clears the active learner session and returns to learner login", async ({ page }) => {
   await simulateNativeAndroid(page);
-  await seedLearner(page);
-  await seedCourseSelection(page);
+  await page.goto("/login");
+  await page.evaluate(() => {
+    const selectedAt = Date.now();
+    window.localStorage.setItem(
+      "intellectx:learner-session",
+      JSON.stringify({
+        name: "Boundary Learner",
+        email: "boundary.learner@intellectx.local",
+        role: "student",
+      }),
+    );
+    window.localStorage.setItem(
+      "intellectx:course-selection",
+      JSON.stringify({
+        selectedCourseIds: ["ai-study-systems"],
+        selectedAt,
+        gracePeriodEndsAt: selectedAt + 7 * 24 * 60 * 60 * 1000,
+        lockedAt: null,
+        locked: false,
+      }),
+    );
+  });
   await page.goto("/mobile-profile");
 
   await expect(page.getByText("boundary.learner@intellectx.local")).toBeVisible();
