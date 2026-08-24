@@ -83,6 +83,8 @@ describe("Past Paper admin and release seeding", () => {
     expect(reconcile).toContain("staleRowsRemoved");
     expect(reconcile).toContain('question.stableId.startsWith("bgcse-bio-2019-p3-")');
     expect(reconcile).toContain("isBiology2019Paper3ResetCandidate(paper)");
+    expect(reconcile).toContain("if (question.seedManaged !== false)");
+    expect(reconcile).toContain("Rows from before seed provenance existed have seedManaged undefined.");
   });
 
   it("keeps learner paper payloads answer-free until Reveal answer", () => {
