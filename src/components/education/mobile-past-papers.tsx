@@ -299,6 +299,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
   }
 
   function restart() {
+    if (!paper) return;
     clearMobilePastPaperProgress(paper.stableId);
     setCurrentIndex(0);
     setRevealed(new Set());
