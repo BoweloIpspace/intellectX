@@ -22,8 +22,11 @@ const paper = {
   year: 2019,
   paperCode: "0572/03",
   session: "October/November 2019",
-  description: "BGCSE Biology Paper 3 in question-by-question reveal-answer mode.",
+  description:
+    "Source-aligned BGCSE Biology Paper 3 practice edition. Question facts and mark totals follow the 2019 paper; IntellectX uses original reconstructed study visuals rather than reproducing the examination artwork.",
   estimatedTime: "1 hour 15 minutes",
+  totalMarks: 70,
+  pageCount: 8,
   accessLevel: "free" as const,
   published: true,
   order: 1,
@@ -33,65 +36,139 @@ const questions = [
   {
     stableId: "bgcse-bio-2019-p3-q1",
     questionNumber: "1",
+    sectionLabel: "Section A",
     marks: 8,
     order: 1,
-    prompt: "A diagram shows part of a fungus, including a food granule.\n\n(a) Identify the two labelled structures in the fungal cell.\n(b) State two similarities and two differences between the fungus shown and a bacterium.\n(c) Describe the mode of nutrition used by fungi.",
-    modelAnswer: "(a) This sub-question depends on the labelled arrows in the original paper figure; use the figure to identify the two structures.\n\n(b) Similarities include a cell membrane, cytoplasm and a cell wall. Differences include that a fungal cell has a membrane-bound nucleus whereas a bacterium does not, and their cell-wall composition differs.\n\n(c) Fungi use saprotrophic nutrition: digestive enzymes are secreted onto organic material, digestion occurs outside the organism, and soluble products are absorbed.",
-    explanation: "For (b), compare a eukaryotic fungal cell with a prokaryotic bacterial cell. For (c), the scoring chain is extracellular enzyme secretion, external digestion and absorption.",
+    stimulusTitle: "Fungal structure",
+    stimulusText:
+      "Use the reconstructed study diagram. Q points to a rounded structure inside the fungal cell, R points to the outer boundary, and a food granule is shown inside the cell.",
+    stimulusAssetPath: "/past-papers/bgcse-biology/2019-paper-3/q1-fungus.svg",
+    stimulusAssetAlt:
+      "Branching fungal hypha with a rounded cell. Q points to the nucleus, R points to the outer cell wall, and a food granule is shown inside the cell.",
+    stimulusSourceStatus: "reconstructed-visual" as const,
+    prompt:
+      "(a) Identify the structures labelled Q and R.\n(b) Give two similarities and two differences between the fungus and a bacterium.\n(c) Describe how fungi obtain nutrients.",
+    modelAnswer:
+      "(a) Q: nucleus. R: cell wall.\n\n(b) Similarities: both have a cell membrane, cytoplasm and a cell wall (any two suitable similarities). Differences: the fungus has a membrane-bound nucleus whereas a bacterium has no true nucleus; the fungal wall contains chitin whereas the bacterial wall contains peptidoglycan/murein. A further valid difference is that fungal cells have membrane-bound organelles such as mitochondria whereas bacteria do not.\n\n(c) Fungi use saprotrophic nutrition. They secrete digestive enzymes onto organic material, digest it outside the organism, then absorb the soluble products.",
+    explanation:
+      "The visual-identification part is now answerable from the reconstructed diagram instead of referring the learner back to a missing paper figure. The nutrition sequence to remember is enzyme secretion → extracellular digestion → absorption.",
   },
   {
     stableId: "bgcse-bio-2019-p3-q2",
     questionNumber: "2",
+    sectionLabel: "Section A",
     marks: 7,
     order: 2,
-    prompt: "A diagram shows the left side of a human heart and labels valve X.\n\n(a) Name valve X and explain how the body would be affected if it failed to close properly.\n(b) Suggest two advantages of double circulation.",
-    modelAnswer: "(a) The name of valve X must be read from its position in the original figure. If the valve fails to close, blood flows backwards during contraction, reducing forward cardiac output. Less oxygen and glucose reach tissues, reducing aerobic respiration and exercise capacity.\n\n(b) Double circulation keeps oxygenated and deoxygenated blood separate and allows different pressures in the pulmonary and systemic circuits, giving efficient delivery to the body while protecting lung capillaries.",
-    explanation: "The core idea is that valves prevent backflow. Trace the effect of leakage through reduced forward blood flow and therefore reduced oxygen delivery.",
+    stimulusTitle: "Left side of the heart",
+    stimulusText:
+      "In the reconstructed study diagram, X marks the valve between the left atrium and left ventricle. The aorta leaves the left ventricle.",
+    stimulusAssetPath: "/past-papers/bgcse-biology/2019-paper-3/q2-left-heart.svg",
+    stimulusAssetAlt:
+      "Left atrium above the left ventricle, with valve X between the two chambers and the aorta leaving the ventricle.",
+    stimulusSourceStatus: "reconstructed-visual" as const,
+    prompt:
+      "(a) Name valve X. Describe and explain how the body would be affected if this valve failed to close properly.\n(b) Suggest two advantages of double circulation.",
+    modelAnswer:
+      "(a) X is the bicuspid (mitral) valve. If it does not close properly when the ventricle contracts, some blood flows back into the left atrium instead of entering the aorta. This reduces forward cardiac output, so tissues receive less oxygen and glucose and can carry out less aerobic respiration, especially during exercise.\n\n(b) The systemic circuit can operate at a relatively high pressure for rapid delivery around the body while the pulmonary circuit remains at a lower pressure that protects lung capillaries. Oxygenated blood returning from the lungs is also kept separate from deoxygenated blood before systemic delivery.",
+    explanation:
+      "Valve X is identified by position: the atrioventricular valve on the left side is the bicuspid/mitral valve. For valve failure, trace the consequence from backflow → lower forward output → lower oxygen delivery → reduced aerobic respiration.",
   },
   {
     stableId: "bgcse-bio-2019-p3-q3",
     questionNumber: "3",
+    sectionLabel: "Section A",
     marks: 7,
     order: 3,
-    prompt: "A diagram shows the male reproductive system.\n\n(a) Name the structure labelled S and state its function.\n(b) Identify the structure where meiosis occurs and explain why meiosis is important in reproduction.\n(c) Distinguish between prophase of mitosis and prophase I of meiosis.",
-    modelAnswer: "(a) This sub-question depends on the arrow labelled S in the original figure; identify the organ from that figure and state its matching function.\n\n(b) Meiosis occurs in the testes during sperm formation. It halves the chromosome number to form haploid gametes so fertilisation can restore the diploid number, and it contributes to genetic variation.\n\n(c) Homologous chromosomes do not pair in mitotic prophase. In prophase I of meiosis homologous chromosomes pair as bivalents and crossing over can occur.",
-    explanation: "The distinctive events in prophase I are pairing of homologous chromosomes and possible crossing over.",
+    stimulusTitle: "Male reproductive system",
+    stimulusText:
+      "The source paper uses a labelled male reproductive-system diagram. IntellectX provides an original study reconstruction rather than a facsimile: S marks the narrow tube running upward from a testis, and V marks the oval organ in the scrotum.",
+    stimulusAssetPath: "/past-papers/bgcse-biology/2019-paper-3/q3-male-reproductive.svg",
+    stimulusAssetAlt:
+      "Side-view male reproductive-system study diagram. S points to the narrow tube running upward from a testis; T points to a gland behind the bladder; U points to the gland below the bladder; V points to the oval organ in the scrotum.",
+    stimulusSourceStatus: "reconstructed-visual" as const,
+    prompt:
+      "(a) In the study diagram, name S and state its function.\n(b) Which labelled structure is where meiosis occurs? Explain why meiosis is important in reproduction.\n(c) Distinguish prophase of mitosis from prophase I of meiosis.",
+    modelAnswer:
+      "(a) S is the sperm duct (vas deferens). It carries sperm from the testis/epididymis towards the urethra.\n\n(b) V, the testis. Meiosis makes haploid gametes so fertilisation can restore the diploid chromosome number; it also contributes to genetic variation.\n\n(c) In mitotic prophase homologous chromosomes do not pair. In prophase I of meiosis homologous chromosomes pair as bivalents and crossing over can occur.",
+    explanation:
+      "This diagram is an IntellectX reconstruction because a reliable reusable copy of the source artwork was not established. It preserves the assessed biology concepts while making the digital question independently answerable.",
   },
   {
     stableId: "bgcse-bio-2019-p3-q4",
     questionNumber: "4",
+    sectionLabel: "Section A",
     marks: 7,
     order: 4,
-    prompt: "Yeast and glucose solution are mixed and divided into equal samples. The samples are kept for 30 minutes at 2°C, 25°C and 60°C. The amount of froth differs between temperatures.\n\n(a) Explain the difference between the results at 2°C and 25°C.\n(b) The 60°C sample is moved to 25°C for another 30 minutes. Predict what happens and explain why.",
-    modelAnswer: "(a) At 25°C enzyme-controlled respiration proceeds faster than at 2°C because particles have more kinetic energy and successful collisions occur more often. More carbon dioxide is produced, so more froth forms.\n\n(b) Little or no new froth is expected after the 60°C sample is cooled. The high temperature denatures essential enzymes and may kill the yeast cells; cooling does not restore denatured enzyme shape.",
-    explanation: "Low temperature slows enzyme activity and is generally reversible. High temperature can denature enzymes irreversibly.",
+    stimulusTitle: "Yeast respiration at different temperatures",
+    stimulusText:
+      "Equal yeast-and-glucose samples were kept for 30 minutes at 2°C, 25°C and 60°C. The study reconstruction shows little froth at 2°C, much more froth at 25°C, and no visible froth at 60°C.",
+    stimulusAssetPath: "/past-papers/bgcse-biology/2019-paper-3/q4-yeast-temperature.svg",
+    stimulusAssetAlt:
+      "Three equal yeast and glucose samples after 30 minutes: a small froth layer at 2 degrees Celsius, a much larger froth layer at 25 degrees Celsius, and no visible froth at 60 degrees Celsius.",
+    stimulusSourceStatus: "reconstructed-visual" as const,
+    prompt:
+      "(a) Explain the difference between the 2°C and 25°C results.\n(b) The 60°C sample is then kept at 25°C for another 30 minutes. Predict what will happen and explain why.",
+    modelAnswer:
+      "(a) At 25°C, enzyme-controlled respiration is faster than at 2°C. Molecules have more kinetic energy, so enzyme-substrate collisions occur more frequently and more carbon dioxide is produced, giving more froth. At 2°C respiration is slowed but the enzymes are not permanently damaged.\n\n(b) Little or no new froth is expected. At 60°C essential enzymes are denatured and the yeast cells may be killed. Cooling to 25°C does not restore the three-dimensional shape of denatured enzymes.",
+    explanation:
+      "Cold conditions slow enzyme-controlled reactions and the effect is usually reversible. Excessive heat can denature enzymes irreversibly. Froth is evidence of carbon dioxide released during yeast respiration/fermentation.",
   },
   {
     stableId: "bgcse-bio-2019-p3-q5",
     questionNumber: "5",
+    sectionLabel: "Section A",
     marks: 11,
     order: 5,
-    prompt: "A graph shows the adrenaline level in a girl's blood after she is frightened by a dog. She runs away and reaches home after 20 minutes.\n\n(a) Describe the graph between 0 and 15 minutes.\n(b) Explain how the rise in adrenaline prepares her for running.\n(c) Name the organs mainly responsible for destroying spent adrenaline and removing its products from the blood.",
-    modelAnswer: "(a) Use the plotted values in the original graph: describe the initial rise to a maximum and the subsequent fall, quoting values or times where the graph supplies them.\n\n(b) Adrenaline raises heart rate and ventilation, increases blood flow to skeletal muscles and promotes release of glucose. This increases oxygen and glucose delivery and therefore ATP production for muscle contraction.\n\n(c) The liver breaks down adrenaline and the kidneys remove soluble waste products from the blood for excretion.",
-    explanation: "For graph questions, describe only what is plotted and quote the graph where possible. For fight-or-flight, link each change to increased respiration in working muscle.",
+    stimulusTitle: "Adrenaline after a fright",
+    stimulusText:
+      "A girl is frightened by a dog, runs away, and reaches home after 20 minutes. The reconstructed qualitative graph shows adrenaline rising rapidly to a peak before 10 minutes and then falling through 15 and 20 minutes.",
+    stimulusAssetPath: "/past-papers/bgcse-biology/2019-paper-3/q5-adrenaline-graph.svg",
+    stimulusAssetAlt:
+      "Qualitative adrenaline graph from 0 to 20 minutes: rapid rise after the fright, a peak before 10 minutes, then a decline through 15 and 20 minutes.",
+    stimulusSourceStatus: "reconstructed-visual" as const,
+    prompt:
+      "(a) Describe the shape of the graph from 0 to 15 minutes.\n(b) Explain how the early rise in adrenaline prepares the girl for running.\n(c) Name the organs mainly responsible for destroying spent adrenaline and removing its breakdown products from the blood.",
+    modelAnswer:
+      "(a) The adrenaline level rises rapidly from its initial level to a maximum, then decreases by 15 minutes.\n\n(b) Adrenaline increases heart rate and ventilation, redirects/increases blood flow to skeletal muscles and promotes release of glucose into the blood. More oxygen and glucose reach working muscles, increasing aerobic respiration and ATP supply for contraction.\n\n(c) Liver: breakdown/destruction of spent adrenaline. Kidneys: removal of soluble breakdown products from the blood for excretion.",
+    explanation:
+      "For the graph, describe only the trend that is shown. For fight-or-flight, link each physiological response to faster delivery of oxygen/glucose and therefore greater energy release in working muscle.",
   },
   {
     stableId: "bgcse-bio-2019-p3-q6",
     questionNumber: "6",
+    sectionLabel: "Section B",
     marks: 15,
     order: 6,
-    prompt: "Section B. A diagram shows an asexual reproduction method used in commercial plant farming.\n\n(a) Name the method and describe disadvantages of using this kind of asexual propagation on a large scale.\n(b) Describe and explain how magnesium deficiency in soil would affect development of the plant.\n(c) Flowers have adaptations for attracting pollinators such as bees. Explain how heavy air pollution could interfere with pollination.",
-    modelAnswer: "(a) The exact propagation method must be identified from the original figure. A major disadvantage of large-scale asexual propagation is low genetic variation: genetically similar plants may all be susceptible to the same disease, pest or environmental change. Pathogens can also be carried with vegetative material.\n\n(b) Magnesium is needed to make chlorophyll. Deficiency causes chlorosis, reduces light absorption and lowers photosynthesis. Less glucose is produced for respiration and biomass formation, so growth and yield fall.\n\n(c) Pollution can reduce floral scent or visibility, damage flowers, harm or repel pollinators, and interfere with pollen transfer or germination. Fewer successful pollinator visits reduce fertilisation and seed or fruit production.",
-    explanation: "For magnesium, follow magnesium → chlorophyll → photosynthesis → glucose → growth. For pollution, explain a mechanism that reduces attraction, pollinator survival or successful pollen transfer.",
+    stimulusTitle: "Commercial vegetative propagation",
+    stimulusText:
+      "The source paper assesses identification of an asexual plant-propagation method from a figure. The original figure could not be independently verified for reusable digital reproduction, so this IntellectX study reconstruction uses a stem cutting: a stem section from a parent plant is placed in moist growing medium and develops roots.",
+    stimulusAssetPath: "/past-papers/bgcse-biology/2019-paper-3/q6-vegetative-propagation.svg",
+    stimulusAssetAlt:
+      "A stem section with leaves is taken from a parent plant, inserted into moist growing medium, forms new roots and develops into a new plant.",
+    stimulusSourceStatus: "reconstructed-visual" as const,
+    prompt:
+      "(a) Name the asexual propagation method shown in the study reconstruction and describe disadvantages of using this kind of clonal propagation on a large scale.\n(b) Describe and explain how magnesium deficiency in soil would affect the plant's development.\n(c) Explain how heavy air pollution could interfere with insect pollination of flowers.",
+    modelAnswer:
+      "(a) Stem cutting (vegetative propagation). Large-scale asexual propagation produces genetically very similar or identical plants, so a disease, pest or environmental change to which one is susceptible may affect many plants. Infected source material can also spread pathogens through the crop.\n\n(b) Magnesium is required to make chlorophyll. Deficiency causes reduced chlorophyll/chlorosis, so less light is absorbed and photosynthesis decreases. Less glucose is made for respiration and production of new biomass, so growth, leaf development and yield are reduced.\n\n(c) Pollution can mask or alter floral scent and visibility, coat or damage flower surfaces/pollen, harm or repel pollinating insects, or reduce pollen germination/transfer. Fewer effective pollinator visits mean less pollination, fertilisation, seed formation and fruit production.",
+    explanation:
+      "The Q6 source artwork was not treated as verified, reusable content. The reconstruction is explicitly labelled so learners are not misled into thinking it is a facsimile. The core syllabus chain for magnesium is magnesium → chlorophyll → photosynthesis → glucose → growth.",
   },
   {
     stableId: "bgcse-bio-2019-p3-q7",
     questionNumber: "7",
+    sectionLabel: "Section B",
     marks: 15,
     order: 7,
-    prompt: "Section B.\n\n(a) Distinguish continuous from discontinuous variation and give one example of each other than blood group.\n(b) A family has individuals with blood groups A, B, AB and O. Use the stated family relationships in the source paper to construct a pedigree. Given that the daughter's genotype is IᴬIᴼ, determine the two possible genotypes of her mother.\n(c) A man with genotype IᴬIᴼ has children with a woman of blood group AB. Use a genetic cross to determine all possible blood groups of their children.",
-    modelAnswer: "(a) Continuous variation forms a range with intermediate values, for example height. Discontinuous variation falls into distinct categories with no intermediates, for example tongue-rolling phenotype in the school-level model.\n\n(b) This part depends on the exact family relationships shown in the original paper. Construct the pedigree from those relationships and use allele inheritance from each parent to determine the mother's two possible genotypes.\n\n(c) Father IᴬIᴼ produces gametes Iᴬ and Iᴼ. Mother IᴬIᴮ produces gametes Iᴬ and Iᴮ. Offspring can be IᴬIᴬ (A), IᴬIᴮ (AB), IᴬIᴼ (A) or IᴮIᴼ (B). Possible blood groups are therefore A, AB and B; group O is not possible.",
-    explanation: "ABO inheritance uses three alleles: Iᴬ and Iᴮ are codominant and Iᴼ is recessive. The pedigree part must be solved from the relationships in the original figure rather than guessed from phenotype alone.",
+    stimulusTitle: "ABO family information",
+    stimulusText:
+      "A blood-group-B father and an unspecified mother have three sons with blood groups A, B and AB, plus a daughter. That daughter has genotype IᴬIᴼ, marries a blood-group-B man, and they have two sons with blood groups AB and O. The blood-group-A son has genotype IᴬIᴼ and later has children with a blood-group-AB woman.",
+    stimulusSourceStatus: "source-text" as const,
+    prompt:
+      "(a) Distinguish continuous from discontinuous variation and give one example of each other than blood group.\n(b) Use the family information above to construct a pedigree. Determine the two possible genotypes of the first-generation mother.\n(c) For the IᴬIᴼ man and the blood-group-AB woman, use a genetic cross to determine all possible blood groups of their children.",
+    modelAnswer:
+      "(a) Continuous variation shows a range with intermediate values, for example height or body mass. Discontinuous variation has distinct categories with no intermediates, for example biological sex in the simplified school-level model or ability to roll the tongue.\n\n(b) The pedigree should show the blood-group-B father and the mother as a couple, their sons A, B and AB plus their daughter, then the daughter with a blood-group-B partner and their sons AB and O. Because the daughter is IᴬIᴼ, the mother must be able to supply Iᴬ. The family can be produced if the mother is IᴬIᴼ (group A) or IᴬIᴮ (group AB).\n\n(c) Father IᴬIᴼ produces gametes Iᴬ and Iᴼ. Mother IᴬIᴮ produces gametes Iᴬ and Iᴮ. Possible offspring are IᴬIᴬ (A), IᴬIᴮ (AB), IᴬIᴼ (A) and IᴮIᴼ (B). Possible blood groups are A, AB and B; O is not possible.",
+    explanation:
+      "ABO inheritance has three alleles. Iᴬ and Iᴮ are codominant; Iᴼ is recessive. The complete family relationships are now included in the digital question, so the pedigree and genotype parts no longer depend on missing source text.",
   },
 ];
 
@@ -138,6 +215,7 @@ export const seed = internalMutationGeneric({
       courseStableId: course.stableId,
       paperStableId: paper.stableId,
       questionCount: questions.length,
+      totalMarks: questions.reduce((total, question) => total + question.marks, 0),
     };
   },
 });
