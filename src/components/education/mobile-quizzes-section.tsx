@@ -37,9 +37,39 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+type PastPaperCourseSummary = {
+  courseStableId: string;
+  paperCount: number;
+};
+
+function getCourseQuizCount(catalog: LearnerCatalog, courseId: string) {
+  return catalog.quizzes.filter((quiz) => quiz.courseId === courseId).length;
+}
+
+function getCourseTopicCount(catalog: LearnerCatalog, courseId: string) {
+  return catalog.lessons.filter(
+    (lesson) =>
+      lesson.courseId === courseId &&
+      catalog.quizzes.some((quiz) => quiz.courseId === courseId && quiz.lessonId === lesson.id),
+  ).length;
+}
+
+function getCoursePaperCount(summaries: PastPaperCourseSummary[], courseId: string) {
+  return summaries.find((summary) => summary.courseStableId === courseId)?.paperCount ?? 0;
+}
+
+function formatCourseContentSummary(quizCount: number, paperCount: number) {
+  return [
+    quizCount > 0 ? `${quizCount} ${quizCount === 1 ? "quiz" : "quizzes"}` : null,
+    paperCount > 0 ? `${paperCount} past ${paperCount === 1 ? "paper" : "papers"}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 export function MobileQuizzesSection() {
   if (!convexEnv.isConfigured) {
-    return <MobileQuizzesContent catalog={buildLearnerCatalog()} pastPaperCourseIds={[]} />;
+    return <MobileQuizzesContent catalog={buildLearnerCatalog()} pastPaperSummaries={[]} />;
   }
 
   return <ConvexMobileQuizzesSection />;
@@ -47,24 +77,26 @@ export function MobileQuizzesSection() {
 
 function ConvexMobileQuizzesSection() {
   const catalog = useLearnerCatalog();
-  const pastPaperCourseIds = useQuery(convexApi.pastPapers.listPastPaperCourseIds, {}) as string[] | undefined;
+  const pastPaperSummaries = useQuery(convexApi.pastPapers.listPastPaperCourseSummaries, {}) as
+    | PastPaperCourseSummary[]
+    | undefined;
 
   return (
     <MobileQuizzesContent
       catalog={catalog}
-      pastPaperCourseIds={pastPaperCourseIds ?? []}
-      pastPapersLoading={pastPaperCourseIds === undefined}
+      pastPaperSummaries={pastPaperSummaries ?? []}
+      pastPapersLoading={pastPaperSummaries === undefined}
     />
   );
 }
 
 function MobileQuizzesContent({
   catalog,
-  pastPaperCourseIds,
+  pastPaperSummaries,
   pastPapersLoading = false,
 }: {
   catalog: LearnerCatalog;
-  pastPaperCourseIds: string[];
+  pastPaperSummaries: PastPaperCourseSummary[];
   pastPapersLoading?: boolean;
 }) {
   const [nativeAppSurface, setNativeAppSurface] = useState<boolean | null>(null);
@@ -85,15 +117,15 @@ function MobileQuizzesContent({
     return <FlatQuizLibrary catalog={catalog} />;
   }
 
-  return <NativeCourseTopicQuizFlow catalog={catalog} pastPaperCourseIds={pastPaperCourseIds} />;
+  return <NativeCourseTopicQuizFlow catalog={catalog} pastPaperSummaries={pastPaperSummaries} />;
 }
 
 function NativeCourseTopicQuizFlow({
   catalog,
-  pastPaperCourseIds,
+  pastPaperSummaries,
 }: {
   catalog: LearnerCatalog;
-  pastPaperCourseIds: string[];
+  pastPaperSummaries: PastPaperCourseSummary[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -152,10 +184,9 @@ function NativeCourseTopicQuizFlow({
   const availableCourses = useMemo(
     () =>
       catalog.courses.filter(
-        (course) =>
-          catalog.lessons.some((lesson) => lesson.courseId === course.id) || pastPaperCourseIds.includes(course.id),
+        (course) => getCourseQuizCount(catalog, course.id) > 0 || getCoursePaperCount(pastPaperSummaries, course.id) > 0,
       ),
-    [catalog.courses, catalog.lessons, pastPaperCourseIds],
+    [catalog, pastPaperSummaries],
   );
 
   const selectableCourses = useMemo(() => {
@@ -193,7 +224,7 @@ function NativeCourseTopicQuizFlow({
       <CourseSelectionStep
         courses={selectableCourses}
         catalog={catalog}
-        pastPaperCourseIds={pastPaperCourseIds}
+        pastPaperSummaries={pastPaperSummaries}
         selection={selection}
         error={selectionError}
         onToggle={toggleCourse}
@@ -206,6 +237,15 @@ function NativeCourseTopicQuizFlow({
     ? selectedCourses.find((course) => course.id === requestedCourseId) ?? null
     : null;
 
+  if (requestedCourseId && !selectedCourse) {
+    return (
+      <SelectedCourseFallback
+        title="Course is not available in your current selection"
+        description="Return Home or change your selected courses to continue."
+      />
+    );
+  }
+
   if (selectedCourse && requestedTopicId) {
     return <TopicQuizList catalog={catalog} courseId={selectedCourse.id} topicId={requestedTopicId} />;
   }
@@ -215,7 +255,7 @@ function NativeCourseTopicQuizFlow({
       <CourseTopicList
         catalog={catalog}
         courseId={selectedCourse.id}
-        hasPastPapers={pastPaperCourseIds.includes(selectedCourse.id)}
+        paperCount={getCoursePaperCount(pastPaperSummaries, selectedCourse.id)}
       />
     );
   }
@@ -225,7 +265,7 @@ function NativeCourseTopicQuizFlow({
       catalog={catalog}
       courses={selectedCourses}
       selection={selection}
-      pastPaperCourseIds={pastPaperCourseIds}
+      pastPaperSummaries={pastPaperSummaries}
     />
   );
 }
@@ -233,7 +273,7 @@ function NativeCourseTopicQuizFlow({
 function CourseSelectionStep({
   courses,
   catalog,
-  pastPaperCourseIds,
+  pastPaperSummaries,
   selection,
   error,
   onToggle,
@@ -241,7 +281,7 @@ function CourseSelectionStep({
 }: {
   courses: LearnerCatalog["courses"];
   catalog: LearnerCatalog;
-  pastPaperCourseIds: string[];
+  pastPaperSummaries: PastPaperCourseSummary[];
   selection: CourseSelection;
   error: string | null;
   onToggle: (courseId: string) => void;
@@ -255,7 +295,7 @@ function CourseSelectionStep({
         <BookOpenIcon className="mx-auto size-6" />
         <h2 className="mt-4 text-xl font-semibold tracking-tight">No study courses available yet</h2>
         <p className="text-muted-foreground mt-3 text-sm leading-6">
-          Courses will appear here as soon as learner quizzes or past papers are published.
+          No learner quizzes or past papers are currently published for your mobile catalog.
         </p>
       </section>
     );
@@ -277,8 +317,9 @@ function CourseSelectionStep({
       <div className="grid gap-3">
         {courses.map((course) => {
           const selected = selection.selectedCourseIds.includes(course.id);
-          const topicCount = catalog.lessons.filter((lesson) => lesson.courseId === course.id).length;
-          const hasPastPapers = pastPaperCourseIds.includes(course.id);
+          const quizCount = getCourseQuizCount(catalog, course.id);
+          const paperCount = getCoursePaperCount(pastPaperSummaries, course.id);
+          const topicCount = getCourseTopicCount(catalog, course.id);
 
           return (
             <button
@@ -300,9 +341,8 @@ function CourseSelectionStep({
                 <span className="block font-semibold text-foreground">{course.title}</span>
                 <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
                 <span className="text-muted-foreground mt-2 block text-xs">
-                  {topicCount > 0 ? `${topicCount} ${topicCount === 1 ? "topic" : "topics"}` : ""}
-                  {topicCount > 0 && hasPastPapers ? " · " : ""}
-                  {hasPastPapers ? "Past papers" : ""}
+                  {formatCourseContentSummary(quizCount, paperCount)}
+                  {topicCount > 0 ? ` · ${topicCount} ${topicCount === 1 ? "topic" : "topics"}` : ""}
                 </span>
               </span>
             </button>
@@ -333,12 +373,12 @@ function SelectedCourseList({
   catalog,
   courses,
   selection,
-  pastPaperCourseIds,
+  pastPaperSummaries,
 }: {
   catalog: LearnerCatalog;
   courses: LearnerCatalog["courses"];
   selection: CourseSelection;
-  pastPaperCourseIds: string[];
+  pastPaperSummaries: PastPaperCourseSummary[];
 }) {
   return (
     <section className="space-y-4">
@@ -346,7 +386,7 @@ function SelectedCourseList({
         <div>
           <Badge variant="secondary">My courses</Badge>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight">Choose a course</h2>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">Tap a course to open its study content.</p>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">Tap a course to open its available study content.</p>
         </div>
         {!selection.locked ? (
           <Button asChild size="sm" variant="outline">
@@ -357,8 +397,9 @@ function SelectedCourseList({
 
       <div className="grid gap-3">
         {courses.map((course) => {
-          const topicCount = catalog.lessons.filter((lesson) => lesson.courseId === course.id).length;
-          const hasPastPapers = pastPaperCourseIds.includes(course.id);
+          const quizCount = getCourseQuizCount(catalog, course.id);
+          const paperCount = getCoursePaperCount(pastPaperSummaries, course.id);
+          const topicCount = getCourseTopicCount(catalog, course.id);
           return (
             <Link
               key={course.id}
@@ -366,15 +407,14 @@ function SelectedCourseList({
               className="animate-widget flex min-h-36 items-center gap-4 rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-card/60"
             >
               <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-full">
-                <BookOpenIcon className="size-5" />
+                {paperCount > 0 && quizCount === 0 ? <FileTextIcon className="size-5" /> : <BookOpenIcon className="size-5" />}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-lg font-semibold tracking-tight text-foreground">{course.title}</span>
                 <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
                 <span className="text-muted-foreground mt-2 block text-xs">
-                  {topicCount > 0 ? `${topicCount} ${topicCount === 1 ? "topic" : "topics"}` : ""}
-                  {topicCount > 0 && hasPastPapers ? " · " : ""}
-                  {hasPastPapers ? "Past papers" : ""}
+                  {formatCourseContentSummary(quizCount, paperCount)}
+                  {topicCount > 0 ? ` · ${topicCount} ${topicCount === 1 ? "topic" : "topics"}` : ""}
                 </span>
               </span>
               <ArrowRightIcon className="size-5 shrink-0" />
@@ -389,11 +429,11 @@ function SelectedCourseList({
 function CourseTopicList({
   catalog,
   courseId,
-  hasPastPapers,
+  paperCount,
 }: {
   catalog: LearnerCatalog;
   courseId: string;
-  hasPastPapers: boolean;
+  paperCount: number;
 }) {
   const course = catalog.courseById.get(courseId);
   const topics = catalog.lessons.filter(
@@ -401,9 +441,15 @@ function CourseTopicList({
       lesson.courseId === courseId &&
       catalog.quizzes.some((quiz) => quiz.courseId === courseId && quiz.lessonId === lesson.id),
   );
+  const quizCount = getCourseQuizCount(catalog, courseId);
+  const hasPastPapers = paperCount > 0;
 
-  if (!course || (topics.length === 0 && !hasPastPapers)) {
+  if (!course) {
     return <SelectedCourseFallback />;
+  }
+
+  if (topics.length === 0 && !hasPastPapers) {
+    return <EmptyCourseContent courseTitle={course.title} />;
   }
 
   return (
@@ -420,10 +466,10 @@ function CourseTopicList({
         <h2 className="mt-4 text-2xl font-semibold tracking-tight">{course.title}</h2>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
           {hasPastPapers && topics.length > 0
-            ? "Choose a topic or open Past Papers."
+            ? `Choose a quiz topic or open ${paperCount === 1 ? "the available past paper" : `${paperCount} past papers`}.`
             : hasPastPapers
-              ? "Open Past Papers to practice published exam questions."
-              : "Choose a topic to see its quizzes."}
+              ? `Open ${paperCount === 1 ? "the past paper" : `${paperCount} past papers`} to practice published exam questions.`
+              : `Choose a topic to open one of ${quizCount} ${quizCount === 1 ? "quiz" : "quizzes"}.`}
         </p>
       </div>
 
@@ -439,7 +485,7 @@ function CourseTopicList({
             <span className="min-w-0 flex-1">
               <span className="block font-semibold text-foreground">Past Papers</span>
               <span className="text-muted-foreground mt-1 block text-xs">
-                Exam questions with reveal-answer revision
+                {paperCount} {paperCount === 1 ? "paper" : "papers"} · reveal-answer revision
               </span>
             </span>
             <ArrowRightIcon className="size-5 shrink-0" />
@@ -447,7 +493,7 @@ function CourseTopicList({
         ) : null}
 
         {topics.map((topic) => {
-          const quizCount = catalog.quizzes.filter(
+          const topicQuizCount = catalog.quizzes.filter(
             (quiz) => quiz.courseId === courseId && quiz.lessonId === topic.id,
           ).length;
 
@@ -464,7 +510,7 @@ function CourseTopicList({
                 <span className="block font-semibold text-foreground">{topic.title}</span>
                 <span className="text-muted-foreground mt-1 block text-xs">{topic.duration}</span>
                 <span className="text-muted-foreground mt-2 block text-xs">
-                  {quizCount} {quizCount === 1 ? "quiz" : "quizzes"}
+                  {topicQuizCount} {topicQuizCount === 1 ? "quiz" : "quizzes"}
                 </span>
               </span>
               <ArrowRightIcon className="size-5 shrink-0" />
@@ -489,8 +535,30 @@ function TopicQuizList({
   const topic = catalog.lessonById.get(topicId);
   const quizzes = catalog.quizzes.filter((quiz) => quiz.courseId === courseId && quiz.lessonId === topicId);
 
-  if (!course || !topic || topic.courseId !== courseId || quizzes.length === 0) {
+  if (!course) {
     return <SelectedCourseFallback />;
+  }
+
+  if (!topic || topic.courseId !== courseId) {
+    return (
+      <SelectedCourseFallback
+        title="Topic unavailable"
+        description="This topic is not available in the selected course. Return to the course and choose another topic."
+        backHref={`/mobile-quizzes?course=${encodeURIComponent(courseId)}`}
+        backLabel="Back to course"
+      />
+    );
+  }
+
+  if (quizzes.length === 0) {
+    return (
+      <SelectedCourseFallback
+        title="No quizzes published for this topic"
+        description="Return to the course and choose another topic or study mode."
+        backHref={`/mobile-quizzes?course=${encodeURIComponent(courseId)}`}
+        backLabel="Back to course"
+      />
+    );
   }
 
   return (
@@ -498,7 +566,7 @@ function TopicQuizList({
       <Button asChild size="sm" variant="ghost" className="-ml-2">
         <Link href={`/mobile-quizzes?course=${encodeURIComponent(courseId)}`}>
           <ArrowLeftIcon className="size-4" />
-          Topics
+          Course
         </Link>
       </Button>
 
@@ -508,19 +576,49 @@ function TopicQuizList({
         <p className="text-muted-foreground mt-2 text-sm leading-6">{topic.summary}</p>
       </div>
 
-      <QuizCards catalog={catalog} quizzes={quizzes} />
+      <QuizCards catalog={catalog} quizzes={quizzes} mobileContext={{ courseId, topicId }} />
     </section>
   );
 }
 
-function SelectedCourseFallback() {
+function EmptyCourseContent({ courseTitle }: { courseTitle: string }) {
+  return (
+    <section className="space-y-4">
+      <Button asChild size="sm" variant="ghost" className="-ml-2">
+        <Link href="/mobile-study">
+          <ArrowLeftIcon className="size-4" />
+          Home
+        </Link>
+      </Button>
+      <div className="animate-widget rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
+        <BookOpenCheckIcon className="mx-auto size-6" />
+        <h2 className="mt-4 text-xl font-semibold tracking-tight">No published study content</h2>
+        <p className="text-muted-foreground mt-3 text-sm leading-6">
+          {courseTitle} is selected, but it currently has no published quizzes or past papers. Nothing has been lost from your device.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function SelectedCourseFallback({
+  title = "Course content unavailable",
+  description = "Return Home and choose another course.",
+  backHref = "/mobile-study",
+  backLabel = "Back to Home",
+}: {
+  title?: string;
+  description?: string;
+  backHref?: string;
+  backLabel?: string;
+}) {
   return (
     <section className="animate-widget rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
       <BookOpenCheckIcon className="mx-auto size-6" />
-      <h2 className="mt-4 text-xl font-semibold tracking-tight">Course content unavailable</h2>
-      <p className="text-muted-foreground mt-3 text-sm leading-6">Return Home and choose another course.</p>
+      <h2 className="mt-4 text-xl font-semibold tracking-tight">{title}</h2>
+      <p className="text-muted-foreground mt-3 text-sm leading-6">{description}</p>
       <Button asChild className="mt-5">
-        <Link href="/mobile-study">Back to Home</Link>
+        <Link href={backHref}>{backLabel}</Link>
       </Button>
     </section>
   );
@@ -548,7 +646,15 @@ function NoQuizzes() {
   );
 }
 
-function QuizCards({ catalog, quizzes }: { catalog: LearnerCatalog; quizzes: LearnerCatalog["quizzes"] }) {
+function QuizCards({
+  catalog,
+  quizzes,
+  mobileContext,
+}: {
+  catalog: LearnerCatalog;
+  quizzes: LearnerCatalog["quizzes"];
+  mobileContext?: { courseId: string; topicId: string };
+}) {
   if (quizzes.length === 0) {
     return <NoQuizzes />;
   }
@@ -557,6 +663,9 @@ function QuizCards({ catalog, quizzes }: { catalog: LearnerCatalog; quizzes: Lea
     <div className="grid gap-3">
       {quizzes.map((quiz) => {
         const course = catalog.courseById.get(quiz.courseId);
+        const mobileHref = mobileContext
+          ? `/quiz/${quiz.id}?from=mobile&course=${encodeURIComponent(mobileContext.courseId)}&topic=${encodeURIComponent(mobileContext.topicId)}`
+          : `/quiz/${quiz.id}?from=mobile`;
 
         return (
           <article
@@ -578,7 +687,7 @@ function QuizCards({ catalog, quizzes }: { catalog: LearnerCatalog; quizzes: Lea
               {course ? `${course.subject} practice from ${course.title}.` : "Practice with an available knowledge check."}
             </p>
             <Button className="mt-6 min-h-12 w-full" asChild>
-              <Link href={`/quiz/${quiz.id}?from=mobile`}>
+              <Link href={mobileHref}>
                 Start quiz
                 <ArrowRightIcon />
               </Link>
