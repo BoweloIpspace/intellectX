@@ -21,9 +21,12 @@ on:
       - "src/app/mobile-*/**"
       - "src/app/quiz/**"
       - "src/components/education/mobile-*.tsx"
+      - "src/components/education/mixed-quiz-player.tsx"
       - "src/components/education/quiz-page-content.tsx"
       - "src/components/education/secure-quiz-player.tsx"
+      - "src/components/providers/native-mobile-surface-boundary.tsx"
       - "src/lib/mobile-*.ts"
+      - "src/lib/native-launch-auth.ts"
       - "src/lib/local-learner-profile-data.ts"
       - "src/lib/feature-scope.ts"
 
@@ -211,7 +214,7 @@ jobs:
               continue
             fi
 
-            if grep -Eq 'Continue on this device|Create a local learner profile|Choose your courses|Your courses|IntellectX' "$UI_DUMP"; then
+            if grep -Eq 'Sign in to continue|Continue on this device|Create a local learner profile|Choose your courses|Your courses|IntellectX|intellectX' "$UI_DUMP"; then
               rendered=true
               break
             fi
@@ -267,7 +270,7 @@ jobs:
               exit 1
             fi
 
-            if grep -Fq 'IntellectX is temporarily unavailable' "$OFFLINE_DUMP" && grep -Fq 'text="Try again"' "$OFFLINE_DUMP"; then
+            if grep -Fq "You're offline." "$OFFLINE_DUMP" && grep -Fq 'text="Try again"' "$OFFLINE_DUMP"; then
               offline_fallback=true
               break
             fi
@@ -325,7 +328,7 @@ jobs:
               exit 1
             fi
 
-            if grep -Eq 'Continue on this device|Create a local learner profile|Choose your courses|Your courses' "$RECOVERY_DUMP"; then
+            if grep -Eq 'Sign in to continue|Continue on this device|Create a local learner profile|Choose your courses|Your courses' "$RECOVERY_DUMP"; then
               recovered=true
               break
             fi
