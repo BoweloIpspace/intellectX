@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" role="img" aria-labelledby="title desc">
+  <title id="title">Reconstructed vegetative propagation study diagram</title>
+  <desc id="desc">A stem section with several leaves is cut from a healthy parent plant. The lower leaves are removed and the cut end is placed in moist growing medium, where new roots form and the cutting grows as a new plant.</desc>
+  <rect width="760" height="430" fill="white"/>
+  <g stroke="#111827" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M165 324 C155 245 160 170 190 88" stroke-width="6"/>
+    <path d="M181 160 C135 128 108 126 80 142 C108 169 137 180 181 174" stroke-width="4"/>
+    <path d="M174 215 C122 190 93 194 70 217 C105 239 137 242 174 229" stroke-width="4"/>
+    <path d="M190 111 C226 80 256 72 290 84 C269 118 238 132 187 127" stroke-width="4"/>
+    <path d="M170 278 L214 254" stroke-width="3" stroke-dasharray="7 7"/>
+    <path d="M267 259 L267 126" stroke-width="5"/>
+    <path d="M267 150 C225 129 203 131 180 151 C204 171 228 173 267 164" stroke-width="4"/>
+    <path d="M267 191 C307 165 337 163 365 180 C340 207 311 213 267 205" stroke-width="4"/>
+    <path d="M267 259 C249 285 245 305 250 331" stroke-width="4"/>
+    <path d="M267 259 C281 283 295 303 320 324" stroke-width="4"/>
+    <path d="M267 259 C270 294 267 318 263 340" stroke-width="4"/>
+    <path d="M430 335 L688 335 L650 232 L468 232 Z" stroke-width="5"/>
+    <path d="M470 232 L650 232" stroke-width="3"/>
+    <path d="M556 231 L556 88" stroke-width="6"/>
+    <path d="M556 128 C514 103 482 105 453 125 C480 151 513 155 556 142" stroke-width="4"/>
+    <path d="M556 174 C597 146 628 147 660 166 C632 195 600 198 556 188" stroke-width="4"/>
+    <path d="M556 232 C535 258 527 281 531 310" stroke-width="4"/>
+    <path d="M556 232 C571 258 584 280 610 301" stroke-width="4"/>
+    <path d="M556 232 C558 270 554 293 550 317" stroke-width="4"/>
+    <path d="M327 118 L426 118" stroke-width="3"/>
+    <path d="M413 106 L426 118 L413 130" stroke-width="3"/>
+  </g>
+  <g fill="#111827" font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="170" y="387" font-size="22">parent plant</text>
+    <text x="270" y="387" font-size="22">stem section</text>
+    <text x="557" y="387" font-size="22">new rooted plant</text>
+  </g>
+</svg>
