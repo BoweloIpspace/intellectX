@@ -45,9 +45,10 @@ test("MAT111 infographies use lecture-note visuals and link back to topic quizze
   await seedMat111NativeLearner(page);
   await page.goto("/mobile-infographies");
 
-  await expect(page.getByRole("heading", { name: "Combinations, Composition and Inverse Functions" })).toBeVisible();
-  await expect(page.getByRole("img", { name: "Combinations, Composition and Inverse Functions study diagram" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Open topic quizzes/i })).toBeVisible();
+  const firstInfography = page.getByRole("article").first();
+  await expect(firstInfography.getByRole("heading", { name: "Combinations, Composition and Inverse Functions" })).toBeVisible();
+  await expect(firstInfography.getByRole("img", { name: "Combinations, Composition and Inverse Functions study diagram" })).toBeVisible();
+  await expect(firstInfography.getByRole("link", { name: /Open topic quizzes/i })).toBeVisible();
 });
 
 test("MAT111 Exams exposes three structured practice papers with protected answer reveal", async ({ page }) => {
