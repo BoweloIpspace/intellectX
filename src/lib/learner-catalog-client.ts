@@ -2,6 +2,9 @@
 
 import { courses as staticCourses, getCourse, type Course } from "@/data/courses";
 import { getLesson, lessons as staticLessons, type Lesson } from "@/data/lessons";
+import { MAT111_COURSE_ID, mat111Course } from "@/data/mat111-course";
+import { mat111Lessons } from "@/data/mat111-lessons";
+import { mat111Quizzes } from "@/data/mat111-quizzes";
 import { getQuiz, quizzes as staticQuizzes, type Quiz } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
@@ -27,6 +30,20 @@ export type LearnerCatalog = {
   isLoading: boolean;
 };
 
+function appendMissingMat111Course(courses: Course[]) {
+  return courses.some((course) => course.id === MAT111_COURSE_ID) ? courses : [...courses, mat111Course];
+}
+
+function appendMissingMat111Lessons(lessons: Lesson[]) {
+  const existingIds = new Set(lessons.map((lesson) => lesson.id));
+  return [...lessons, ...mat111Lessons.filter((lesson) => !existingIds.has(lesson.id))];
+}
+
+function appendMissingMat111Quizzes(quizzes: Quiz[]) {
+  const existingIds = new Set(quizzes.map((quiz) => quiz.id));
+  return [...quizzes, ...mat111Quizzes.filter((quiz) => !existingIds.has(quiz.id))];
+}
+
 export function buildLearnerCatalog(input?: {
   convexCourses?: ConvexCourseRecord[] | null;
   convexLessons?: ConvexLessonRecord[] | null;
@@ -35,7 +52,7 @@ export function buildLearnerCatalog(input?: {
   const normalizedCourses =
     input?.convexCourses?.map((course) => normalizeLearnerCourse(course, getCourse(course.stableId))).filter(Boolean) ??
     staticCourses;
-  const courses = normalizedCourses as Course[];
+  const courses = appendMissingMat111Course(normalizedCourses as Course[]);
   const initialCourseById = new Map(courses.map((course) => [course.id, course]));
 
   const normalizedQuizzes =
@@ -47,7 +64,7 @@ export function buildLearnerCatalog(input?: {
         }),
       )
       .filter(Boolean) ?? staticQuizzes;
-  const quizzes = normalizedQuizzes as Quiz[];
+  const quizzes = appendMissingMat111Quizzes(normalizedQuizzes as Quiz[]);
   const quizzesByCourseId = new Map<string, ConvexQuizRecord[]>();
 
   for (const quiz of input?.convexQuizzes ?? []) {
@@ -75,7 +92,7 @@ export function buildLearnerCatalog(input?: {
         }),
       )
       .filter(Boolean) ?? staticLessons;
-  const lessons = normalizedLessons as Lesson[];
+  const lessons = appendMissingMat111Lessons(normalizedLessons as Lesson[]);
   const coursesWithRelationships = courses.map((course) => ({
     ...course,
     lessonIds:
