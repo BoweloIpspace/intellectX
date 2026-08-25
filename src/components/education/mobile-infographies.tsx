@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
 import { useLearnerCatalog } from "@/lib/learner-catalog-client";
 import { BookOpenIcon, ChevronDownIcon, GalleryVerticalEndIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -45,6 +46,7 @@ export function MobileInfographies() {
           subject: course?.subject ?? "Study",
           title: lesson.title,
           summary: lesson.summary,
+          posterUrl: lesson.posterUrl,
           keyIdeas,
         };
       });
@@ -112,24 +114,37 @@ export function MobileInfographies() {
               </span>
             </div>
 
-            <h1 className="mt-7 text-3xl font-semibold leading-tight tracking-[-0.045em]">{card.title}</h1>
-            <p className="text-muted-foreground mt-4 text-base leading-7">{card.summary}</p>
+            <h1 className="mt-6 text-3xl font-semibold leading-tight tracking-[-0.045em]">{card.title}</h1>
+            <p className="text-muted-foreground mt-3 text-sm leading-6">{card.summary}</p>
+
+            {card.posterUrl ? (
+              <div className="mt-5 overflow-hidden rounded-2xl border border-border/70 bg-white p-2 dark:bg-white">
+                <Image
+                  src={card.posterUrl}
+                  alt={`${card.title} study diagram`}
+                  width={800}
+                  height={420}
+                  unoptimized
+                  className="h-auto max-h-44 w-full object-contain grayscale contrast-125"
+                />
+              </div>
+            ) : null}
 
             {card.keyIdeas.length > 0 ? (
-              <div className="mt-8 space-y-5">
+              <div className="mt-5 space-y-3">
                 {card.keyIdeas.map((idea, ideaIndex) => (
-                  <div key={`${card.id}-${ideaIndex}`} className="flex gap-4">
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-foreground text-xs font-semibold text-background">
+                  <div key={`${card.id}-${ideaIndex}`} className="flex gap-3">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-foreground text-[11px] font-semibold text-background">
                       {ideaIndex + 1}
                     </span>
-                    <p className="pt-1 text-sm leading-6">{idea}</p>
+                    <p className="line-clamp-3 pt-0.5 text-xs leading-5 sm:text-sm sm:leading-6">{idea}</p>
                   </div>
                 ))}
               </div>
             ) : null}
           </div>
 
-          <div className="mt-8 flex items-end justify-between gap-4 border-t border-border/60 pt-5">
+          <div className="mt-5 flex items-end justify-between gap-4 border-t border-border/60 pt-4">
             <Button asChild variant="ghost" size="sm" className="-ml-3">
               <Link href={`/mobile-quizzes?course=${encodeURIComponent(card.courseId)}&topic=${encodeURIComponent(card.id)}`}>
                 <BookOpenIcon className="size-4" />
