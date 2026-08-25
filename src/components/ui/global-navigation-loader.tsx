@@ -94,9 +94,11 @@ export function GlobalNavigationLoader() {
   return (
     <div
       data-testid="global-navigation-loader"
-      className="pointer-events-none fixed top-3 left-1/2 z-[60] -translate-x-1/2 rounded-full border border-border/70 bg-background/90 px-3 py-2 shadow-sm backdrop-blur"
+      className="pointer-events-none fixed inset-0 z-[60] grid place-items-center"
     >
-      <AppLoadingSpinner label="Loading page" size="sm" />
+      <div className="rounded-full border border-border/70 bg-background/90 p-3 shadow-sm backdrop-blur">
+        <AppLoadingSpinner label="Loading page" size="sm" />
+      </div>
     </div>
   );
 }
