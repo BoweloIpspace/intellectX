@@ -6,6 +6,7 @@ import {
   findLearnerVisibleCourse,
   type CourseWorkflowState,
 } from "../lib/course-workflow-policy";
+import { MAT111_COURSE_ID, mat111Course } from "./mat111-course";
 
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
 
@@ -75,9 +76,9 @@ const courseRecords: Course[] = [
 export const courses = filterLearnerVisibleCourses(courseRecords);
 
 export function getCourse(id: string) {
-  return findLearnerVisibleCourse(courses, id);
+  return findLearnerVisibleCourse(courses, id) ?? (id === MAT111_COURSE_ID ? mat111Course : undefined);
 }
 
 export function listLearnerVisibleCourses() {
-  return filterLearnerVisibleCourses(courses);
+  return [...filterLearnerVisibleCourses(courses), mat111Course];
 }

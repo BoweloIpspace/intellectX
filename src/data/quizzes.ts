@@ -1,4 +1,5 @@
 import type { ContentAccessLevel } from "../lib/entitlements";
+import { getMat111Quiz, getMat111QuizzesByCourse } from "./mat111-quizzes";
 
 export type QuizQuestion = {
   id: string;
@@ -166,9 +167,9 @@ export const quizzes: Quiz[] = [
 ];
 
 export function getQuiz(id: string) {
-  return quizzes.find((quiz) => quiz.id === id);
+  return quizzes.find((quiz) => quiz.id === id) ?? getMat111Quiz(id);
 }
 
 export function getQuizzesByCourse(courseId: string) {
-  return quizzes.filter((quiz) => quiz.courseId === courseId);
+  return [...quizzes.filter((quiz) => quiz.courseId === courseId), ...getMat111QuizzesByCourse(courseId)];
 }
