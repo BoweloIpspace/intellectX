@@ -273,7 +273,7 @@ export function MobileMat111ExamRunner({ paperId }: { paperId: string }) {
   }
 
   function restart() {
-    clearMobilePastPaperProgress(paper.stableId);
+    clearMobilePastPaperProgress(paperId);
     setCurrentIndex(0);
     setRevealed(new Set());
     setAnswers({});
