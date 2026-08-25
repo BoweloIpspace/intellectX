@@ -80,7 +80,7 @@ describe("MAT111 supplied lecture-note course", () => {
       expect(paper.session).toBe("Lecture-note practice");
       expect(paper.questions).toHaveLength(6);
       expect(paper.totalMarks).toBe(60);
-      expect(paper.questions.every((question) => question.choices === undefined)).toBe(true);
+      expect(paper.questions.every((question) => !("choices" in question))).toBe(true);
     }
   });
 
