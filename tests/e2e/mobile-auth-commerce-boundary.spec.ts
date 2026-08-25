@@ -12,8 +12,9 @@ async function simulateNativeAndroid(page: import("@playwright/test").Page, auth
       getPlatform: () => "android",
     };
 
-    if (authorized) {
+    if (authorized && !window.sessionStorage.getItem("intellectx:e2e-native-auth-seeded")) {
       window.sessionStorage.setItem("intellectx:native-launch-authenticated", "1");
+      window.sessionStorage.setItem("intellectx:e2e-native-auth-seeded", "1");
     }
   }, authorizeLaunch);
 }
@@ -36,6 +37,8 @@ async function seedCourseSelection(page: import("@playwright/test").Page) {
 
 async function seedLearner(page: import("@playwright/test").Page) {
   await page.addInitScript(() => {
+    if (window.sessionStorage.getItem("intellectx:e2e-learner-seeded")) return;
+
     window.localStorage.setItem(
       "intellectx:learner-session",
       JSON.stringify({
@@ -44,6 +47,7 @@ async function seedLearner(page: import("@playwright/test").Page) {
         role: "student",
       }),
     );
+    window.sessionStorage.setItem("intellectx:e2e-learner-seeded", "1");
   });
 }
 
