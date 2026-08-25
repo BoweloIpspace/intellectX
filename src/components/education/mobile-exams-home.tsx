@@ -3,6 +3,8 @@
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
+import { mat111ExamPapers } from "@/data/mat111-exams";
+import { MAT111_COURSE_ID } from "@/data/mat111-course";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
 import { useLearnerCatalog } from "@/lib/learner-catalog-client";
@@ -53,6 +55,8 @@ function MobileExamsHomeContent({ summaries }: { summaries: PastPaperCourseSumma
   const available = useMemo(() => {
     if (!summaries) return [];
     const paperCountByCourse = new Map(summaries.map((item) => [item.courseStableId, item.paperCount]));
+    paperCountByCourse.set(MAT111_COURSE_ID, mat111ExamPapers.length);
+
     return catalog.courses
       .filter((course) => selectedCourseIds.includes(course.id) && (paperCountByCourse.get(course.id) ?? 0) > 0)
       .map((course) => ({ course, paperCount: paperCountByCourse.get(course.id) ?? 0 }));
@@ -72,7 +76,7 @@ function MobileExamsHomeContent({ summaries }: { summaries: PastPaperCourseSumma
         <Badge variant="secondary">Exams</Badge>
         <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">Long-form exam practice</h1>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Choose one of your courses, then work through its published structured papers question by question.
+          Choose one of your courses, then work through its published or source-grounded structured papers question by question.
         </p>
       </div>
 
@@ -81,30 +85,36 @@ function MobileExamsHomeContent({ summaries }: { summaries: PastPaperCourseSumma
           <FileTextIcon className="mx-auto size-7" />
           <h2 className="mt-4 text-xl font-semibold">No exams for your selected courses yet</h2>
           <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Only real published exam content appears here. No mock papers are inserted to fill empty courses.
+            Only published exam content or course practice built from supplied learning material appears here.
           </p>
         </div>
       ) : (
         <div className="grid gap-3">
-          {available.map(({ course, paperCount }) => (
-            <Link
-              key={course.id}
-              href={`/mobile-past-papers?course=${encodeURIComponent(course.id)}`}
-              className="flex min-h-24 items-center gap-4 rounded-2xl border border-border/70 bg-background/70 p-4 transition hover:bg-secondary/50"
-            >
-              <span className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-full">
-                <FileTextIcon className="size-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-semibold">{course.title}</span>
-                <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
-                <span className="text-muted-foreground mt-2 block text-xs">
-                  {paperCount} {paperCount === 1 ? "exam paper" : "exam papers"}
+          {available.map(({ course, paperCount }) => {
+            const href = course.id === MAT111_COURSE_ID
+              ? "/mobile-mat111-exams"
+              : `/mobile-past-papers?course=${encodeURIComponent(course.id)}`;
+
+            return (
+              <Link
+                key={course.id}
+                href={href}
+                className="flex min-h-24 items-center gap-4 rounded-2xl border border-border/70 bg-background/70 p-4 transition hover:bg-secondary/50"
+              >
+                <span className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-full">
+                  <FileTextIcon className="size-5" />
                 </span>
-              </span>
-              <ArrowRightIcon className="size-5" />
-            </Link>
-          ))}
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold">{course.title}</span>
+                  <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
+                  <span className="text-muted-foreground mt-2 block text-xs">
+                    {paperCount} {paperCount === 1 ? "exam paper" : "exam papers"}
+                  </span>
+                </span>
+                <ArrowRightIcon className="size-5" />
+              </Link>
+            );
+          })}
         </div>
       )}
     </section>
