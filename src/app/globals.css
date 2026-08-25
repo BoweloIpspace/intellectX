@@ -143,25 +143,11 @@
   );
 }
 
-/* Native quiz actions stay above the bottom tabs so learners do not have to
-   repeatedly scroll to submit or continue. This is scoped to the quiz player. */
+/* Keep quiz actions in normal document flow. The mobile shell already reserves
+   space for its fixed bottom navigation, so floating quiz actions would cover
+   feedback and structured model answers on shorter phone viewports. */
 .mobile-quiz-player [data-slot="card-content"] {
-  padding-bottom: 5.25rem;
-}
-
-.mobile-quiz-player [data-slot="card-content"] > div:last-child {
-  position: fixed;
-  right: 1rem;
-  bottom: calc(5.5rem + env(safe-area-inset-bottom));
-  left: 1rem;
-  z-index: 25;
-  max-width: 26rem;
-  margin-inline: auto;
-  padding: 0.625rem;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: var(--background);
-  box-shadow: 0 12px 28px rgb(0 0 0 / 12%);
+  padding-bottom: 1rem;
 }
 
 /* Course setup has one primary confirmation action. Keep that action reachable
