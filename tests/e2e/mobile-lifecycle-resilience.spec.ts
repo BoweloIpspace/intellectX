@@ -131,7 +131,7 @@ test("logging out preserves one local profile without exposing it to a different
 
   await page.goto("/mobile-profile");
   await page.getByRole("button", { name: "Logout", exact: true }).click();
-  await expect(page).toHaveURL(/\/login\?native=1$/);
+  await expect(page).toHaveURL(/\/login$/);
 
   await createLocalProfile(page, "profile-b@intellectx.local");
   await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
@@ -155,7 +155,7 @@ test("delete local profile requires confirmation and removes only that profile s
   await page.getByRole("button", { name: "Delete local profile & data" }).click();
   await expect(page.getByText("Delete this local profile and its study data?")).toBeVisible();
   await page.getByRole("button", { name: "Delete profile", exact: true }).click();
-  await expect(page).toHaveURL(/\/login\?native=1$/);
+  await expect(page).toHaveURL(/\/login$/);
 
   await createLocalProfile(page, "delete-me@intellectx.local");
   await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
