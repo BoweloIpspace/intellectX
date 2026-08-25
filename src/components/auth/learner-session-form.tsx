@@ -51,8 +51,8 @@ const nativeContentByMode = {
   signup: {
     eyebrow: "intellectX",
     title: "Create a local learner profile",
-    description: "Add your learner details, then choose the courses you want to practice.",
-    submitLabel: "Sign up and choose courses",
+    description: "Add your learner details, complete your Study Profile, then choose the courses you want to practice.",
+    submitLabel: "Sign up and set up Study Profile",
   },
   "forgot-password": {
     eyebrow: "intellectX",
@@ -142,7 +142,7 @@ export function LearnerSessionForm({ mode }: LearnerSessionFormProps) {
       if (nativeMobile) {
         createLearnerSession(nextSession);
         authorizeNativeLaunch();
-        window.location.replace("/mobile-quizzes?setup=1");
+        window.location.replace(withMobileReturnTo("/onboarding", returnTo));
         return;
       }
 
@@ -313,7 +313,11 @@ function AuthFooter({
   if (mode === "signup") {
     return (
       <div className="text-muted-foreground mt-4 grid gap-2 text-center text-sm sm:mt-6">
-        <p>{nativeMobile ? "After signup, choose your courses and start studying." : "After signup, complete your study profile to continue."}</p>
+        <p>
+          {nativeMobile
+            ? "After signup, complete your Study Profile, choose your courses, then start studying."
+            : "After signup, complete your study profile to continue."}
+        </p>
         <p>
           {nativeMobile ? "Already have a local learner profile?" : "Already have a learner session?"}{" "}
           <Link href={withMobileReturnTo("/login", returnTo)} className="text-foreground font-medium underline underline-offset-4">

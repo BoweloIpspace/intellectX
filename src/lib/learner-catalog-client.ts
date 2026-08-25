@@ -1,13 +1,11 @@
 "use client";
 
-import { courses as staticCourses, getCourse, type Course } from "@/data/courses";
-import { getLesson, lessons as staticLessons, type Lesson } from "@/data/lessons";
-import { MAT111_COURSE_ID, mat111Course } from "@/data/mat111-course";
-import { mat111Lessons } from "@/data/mat111-lessons";
-import { mat111Quizzes } from "@/data/mat111-quizzes";
-import { getQuiz, quizzes as staticQuizzes, type Quiz } from "@/data/quizzes";
+import type { Course } from "@/data/courses";
+import type { Lesson } from "@/data/lessons";
+import type { Quiz } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
+import { getE2eLearnerCatalogFixtures } from "@/lib/e2e-learner-catalog-fixtures";
 import {
   normalizeLearnerCourse,
   normalizeLearnerLesson,
@@ -30,18 +28,26 @@ export type LearnerCatalog = {
   isLoading: boolean;
 };
 
-function appendMissingMat111Course(courses: Course[]) {
-  return courses.some((course) => course.id === MAT111_COURSE_ID) ? courses : [...courses, mat111Course];
-}
+const e2eCatalogFixturesEnabled = process.env.NEXT_PUBLIC_E2E_CATALOG_FIXTURES === "1";
 
-function appendMissingMat111Lessons(lessons: Lesson[]) {
-  const existingIds = new Set(lessons.map((lesson) => lesson.id));
-  return [...lessons, ...mat111Lessons.filter((lesson) => !existingIds.has(lesson.id))];
-}
+function buildE2eFixtureCatalog(): LearnerCatalog {
+  const fixtures = getE2eLearnerCatalogFixtures();
+  const courses = fixtures.courses.map((course) => ({
+    ...course,
+    lessonIds: fixtures.lessons.filter((lesson) => lesson.courseId === course.id).map((lesson) => lesson.id),
+    quizIds: fixtures.quizzes.filter((quiz) => quiz.courseId === course.id).map((quiz) => quiz.id),
+  }));
 
-function appendMissingMat111Quizzes(quizzes: Quiz[]) {
-  const existingIds = new Set(quizzes.map((quiz) => quiz.id));
-  return [...quizzes, ...mat111Quizzes.filter((quiz) => !existingIds.has(quiz.id))];
+  return {
+    courses,
+    lessons: fixtures.lessons,
+    quizzes: fixtures.quizzes,
+    courseById: new Map(courses.map((course) => [course.id, course])),
+    lessonById: new Map(fixtures.lessons.map((lesson) => [lesson.id, lesson])),
+    quizById: new Map(fixtures.quizzes.map((quiz) => [quiz.id, quiz])),
+    isLive: false,
+    isLoading: false,
+  };
 }
 
 export function buildLearnerCatalog(input?: {
@@ -49,29 +55,16 @@ export function buildLearnerCatalog(input?: {
   convexLessons?: ConvexLessonRecord[] | null;
   convexQuizzes?: ConvexQuizRecord[] | null;
 }): LearnerCatalog {
-  const normalizedCourses =
-    input?.convexCourses?.map((course) => normalizeLearnerCourse(course, getCourse(course.stableId))).filter(Boolean) ??
-    staticCourses;
-  const includeMat111TestCourse = input?.convexCourses === undefined || normalizedCourses.length > 0;
-  const courses = includeMat111TestCourse
-    ? appendMissingMat111Course(normalizedCourses as Course[])
-    : (normalizedCourses as Course[]);
-  const initialCourseById = new Map(courses.map((course) => [course.id, course]));
+  if (!input && e2eCatalogFixturesEnabled) {
+    return buildE2eFixtureCatalog();
+  }
 
-  const normalizedQuizzes =
-    input?.convexQuizzes
-      ?.map((quiz) =>
-        normalizeLearnerQuiz(quiz, {
-          course: initialCourseById.get(quiz.courseStableId) ?? null,
-          fallback: getQuiz(quiz.stableId),
-        }),
-      )
-      .filter(Boolean) ?? staticQuizzes;
-  const quizzes = includeMat111TestCourse
-    ? appendMissingMat111Quizzes(normalizedQuizzes as Quiz[])
-    : (normalizedQuizzes as Quiz[]);
+  const normalizedCourses = (input?.convexCourses ?? [])
+    .map((course) => normalizeLearnerCourse(course))
+    .filter((course): course is Course => Boolean(course));
+  const initialCourseById = new Map(normalizedCourses.map((course) => [course.id, course]));
+
   const quizzesByCourseId = new Map<string, ConvexQuizRecord[]>();
-
   for (const quiz of input?.convexQuizzes ?? []) {
     const courseQuizzes = quizzesByCourseId.get(quiz.courseStableId) ?? [];
     courseQuizzes.push(quiz);
@@ -79,44 +72,41 @@ export function buildLearnerCatalog(input?: {
   }
 
   const lessonsByCourseId = new Map<string, ConvexLessonRecord[]>();
-
   for (const lesson of input?.convexLessons ?? []) {
     const courseLessons = lessonsByCourseId.get(lesson.courseStableId) ?? [];
     courseLessons.push(lesson);
     lessonsByCourseId.set(lesson.courseStableId, courseLessons);
   }
 
-  const normalizedLessons =
-    input?.convexLessons
-      ?.map((lesson) =>
-        normalizeLearnerLesson(lesson, {
-          course: initialCourseById.get(lesson.courseStableId) ?? null,
-          lessons: lessonsByCourseId.get(lesson.courseStableId),
-          quizzes: quizzesByCourseId.get(lesson.courseStableId),
-          fallback: getLesson(lesson.stableId),
-        }),
-      )
-      .filter(Boolean) ?? staticLessons;
-  const lessons = includeMat111TestCourse
-    ? appendMissingMat111Lessons(normalizedLessons as Lesson[])
-    : (normalizedLessons as Lesson[]);
-  const coursesWithRelationships = courses.map((course) => ({
+  const quizzes = (input?.convexQuizzes ?? [])
+    .map((quiz) =>
+      normalizeLearnerQuiz(quiz, {
+        course: initialCourseById.get(quiz.courseStableId) ?? null,
+      }),
+    )
+    .filter((quiz): quiz is Quiz => Boolean(quiz));
+
+  const lessons = (input?.convexLessons ?? [])
+    .map((lesson) =>
+      normalizeLearnerLesson(lesson, {
+        course: initialCourseById.get(lesson.courseStableId) ?? null,
+        lessons: lessonsByCourseId.get(lesson.courseStableId),
+        quizzes: quizzesByCourseId.get(lesson.courseStableId),
+      }),
+    )
+    .filter((lesson): lesson is Lesson => Boolean(lesson));
+
+  const courses = normalizedCourses.map((course) => ({
     ...course,
-    lessonIds:
-      input?.convexLessons === undefined
-        ? course.lessonIds
-        : lessons.filter((lesson) => lesson.courseId === course.id).map((lesson) => lesson.id),
-    quizIds:
-      input?.convexQuizzes === undefined
-        ? course.quizIds
-        : quizzes.filter((quiz) => quiz.courseId === course.id).map((quiz) => quiz.id),
+    lessonIds: lessons.filter((lesson) => lesson.courseId === course.id).map((lesson) => lesson.id),
+    quizIds: quizzes.filter((quiz) => quiz.courseId === course.id).map((quiz) => quiz.id),
   }));
 
   return {
-    courses: coursesWithRelationships,
+    courses,
     lessons,
     quizzes,
-    courseById: new Map(coursesWithRelationships.map((course) => [course.id, course])),
+    courseById: new Map(courses.map((course) => [course.id, course])),
     lessonById: new Map(lessons.map((lesson) => [lesson.id, lesson])),
     quizById: new Map(quizzes.map((quiz) => [quiz.id, quiz])),
     isLive: Boolean(

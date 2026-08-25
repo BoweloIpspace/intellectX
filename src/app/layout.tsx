@@ -52,8 +52,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <ConvexClientProvider>
-          <NativeMobileSurfaceBoundary />
-          {children}
+          <NativeMobileSurfaceBoundary>{children}</NativeMobileSurfaceBoundary>
         </ConvexClientProvider>
         <Suspense fallback={null}>
           <GlobalNavigationLoader />

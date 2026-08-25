@@ -1,9 +1,8 @@
 "use client";
 
 import { CourseCard } from "@/components/education/course-card";
-import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
-import { DataSourceBadge } from "@/components/education/data-source-badge";
 import { EmptyState } from "@/components/education/empty-state";
+import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Button } from "@/components/ui/button";
 import type { Course } from "@/data/courses";
 import {
@@ -24,14 +23,9 @@ import {
   retryCourseSelectionSync,
   toggleSelectedCourse,
 } from "@/lib/course-selection";
-import { convexEnv } from "@/lib/education-data";
 import { useLearnerCatalog } from "@/lib/learner-catalog-client";
 import { BookOpenIcon, GraduationCapIcon, InfoIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
-type ConvexCoursesSectionProps = {
-  fallbackCourses: Course[];
-};
 
 function useCourseSelection() {
   const [selection, setSelection] = useState<CourseSelection | null>(null);
@@ -100,7 +94,10 @@ function CourseSelectionSyncFeedback({ status }: { status: CourseSelectionSyncSt
 
   if (status === "error") {
     return (
-      <div className="border-destructive/30 bg-destructive/5 mt-3 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between" role="alert">
+      <div
+        className="border-destructive/30 bg-destructive/5 mt-3 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+        role="alert"
+      >
         <p className="text-destructive text-sm leading-6">
           We couldn&apos;t sync your course selection. Your current selection is still saved on this device.
         </p>
@@ -291,7 +288,7 @@ function PersonalizedCourses({ courses }: { courses: Course[] }) {
       ) : (
         <EmptyState
           title="No exact course matches yet"
-          description="The catalog is still growing. Edit your study profile to adjust the filtered course list."
+          description="The production catalog is still growing. Edit your study profile to adjust the filtered course list."
           actionHref="/profile#study-profile"
           actionLabel="Edit study profile"
           icon={BookOpenIcon}
@@ -301,28 +298,7 @@ function PersonalizedCourses({ courses }: { courses: Course[] }) {
   );
 }
 
-function FallbackCoursesSection({ fallbackCourses }: ConvexCoursesSectionProps) {
-  return (
-    <>
-      <div className="mb-4 flex justify-center">
-        <DataSourceBadge />
-      </div>
-      {fallbackCourses.length > 0 ? (
-        <PersonalizedCourses courses={fallbackCourses} />
-      ) : (
-        <EmptyState
-          title="No courses available yet"
-          description="The course catalog is being prepared. Check the dashboard for your current learning overview."
-          actionHref="/dashboard"
-          actionLabel="Go to dashboard"
-          icon={BookOpenIcon}
-        />
-      )}
-    </>
-  );
-}
-
-function LiveCoursesSection() {
+export function ConvexCoursesSection() {
   const catalog = useLearnerCatalog();
 
   if (catalog.isLoading) {
@@ -333,13 +309,17 @@ function LiveCoursesSection() {
     );
   }
 
-  return <FallbackCoursesSection fallbackCourses={catalog.courses} />;
-}
-
-export function ConvexCoursesSection({ fallbackCourses }: ConvexCoursesSectionProps) {
-  if (!convexEnv.isConfigured) {
-    return <FallbackCoursesSection fallbackCourses={fallbackCourses} />;
+  if (catalog.courses.length === 0) {
+    return (
+      <EmptyState
+        title="No published courses yet"
+        description="Production courses will appear here after they are published."
+        actionHref="/profile#study-profile"
+        actionLabel="Review study profile"
+        icon={BookOpenIcon}
+      />
+    );
   }
 
-  return <LiveCoursesSection />;
+  return <PersonalizedCourses courses={catalog.courses} />;
 }

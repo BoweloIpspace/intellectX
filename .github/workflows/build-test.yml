@@ -56,6 +56,11 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: Build explicit E2E fixture app
+        run: |
+          rm -rf .next
+          NEXT_PUBLIC_E2E_CATALOG_FIXTURES=1 npm run build
+
       - name: E2E tests against production server
         run: npm run test:e2e
         env:

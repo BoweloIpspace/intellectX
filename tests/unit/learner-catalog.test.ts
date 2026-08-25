@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeLearnerCourse, normalizeLearnerLesson, normalizeLearnerQuiz } from "@/lib/learner-catalog";
-import { buildLearnerCatalog } from "@/lib/learner-catalog-client";
 import type { Course } from "@/data/courses";
 import type { Lesson } from "@/data/lessons";
+import { normalizeLearnerCourse, normalizeLearnerLesson, normalizeLearnerQuiz } from "@/lib/learner-catalog";
+import { buildLearnerCatalog } from "@/lib/learner-catalog-client";
 
 const visibleCourseRecord = {
   stableId: "convex-course",
@@ -33,7 +33,7 @@ describe("learner catalog normalization", () => {
     });
   });
 
-  it("keeps trusted bundled legacy records visible without weakening unknown records", () => {
+  it("keeps trusted bundled legacy records visible only when explicitly supplied to the normalizer", () => {
     const bundledFallback: Course = {
       ...visibleCourse,
       id: "legacy-course",
@@ -294,7 +294,7 @@ describe("learner catalog normalization", () => {
     expect(catalog.quizById.get("convex-quiz")?.questions).toHaveLength(1);
   });
 
-  it("blocks hidden and paid dynamic records while preserving static fallback mode", () => {
+  it("blocks hidden and paid dynamic records and never falls back to bundled learner subjects", () => {
     const liveCatalog = buildLearnerCatalog({
       convexCourses: [
         {
@@ -313,6 +313,8 @@ describe("learner catalog normalization", () => {
     });
 
     expect(liveCatalog.courses).toHaveLength(0);
-    expect(buildLearnerCatalog().courses.length).toBeGreaterThan(0);
+    expect(buildLearnerCatalog().courses).toEqual([]);
+    expect(buildLearnerCatalog().lessons).toEqual([]);
+    expect(buildLearnerCatalog().quizzes).toEqual([]);
   });
 });

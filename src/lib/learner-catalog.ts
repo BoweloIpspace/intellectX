@@ -1,6 +1,6 @@
-import { getCourse, type Course, type CourseLevel } from "@/data/courses";
-import { getLesson, getLessonsByCourse, type Lesson } from "@/data/lessons";
-import { getQuiz, getQuizzesByCourse, type Quiz, type QuizQuestion } from "@/data/quizzes";
+import type { Course, CourseLevel } from "@/data/courses";
+import type { Lesson } from "@/data/lessons";
+import type { Quiz, QuizQuestion } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
 import { getContentAccessLevel, getEntitlementAccessDecision, type ContentAccessLevel } from "@/lib/entitlements";
@@ -211,25 +211,11 @@ function getQuestionOrder(question: ConvexQuestionRecord) {
   return typeof question.order === "number" ? question.order : 0;
 }
 
-function getStaticCourseDetail(id: string): LearnerCourseDetail | null {
-  const course = getCourse(id);
-
-  if (!course || !accessAllowed(course)) {
-    return null;
-  }
-
-  return {
-    course,
-    lessons: getLessonsByCourse(course.id).filter(accessAllowed),
-    quizzes: getQuizzesByCourse(course.id).filter(accessAllowed),
-  };
-}
-
 export async function getLearnerCourseDetail(id: string): Promise<LearnerCourseDetail | null> {
   const client = getConvexClient();
 
   if (!client) {
-    return getStaticCourseDetail(id);
+    return null;
   }
 
   const convexCourse =
@@ -237,11 +223,10 @@ export async function getLearnerCourseDetail(id: string): Promise<LearnerCourseD
     ((await client.query(convexApi.courses.getCourseBySlug, { slug: id })) as ConvexCourseRecord | null);
 
   if (!convexCourse) {
-    return getStaticCourseDetail(id);
+    return null;
   }
 
-  const fallback = getCourse(convexCourse.stableId);
-  const course = normalizeLearnerCourse(convexCourse, fallback);
+  const course = normalizeLearnerCourse(convexCourse);
 
   if (!course) {
     return null;
@@ -258,12 +243,11 @@ export async function getLearnerCourseDetail(id: string): Promise<LearnerCourseD
         course,
         lessons: convexLessons,
         quizzes: convexQuizzes,
-        fallback: getLesson(lesson.stableId),
       }),
     )
     .filter((lesson): lesson is Lesson => Boolean(lesson));
   const quizzes = convexQuizzes
-    .map((quiz) => normalizeLearnerQuiz(quiz, { course, fallback: getQuiz(quiz.stableId) }))
+    .map((quiz) => normalizeLearnerQuiz(quiz, { course }))
     .filter((quiz): quiz is Quiz => Boolean(quiz));
 
   return {
@@ -281,23 +265,13 @@ export async function getLearnerLessonDetail(lessonId: string) {
   const client = getConvexClient();
 
   if (!client) {
-    const lesson = getLesson(lessonId);
-    const course = lesson ? getCourse(lesson.courseId) : null;
-
-    return lesson && course && accessAllowed(course) && accessAllowed(lesson)
-      ? { lesson, course, lessons: getLessonsByCourse(course.id).filter(accessAllowed) }
-      : null;
+    return null;
   }
 
   const convexLesson = (await client.query(convexApi.lessons.getLessonById, { lessonId })) as ConvexLessonRecord | null;
 
   if (!convexLesson) {
-    const lesson = getLesson(lessonId);
-    const course = lesson ? getCourse(lesson.courseId) : null;
-
-    return lesson && course && accessAllowed(course) && accessAllowed(lesson)
-      ? { lesson, course, lessons: getLessonsByCourse(course.id).filter(accessAllowed) }
-      : null;
+    return null;
   }
 
   const courseDetail = await getLearnerCourseDetail(convexLesson.courseStableId);
@@ -310,25 +284,18 @@ export async function getLearnerQuizDetail(quizId: string) {
   const client = getConvexClient();
 
   if (!client) {
-    const quiz = getQuiz(quizId);
-    const course = quiz ? getCourse(quiz.courseId) : null;
-
-    return quiz && course && accessAllowed(course) && accessAllowed(quiz) ? { quiz, course } : null;
+    return null;
   }
 
   const convexQuiz = (await client.query(convexApi.quizzes.getQuizById, { quizId })) as ConvexQuizRecord | null;
 
   if (!convexQuiz) {
-    const quiz = getQuiz(quizId);
-    const course = quiz ? getCourse(quiz.courseId) : null;
-
-    return quiz && course && accessAllowed(course) && accessAllowed(quiz) ? { quiz, course } : null;
+    return null;
   }
 
   const courseDetail = await getLearnerCourseDetail(convexQuiz.courseStableId);
   const quiz = normalizeLearnerQuiz(convexQuiz, {
     course: courseDetail?.course ?? null,
-    fallback: getQuiz(convexQuiz.stableId),
   });
 
   return quiz && courseDetail ? { quiz, course: courseDetail.course } : null;

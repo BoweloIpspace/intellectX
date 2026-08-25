@@ -1,29 +1,23 @@
 "use client";
 
-import { DataSourceBadge } from "@/components/education/data-source-badge";
 import { EmptyState } from "@/components/education/empty-state";
 import { clickableGlassCardClassName, glassCardClassName } from "@/components/education/glass-card";
-import { Badge } from "@/components/ui/badge";
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Course } from "@/data/courses";
 import type { Quiz } from "@/data/quizzes";
-import { readQuizAttemptHistory } from "@/lib/quiz-attempt-history";
 import {
   type AcademicProfile,
   loadAcademicProfile,
   quizMatchesAcademicProfile,
 } from "@/lib/academic-profile";
-import { convexEnv } from "@/lib/education-data";
 import { type LearnerCatalog, useLearnerCatalog } from "@/lib/learner-catalog-client";
+import { readQuizAttemptHistory } from "@/lib/quiz-attempt-history";
 import { ClockIcon, FileQuestionIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-type ConvexQuizzesSectionProps = {
-  fallbackQuizzes: Quiz[];
-};
 
 type QuizAttemptSummary = {
   completed: boolean;
@@ -138,8 +132,8 @@ function QuizGrid({ quizzes, catalog }: { quizzes: Quiz[]; catalog: LearnerCatal
         </section>
       ) : (
         <EmptyState
-          title="No quizzes ready yet"
-          description="Knowledge checks will appear here when course practice is available."
+          title="No published quizzes yet"
+          description="Production knowledge checks will appear here after they are published."
           actionHref="/courses"
           actionLabel="Browse courses"
           icon={FileQuestionIcon}
@@ -166,24 +160,25 @@ function PersonalizedQuizzes({ quizzes, courses, catalog }: { quizzes: Quiz[]; c
         <>
           <EmptyState
             title="No exact quiz matches yet"
-            description="The catalog is still growing. Edit your study profile or use the available quizzes below."
+            description="The production catalog is still growing. Edit your study profile or use the available quizzes below."
             actionHref="/profile#study-profile"
             actionLabel="Edit study profile"
             icon={FileQuestionIcon}
           />
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold tracking-tight">All available quizzes</h2>
-            <QuizGrid quizzes={quizzes} catalog={catalog} />
-          </section>
+          {quizzes.length > 0 ? (
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold tracking-tight">All available quizzes</h2>
+              <QuizGrid quizzes={quizzes} catalog={catalog} />
+            </section>
+          ) : null}
         </>
       )}
     </div>
   );
 }
 
-function FallbackQuizzesSection({ fallbackQuizzes }: ConvexQuizzesSectionProps) {
+export function ConvexQuizzesSection() {
   const catalog = useLearnerCatalog();
-  const quizzes = convexEnv.isConfigured ? catalog.quizzes : fallbackQuizzes;
 
   if (catalog.isLoading) {
     return (
@@ -193,17 +188,5 @@ function FallbackQuizzesSection({ fallbackQuizzes }: ConvexQuizzesSectionProps) 
     );
   }
 
-  return (
-    <>
-      <div className="mb-4 flex justify-center">
-        <DataSourceBadge />
-      </div>
-      <PersonalizedQuizzes quizzes={quizzes} courses={catalog.courses} catalog={catalog} />
-    </>
-  );
+  return <PersonalizedQuizzes quizzes={catalog.quizzes} courses={catalog.courses} catalog={catalog} />;
 }
-
-export function ConvexQuizzesSection({ fallbackQuizzes }: ConvexQuizzesSectionProps) {
-  return <FallbackQuizzesSection fallbackQuizzes={fallbackQuizzes} />;
-}
-
