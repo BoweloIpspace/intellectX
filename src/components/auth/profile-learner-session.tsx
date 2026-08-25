@@ -12,6 +12,7 @@ import {
   LEARNER_SESSION_CHANGE_EVENT,
   type LearnerSession,
 } from "@/lib/learner-session";
+import { clearNativeLaunchAuthorization } from "@/lib/native-launch-auth";
 import { LogOutIcon, MonitorCheckIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -94,11 +95,13 @@ function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
     // Entering the same normalized email later restores that profile without
     // exposing it to a different local learner on the same device.
     clearLearnerSession();
+    clearNativeLaunchAuthorization();
     goToLogin();
   }
 
   function handleDeleteProfile() {
     clearLearnerSession({ deleteLocalData: true });
+    clearNativeLaunchAuthorization();
     goToLogin();
   }
 
