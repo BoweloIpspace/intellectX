@@ -1,10 +1,9 @@
 import { CourseContinueAction } from "@/components/education/course-continue-action";
 import { CourseProgressSummary } from "@/components/education/course-progress-summary";
-import { PageShell } from "@/components/education/page-shell";
 import { clickableGlassCardClassName, glassCardClassName } from "@/components/education/glass-card";
+import { PageShell } from "@/components/education/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { courses } from "@/data/courses";
 import { getLearnerCourseDetail } from "@/lib/learner-catalog";
 import { BookOpenIcon, ClockIcon, FileQuestionIcon } from "lucide-react";
 import type { Metadata } from "next";
@@ -14,10 +13,6 @@ import { notFound } from "next/navigation";
 type CourseDetailPageProps = {
   params: Promise<{ id: string }>;
 };
-
-export function generateStaticParams() {
-  return courses.map((course) => ({ id: course.id }));
-}
 
 export async function generateMetadata({ params }: CourseDetailPageProps): Promise<Metadata> {
   const { id } = await params;
