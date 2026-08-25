@@ -1,6 +1,4 @@
 import { QuizPageContent } from "@/components/education/quiz-page-content";
-import { getCourse } from "@/data/courses";
-import { getMobileTopicQuiz } from "@/data/mobile-topic-quizzes";
 import { getQuiz, quizzes } from "@/data/quizzes";
 import { getLearnerQuizDetail } from "@/lib/learner-catalog";
 import type { Metadata } from "next";
@@ -34,46 +32,20 @@ export function generateStaticParams() {
   return quizzes.map((quiz) => ({ quizId: quiz.id }));
 }
 
-export async function generateMetadata({ params, searchParams }: QuizPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: QuizPageProps): Promise<Metadata> {
   const { quizId } = await params;
-  const { from } = await searchParams;
-  const mobileTopicQuiz = from === "mobile" ? getMobileTopicQuiz(quizId) : null;
-  const detail = mobileTopicQuiz ? null : await getLearnerQuizDetail(quizId);
-  const quiz = mobileTopicQuiz ?? detail?.quiz ?? getQuiz(quizId);
+  const detail = await getLearnerQuizDetail(quizId);
+  const quiz = detail?.quiz ?? getQuiz(quizId);
 
   return {
     title: quiz ? `${quiz.title} - IntellectX` : "Quiz - IntellectX",
-    description: "Practice with an IntellectX multiple-choice quiz.",
+    description: "Practice with an IntellectX timed quiz.",
   };
 }
 
 export default async function QuizPage({ params, searchParams }: QuizPageProps) {
   const { quizId } = await params;
   const { from, course: requestedCourseId, topic: requestedTopicId } = await searchParams;
-
-  if (from === "mobile") {
-    const mobileTopicQuiz = getMobileTopicQuiz(quizId);
-    const mobileCourse = mobileTopicQuiz ? getCourse(mobileTopicQuiz.courseId) : null;
-
-    if (mobileTopicQuiz && mobileCourse) {
-      const returnTarget = getMobileReturnTarget(
-        mobileCourse.id,
-        mobileTopicQuiz.lessonId,
-        requestedCourseId,
-        requestedTopicId,
-      );
-      return (
-        <QuizPageContent
-          quiz={mobileTopicQuiz}
-          courseId={mobileCourse.id}
-          mobileRequested
-          mobileReturnHref={returnTarget.href}
-          mobileReturnLabel={returnTarget.label}
-        />
-      );
-    }
-  }
-
   const detail = await getLearnerQuizDetail(quizId);
   const quiz = detail?.quiz;
   const course = detail?.course;

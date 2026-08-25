@@ -6,6 +6,8 @@ export type QuizQuestion = {
   choices: string[];
   answerIndex: number;
   explanation: string;
+  diagramPath?: string;
+  diagramAlt?: string;
 };
 
 export type Quiz = {

@@ -52,7 +52,7 @@ const config: CapacitorConfig = {
   server: {
     url: serverUrl,
     cleartext: false,
-    appStartPath: `/mobile-study?nativeShellVersion=${encodedNativeShellVersion}`,
+    appStartPath: `/login?nativeShellVersion=${encodedNativeShellVersion}`,
     errorPath: `mobile-error.html?nativeShellVersion=${encodedNativeShellVersion}`,
   },
 };

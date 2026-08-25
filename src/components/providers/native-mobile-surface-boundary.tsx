@@ -1,16 +1,28 @@
 "use client";
 
 import { MobileUpdateRequiredScreen } from "@/components/education/mobile-update-required-screen";
-import { loadCourseSelection } from "@/lib/course-selection";
 import { isMobileAppRuntime, isRouteWebOnly } from "@/lib/feature-scope";
-import { getLearnerSession } from "@/lib/learner-session";
 import { captureMobileShellVersion, isMobileShellVersionSupported } from "@/lib/mobile-runtime-version";
+import { hasNativeLaunchAuthorization } from "@/lib/native-launch-auth";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const MOBILE_HOME_ROUTE = "/mobile-study";
-const MOBILE_COURSE_SETUP_ROUTE = "/mobile-quizzes";
+const MOBILE_LOGIN_ROUTE = "/login?native=1";
 const MOBILE_UPDATE_REQUIRED_ROUTE = "/mobile-update-required";
+
+function isNativeAuthRoute(pathname: string) {
+  return (
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/signup" ||
+    pathname.startsWith("/signup/") ||
+    pathname === "/forgot-password" ||
+    pathname.startsWith("/forgot-password/") ||
+    pathname === "/logout" ||
+    pathname.startsWith("/auth/continue")
+  );
+}
 
 export function NativeMobileSurfaceBoundary() {
   const pathname = usePathname();
@@ -35,30 +47,27 @@ export function NativeMobileSurfaceBoundary() {
     }
 
     setUpdateRequired(false);
+    const launchAuthorized = hasNativeLaunchAuthorization();
 
     if (pathname === MOBILE_UPDATE_REQUIRED_ROUTE) {
+      router.replace(launchAuthorized ? MOBILE_HOME_ROUTE : MOBILE_LOGIN_ROUTE);
+      return;
+    }
+
+    if (!launchAuthorized && !isNativeAuthRoute(pathname)) {
+      router.replace(MOBILE_LOGIN_ROUTE);
+      return;
+    }
+
+    if (isNativeAuthRoute(pathname)) {
+      return;
+    }
+
+    if (isRouteWebOnly(pathname)) {
       router.replace(MOBILE_HOME_ROUTE);
-      return;
     }
-
-    if (!isRouteWebOnly(pathname)) {
-      return;
-    }
-
-    // Never leave the native WebView on the public web landing surface. If a
-    // local learner exists but has not chosen courses yet, recover directly to
-    // course setup; otherwise let mobile Home own the signed-in/out decision.
-    const needsCourseSetup =
-      pathname === "/" &&
-      Boolean(getLearnerSession()) &&
-      loadCourseSelection().selectedCourseIds.length === 0;
-
-    router.replace(needsCourseSetup ? MOBILE_COURSE_SETUP_ROUTE : MOBILE_HOME_ROUTE);
   }, [pathname, router]);
 
-  // While the client router transitions away from an incompatible route, block
-  // the old content immediately. Once the dedicated route is active it owns the
-  // final screen, avoiding duplicate headings/dialogs in the accessibility tree.
   return updateRequired && pathname !== MOBILE_UPDATE_REQUIRED_ROUTE ? (
     <MobileUpdateRequiredScreen overlay />
   ) : null;

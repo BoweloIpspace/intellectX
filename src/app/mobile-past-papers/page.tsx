@@ -1,10 +1,11 @@
 import { MobileAppShell } from "@/components/education/mobile-app-shell";
+import { MobileExamsHome } from "@/components/education/mobile-exams-home";
 import { MobilePastPaperList } from "@/components/education/mobile-past-papers";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Past Papers - IntellectX",
-  description: "Practice published past papers inside the IntellectX mobile app.",
+  title: "Exams - IntellectX",
+  description: "Practice published long-form exams inside the IntellectX mobile app.",
 };
 
 type MobilePastPapersPageProps = {
@@ -15,8 +16,6 @@ export default async function MobilePastPapersPage({ searchParams }: MobilePastP
   const { course } = await searchParams;
 
   return (
-    <MobileAppShell>
-      <MobilePastPaperList courseId={course ?? ""} />
-    </MobileAppShell>
+    <MobileAppShell>{course ? <MobilePastPaperList courseId={course} /> : <MobileExamsHome />}</MobileAppShell>
   );
 }

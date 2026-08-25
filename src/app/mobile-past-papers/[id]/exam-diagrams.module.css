@@ -1,0 +1,28 @@
+.examSurface :global(aside:has(img[src^="/past-papers/"])) {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.examSurface :global(div:has(> img[src^="/past-papers/"])) {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.examSurface :global(img[src^="/past-papers/"]) {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: grayscale(1) contrast(1.2);
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-color-scheme: dark) {
+  .examSurface :global(img[src^="/past-papers/"]) {
+    filter: grayscale(1) invert(1) contrast(1.1);
+    mix-blend-mode: screen;
+  }
+}

@@ -5,6 +5,7 @@ import {
   gradeQuizAnswers,
   normalizeQuizSubmissionId,
   quizAnswersMatch,
+  revealStructuredQuizAnswer,
   toLearnerQuizQuestionPayload,
   validateQuizAnswer,
 } from "./lib/quizIntegrity";
@@ -130,6 +131,78 @@ export const getQuizById = queryGeneric({
     }
 
     return await buildLearnerQuizPayload(ctx, accessible.quiz);
+  },
+});
+
+// Device-local learner mode uses these read-only queries through the server
+// grading endpoint. They expose feedback only after the learner explicitly
+// checks, submits, or reveals a structured model answer; they do not persist
+// learner identity or attempts to Convex.
+export const checkLocalQuizAnswer = queryGeneric({
+  args: {
+    quizId: v.string(),
+    questionId: v.string(),
+    answer: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const accessible = await getAccessibleQuiz(ctx, args.quizId);
+    if (!accessible) throw new Error("Quiz is not available.");
+
+    const questions = await getQuestionRecordsByQuizStableId(ctx, args.quizId);
+    const question = questions.find((item: any) => item.stableId === args.questionId);
+    if (!question) throw new Error("Quiz question does not exist.");
+
+    const answer = validateQuizAnswer(question, args.answer);
+    if (answer < 0) throw new Error("A multiple-choice check requires a selected answer.");
+
+    return {
+      questionId: question.stableId,
+      answerIndex: question.answerIndex,
+      explanation: question.explanation,
+      correct: answer === question.answerIndex,
+    };
+  },
+});
+
+export const revealLocalStructuredQuizAnswer = queryGeneric({
+  args: { quizId: v.string(), questionId: v.string() },
+  handler: async (ctx, args) => {
+    const accessible = await getAccessibleQuiz(ctx, args.quizId);
+    if (!accessible) throw new Error("Quiz is not available.");
+
+    const questions = await getQuestionRecordsByQuizStableId(ctx, args.quizId);
+    const question = questions.find((item: any) => item.stableId === args.questionId);
+    if (!question) throw new Error("Quiz question does not exist.");
+
+    return revealStructuredQuizAnswer(question);
+  },
+});
+
+export const submitLocalQuizAttempt = queryGeneric({
+  args: {
+    quizId: v.string(),
+    submissionId: v.string(),
+    answers: v.array(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const accessible = await getAccessibleQuiz(ctx, args.quizId);
+    if (!accessible) throw new Error("Quiz is not available.");
+
+    const submissionId = normalizeQuizSubmissionId(args.submissionId);
+    const questions = await getQuestionRecordsByQuizStableId(ctx, args.quizId);
+    const grading = gradeQuizAnswers(questions, args.answers);
+
+    return {
+      attemptId: `local:${submissionId}`,
+      quizId: accessible.quiz.stableId,
+      quizTitle: accessible.quiz.title,
+      score: grading.score,
+      totalQuestions: grading.totalQuestions,
+      percentage: grading.percentage,
+      completedAt: Date.now(),
+      answers: grading.answers,
+      questionResults: grading.questionResults,
+    };
   },
 });
 
@@ -260,8 +333,6 @@ export const getQuizAttempts = queryGeneric({
       }
     }
 
-    // Hydration and streak calculation depend on complete visible history.
-    // Recent-attempt UI limits its own display independently.
     return visibleAttempts.sort((left, right) => right.completedAt - left.completedAt);
   },
 });

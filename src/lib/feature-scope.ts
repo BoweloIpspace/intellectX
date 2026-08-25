@@ -1,18 +1,16 @@
 export type AppSurface = "web" | "mobile";
 
-export type StudyFeature = "quizzes" | "flashcards" | "notes";
+export type StudyFeature = "quizzes" | "flashcards" | "notes" | "infographies";
 
-// The native IntellectX learner app supports course practice through quizzes
-// and Past Papers. Flashcards and notes remain available to the broader web
-// application but are intentionally excluded from the native mobile surface.
-const mobileStudyFeatures = ["quizzes"] as const satisfies readonly StudyFeature[];
+// Native learner navigation is intentionally limited to Home, Infographies,
+// Quizzes and Exams, with Progress/Profile available from the top shortcuts.
+const mobileStudyFeatures = ["quizzes", "infographies"] as const satisfies readonly StudyFeature[];
 
-// Commerce remains a web concern. Native mobile must never expose checkout,
-// subscriptions, premium entitlements, purchase restoration, or billing UI.
 const mobileCommerceEnabled = false as const;
 
 const mobileAllowedRoutePrefixes = [
   "/mobile-study",
+  "/mobile-infographies",
   "/mobile-quizzes",
   "/mobile-past-papers",
   "/mobile-progress",
@@ -47,8 +45,6 @@ export function isMobileAppRuntime() {
     };
   };
 
-  // Capacitor injects window.Capacitor in the native WebView. Keeping native
-  // detection here prevents mobile routing and navigation from drifting apart.
   if (maybeWindow.Capacitor?.isNativePlatform?.()) {
     return true;
   }

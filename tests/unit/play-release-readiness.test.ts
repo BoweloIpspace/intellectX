@@ -56,7 +56,7 @@ describe("Google Play release-readiness contracts", () => {
     expect(mobileQuizzesPageSource).toContain("Practice quizzes and past papers");
     expect(mobileProgressPageSource).not.toContain(">Quiz progress<");
     expect(mobileProfilePageSource).not.toContain(">Quiz learner profile<");
-    expect(mobileErrorSource).toContain("Your local study data remains on this device");
+    expect(mobileErrorSource).toContain("Your selected courses, quiz progress, and local learner profile remain on this device.");
     expect(mobileErrorSource).not.toContain("Your local quiz data remains on this device");
   });
 
@@ -134,13 +134,14 @@ describe("Google Play release-readiness contracts", () => {
     expect(lifecycleWorkflowSource).toContain("Verify offline fallback and network recovery");
     expect(lifecycleWorkflowSource).toContain("airplane-mode enable");
     expect(lifecycleWorkflowSource).toContain("airplane-mode disable");
-    expect(lifecycleWorkflowSource).toContain("IntellectX is temporarily unavailable");
+    expect(lifecycleWorkflowSource).toContain("You're offline.");
+    expect(capacitorSource).toContain("appStartPath: `/login?nativeShellVersion=${encodedNativeShellVersion}`");
     expect(capacitorSource).toContain("errorPath: `mobile-error.html?nativeShellVersion=${encodedNativeShellVersion}`");
-    expect(mobileErrorSource).toContain(`const productionOrigin = "${productionUrl}"`);
-    expect(mobileErrorSource).toContain("const maxProbeAttempts = 5");
+    expect(mobileErrorSource).toContain(`const productionOrigin="${productionUrl}"`);
+    expect(mobileErrorSource).toContain("const maxProbeAttempts=5");
     expect(mobileErrorSource).toContain("await fetch(probeUrl");
-    expect(mobileErrorSource).toContain('cache: "no-store"');
-    expect(mobileErrorSource).toContain("window.location.replace(productionMobileUrl.toString())");
+    expect(mobileErrorSource).toContain('cache:"no-store"');
+    expect(mobileErrorSource).toContain("window.location.replace(productionLoginUrl.toString())");
   });
 
   it("keeps Data Safety documentation evidence-based instead of claiming submission is complete", () => {

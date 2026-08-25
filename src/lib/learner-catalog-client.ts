@@ -2,11 +2,9 @@
 
 import { courses as staticCourses, getCourse, type Course } from "@/data/courses";
 import { getLesson, lessons as staticLessons, type Lesson } from "@/data/lessons";
-import { mobileTopicQuizzes } from "@/data/mobile-topic-quizzes";
 import { getQuiz, quizzes as staticQuizzes, type Quiz } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
-import { isMobileAppRuntime } from "@/lib/feature-scope";
 import {
   normalizeLearnerCourse,
   normalizeLearnerLesson,
@@ -49,15 +47,7 @@ export function buildLearnerCatalog(input?: {
         }),
       )
       .filter(Boolean) ?? staticQuizzes;
-  const baseQuizzes = normalizedQuizzes as Quiz[];
-  const quizzes = isMobileAppRuntime()
-    ? [
-        ...baseQuizzes,
-        ...mobileTopicQuizzes.filter(
-          (quiz) => initialCourseById.has(quiz.courseId) && !baseQuizzes.some((item) => item.id === quiz.id),
-        ),
-      ]
-    : baseQuizzes;
+  const quizzes = normalizedQuizzes as Quiz[];
   const quizzesByCourseId = new Map<string, ConvexQuizRecord[]>();
 
   for (const quiz of input?.convexQuizzes ?? []) {
@@ -115,13 +105,6 @@ export function buildLearnerCatalog(input?: {
 
 type ConvexCatalogQuery = Parameters<typeof useQuery>[0];
 
-/**
- * Subscribes to a Convex query only when Convex is configured. In local-fallback
- * mode there is no ConvexProvider in the tree, so calling useQuery directly would
- * throw "Could not find Convex client". convexEnv.isConfigured is a build-time
- * constant (NEXT_PUBLIC_* is inlined), so this conditional hook is stable for
- * the lifetime of the component.
- */
 function useOptionalConvexQuery(query: ConvexCatalogQuery) {
   if (!convexEnv.isConfigured) {
     return undefined;

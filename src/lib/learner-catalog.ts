@@ -1,4 +1,4 @@
-﻿import { getCourse, type Course, type CourseLevel } from "@/data/courses";
+import { getCourse, type Course, type CourseLevel } from "@/data/courses";
 import { getLesson, getLessonsByCourse, type Lesson } from "@/data/lessons";
 import { getQuiz, getQuizzesByCourse, type Quiz, type QuizQuestion } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
@@ -38,6 +38,9 @@ export type ConvexQuestionRecord = {
   stableId?: unknown;
   prompt?: unknown;
   choices?: unknown;
+  questionType?: unknown;
+  diagramPath?: unknown;
+  diagramAlt?: unknown;
   order?: unknown;
 };
 
@@ -75,9 +78,6 @@ function accessAllowed(value: { accessLevel?: ContentAccessLevel }) {
 }
 
 export function normalizeLearnerCourse(course: ConvexCourseRecord, fallback?: Course): Course | null {
-  // The server explicitly allows the three bundled legacy courses when their
-  // older Convex records predate workflow fields. Only apply that compatibility
-  // rule when the record matches a bundled, learner-visible fallback course.
   const workflowState =
     !course.reviewStatus && !course.publicationStatus && fallback
       ? {
@@ -189,7 +189,10 @@ function normalizeLearnerQuizQuestion(question: ConvexQuestionRecord): QuizQuest
     return null;
   }
 
-  if (!question.prompt || question.choices.length < 2) {
+  // Zero choices is the published structured-question convention: the model
+  // answer remains server-side and is exposed only when the learner taps
+  // Reveal answer. One choice is invalid; two or more choices are normal MCQ.
+  if (!question.prompt || question.choices.length === 1) {
     return null;
   }
 
@@ -199,6 +202,8 @@ function normalizeLearnerQuizQuestion(question: ConvexQuestionRecord): QuizQuest
     choices: question.choices,
     answerIndex: -1,
     explanation: "",
+    diagramPath: typeof question.diagramPath === "string" ? question.diagramPath : undefined,
+    diagramAlt: typeof question.diagramAlt === "string" ? question.diagramAlt : undefined,
   };
 }
 

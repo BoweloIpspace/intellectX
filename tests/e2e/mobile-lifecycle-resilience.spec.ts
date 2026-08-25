@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-async function simulateNativeAndroid(page: import("@playwright/test").Page) {
-  await page.addInitScript(() => {
+async function simulateNativeAndroid(page: import("@playwright/test").Page, authorizeLaunch = false) {
+  await page.addInitScript((authorized) => {
     (window as Window & {
       Capacitor?: {
         isNativePlatform: () => boolean;
@@ -11,7 +11,11 @@ async function simulateNativeAndroid(page: import("@playwright/test").Page) {
       isNativePlatform: () => true,
       getPlatform: () => "android",
     };
-  });
+
+    if (authorized) {
+      window.sessionStorage.setItem("intellectx:native-launch-authenticated", "1");
+    }
+  }, authorizeLaunch);
 }
 
 async function seedLocalLearner(page: import("@playwright/test").Page, email = "lifecycle@intellectx.local") {
@@ -42,13 +46,11 @@ async function seedCourseSelection(page: import("@playwright/test").Page, select
 async function createLocalProfile(page: import("@playwright/test").Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByRole("button", { name: "Log in", exact: true }).click();
 }
 
 test("corrupt session is discarded and orphaned course state is not inherited by the next learner", async ({ page }) => {
   await simulateNativeAndroid(page);
-  // Seed corruption once in the current origin. An init script would run on
-  // every navigation and would incorrectly overwrite the newly created session.
   await page.goto("/login");
   await page.evaluate(() => {
     window.localStorage.setItem("intellectx:learner-session", "{broken json");
@@ -65,17 +67,17 @@ test("corrupt session is discarded and orphaned course state is not inherited by
   });
 
   await page.goto("/mobile-study");
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(/\/login\?native=1$/);
 
   await page.getByLabel("Email").fill("fresh-after-corruption@intellectx.local");
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByRole("button", { name: "Log in", exact: true }).click();
 
   await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
   await expect(page.getByText("0 / 5 selected")).toBeVisible();
 });
 
-test("webview reload preserves the signed-in learner and selected-course launch state", async ({ page }) => {
-  await simulateNativeAndroid(page);
+test("webview reload preserves the authorized learner and selected-course launch state", async ({ page }) => {
+  await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
 
@@ -90,7 +92,7 @@ test("webview reload preserves the signed-in learner and selected-course launch 
 });
 
 test("mobile course navigation keeps browser-history Back inside the native Home flow", async ({ page }) => {
-  await simulateNativeAndroid(page);
+  await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
 
@@ -106,7 +108,7 @@ test("mobile course navigation keeps browser-history Back inside the native Home
 });
 
 test("mobile shell remains usable across portrait and landscape viewport changes", async ({ page }) => {
-  await simulateNativeAndroid(page);
+  await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
 
@@ -161,7 +163,7 @@ test("delete local profile requires confirmation and removes only that profile s
 });
 
 test("known stale Android shell is visibly blocked and routed to the update-required screen", async ({ page }) => {
-  await simulateNativeAndroid(page);
+  await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
 
@@ -173,7 +175,7 @@ test("known stale Android shell is visibly blocked and routed to the update-requ
 });
 
 test("supported Android shell version is recorded and visible in Profile build information", async ({ page }) => {
-  await simulateNativeAndroid(page);
+  await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
 

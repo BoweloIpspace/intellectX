@@ -32,12 +32,15 @@ describe("quiz server authority", () => {
   it("removes answer keys and explanations from pre-submission learner question payloads", () => {
     const payload = toLearnerQuizQuestionPayload(questions[0]);
 
-    expect(payload).toEqual({
+    expect(payload).toMatchObject({
       stableId: "q1",
       prompt: "First?",
       choices: ["A", "B"],
       order: 1,
+      questionType: "mcq",
     });
+    expect(payload.diagramPath).toBeUndefined();
+    expect(payload.diagramAlt).toBeUndefined();
     expect(payload).not.toHaveProperty("answerIndex");
     expect(payload).not.toHaveProperty("explanation");
   });
