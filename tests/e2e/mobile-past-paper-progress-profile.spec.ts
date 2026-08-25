@@ -11,6 +11,7 @@ async function simulateNativeAndroid(page: import("@playwright/test").Page) {
       isNativePlatform: () => true,
       getPlatform: () => "android",
     };
+    window.sessionStorage.setItem("intellectx:native-launch-authenticated", "1");
   });
 }
 
