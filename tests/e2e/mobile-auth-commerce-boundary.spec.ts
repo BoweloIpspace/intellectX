@@ -73,7 +73,7 @@ test("native logout clears the active learner session and returns to learner log
   await expect(page.getByText("boundary.learner@intellectx.local")).toBeVisible();
   await page.getByRole("button", { name: "Logout" }).click();
 
-  await expect(page).toHaveURL(/\/login\?native=1$/);
+  await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByText("Sign in to continue")).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => window.localStorage.getItem("intellectx:learner-session")))
