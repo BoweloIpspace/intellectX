@@ -76,7 +76,7 @@ function MobileExamsHomeContent({ summaries }: { summaries: PastPaperCourseSumma
         <Badge variant="secondary">Exams</Badge>
         <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">Long-form exam practice</h1>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Choose one of your courses, then work through its published or source-grounded structured papers question by question.
+          Choose one of your courses, then work through its published structured papers or source-grounded MAT111 practice papers question by question.
         </p>
       </div>
 
