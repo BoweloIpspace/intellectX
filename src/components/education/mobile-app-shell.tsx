@@ -35,7 +35,7 @@ function isTabActive(pathname: string, href: string) {
   }
 
   if (href === "/mobile-past-papers") {
-    return pathname === href || pathname.startsWith("/mobile-past-papers/");
+    return pathname === href || pathname.startsWith("/mobile-past-papers/") || pathname.startsWith("/mobile-mat111-exams");
   }
 
   return pathname === href;
