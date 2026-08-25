@@ -30,6 +30,10 @@ function isNativeAuthRoute(pathname: string) {
 }
 
 function shouldGateMobileLearnerRoute(pathname: string) {
+  if (pathname === MOBILE_UPDATE_REQUIRED_ROUTE) {
+    return false;
+  }
+
   return (
     pathname.startsWith("/mobile-") ||
     pathname === "/quiz" ||
