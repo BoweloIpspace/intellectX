@@ -50,15 +50,35 @@ describe("mobile learner UX checklist", () => {
     expect(integrity).toContain("gradableQuestions");
   });
 
-  it("removes the synthetic mobile quiz injection and keeps course-topic-quiz marks", () => {
+  it("removes synthetic learner catalog injection and keeps course-topic-quiz marks", () => {
     const catalog = source("src/lib/learner-catalog-client.ts");
+    const learnerCatalog = source("src/lib/learner-catalog.ts");
     const quizzes = source("src/components/education/mobile-quizzes-section.tsx");
     expect(catalog).not.toContain("mobileTopicQuizzes");
+    expect(catalog).not.toContain("staticCourses");
+    expect(catalog).not.toContain("MAT111_COURSE_ID");
+    expect(catalog).not.toContain("mat111Course");
+    expect(learnerCatalog).not.toContain("getStaticCourseDetail");
     expect(existsSync(resolve(process.cwd(), "src/data/mobile-topic-quizzes.ts"))).toBe(false);
     expect(quizzes).toContain("/mobile-quizzes?course=");
     expect(quizzes).toContain("&topic=");
     expect(quizzes).toContain("latestByQuizId");
     expect(quizzes).toContain("{attempt.score}/{attempt.totalQuestions} · {attempt.percentage}%");
+  });
+
+  it("keeps learner-facing web catalog entry points on the same production data path", () => {
+    const coursesPage = source("src/app/courses/page.tsx");
+    const coursesSection = source("src/components/education/convex-courses-section.tsx");
+    const quizzesPage = source("src/app/quizzes/page.tsx");
+    const quizzesSection = source("src/components/education/convex-quizzes-section.tsx");
+
+    expect(coursesPage).not.toContain('@/data/courses');
+    expect(coursesPage).not.toContain("AI Study Systems");
+    expect(coursesPage).toContain("<ConvexCoursesSection />");
+    expect(coursesSection).not.toContain("fallbackCourses");
+    expect(quizzesPage).not.toContain("educationData");
+    expect(quizzesPage).toContain("<ConvexQuizzesSection />");
+    expect(quizzesSection).not.toContain("fallbackQuizzes");
   });
 
   it("provides snap-scrolling infographies and a separate structured exams area", () => {
@@ -72,16 +92,28 @@ describe("mobile learner UX checklist", () => {
     expect(exams).toContain("published structured papers");
   });
 
-  it("starts native launches on authentication and uses a themed recovery surface", () => {
+  it("starts native launches on authentication without painting protected study content first", () => {
     const capacitor = source("capacitor.config.ts");
     const boundary = source("src/components/providers/native-mobile-surface-boundary.tsx");
+    const layout = source("src/app/layout.tsx");
     const learnerForm = source("src/components/auth/learner-session-form.tsx");
     const errorPage = source("public/mobile-error.html");
+
     expect(capacitor).toContain("appStartPath: `/login?nativeShellVersion=");
     expect(boundary).toContain("hasNativeLaunchAuthorization");
+    expect(boundary).toContain("shouldGateMobileLearnerRoute");
     expect(boundary).toContain("router.replace(MOBILE_LOGIN_ROUTE)");
+    expect(layout).toContain("<NativeMobileSurfaceBoundary>{children}</NativeMobileSurfaceBoundary>");
     expect(learnerForm).toContain("authorizeNativeLaunch()");
+    expect(learnerForm).toContain('window.location.replace(withMobileReturnTo("/onboarding", returnTo))');
+    expect(learnerForm).not.toContain('window.location.replace("/mobile-quizzes?setup=1")');
     expect(errorPage).toContain("You're offline.");
     expect(errorPage).toContain("intellectX");
+  });
+
+  it("centers the global navigation spinner in the viewport", () => {
+    const loader = source("src/components/ui/global-navigation-loader.tsx");
+    expect(loader).toContain("fixed inset-0 z-[60] grid place-items-center");
+    expect(loader).not.toContain("fixed top-3 left-1/2");
   });
 });
