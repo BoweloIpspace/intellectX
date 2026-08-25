@@ -79,13 +79,18 @@ test("native signup keeps the authenticated hamburger gated", async ({ page }) =
   await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
 });
 
-test("new native signup chooses courses then lands on Home with those courses", async ({ page }) => {
+test("new native signup completes Study Profile, chooses courses, then lands on Home", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/signup");
 
   await page.getByLabel("Name").fill("New Mobile Learner");
   await page.getByLabel("Email").fill("new.mobile.learner@intellectx.local");
-  await page.getByRole("button", { name: "Sign up and choose courses", exact: true }).click();
+  await page.getByRole("button", { name: "Sign up and set up Study Profile", exact: true }).click();
+
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(page.getByRole("heading", { name: "Set up your Study Profile" })).toBeVisible();
+  await page.getByRole("button", { name: "Mathematics", exact: true }).click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
 
   await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
   await expect(page.getByRole("heading", { name: "Choose your courses" })).toBeVisible();
