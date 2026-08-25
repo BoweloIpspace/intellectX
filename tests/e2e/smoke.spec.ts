@@ -261,14 +261,25 @@ test.describe("global loading indicator", () => {
   });
 });
 
-test("native app restores logged-in learners from home to the free mobile practice hub", async ({ page }) => {
+test("native app requires explicit launch login before restoring a saved learner", async ({ page }) => {
   await page.addInitScript(() => {
+    const selectedAt = Date.now();
     window.localStorage.setItem(
       "intellectx:learner-session",
       JSON.stringify({
         name: "Native Learner",
         email: "native.learner@intellectx.local",
         role: "student",
+      }),
+    );
+    window.localStorage.setItem(
+      "intellectx:course-selection",
+      JSON.stringify({
+        selectedCourseIds: ["ai-study-systems"],
+        selectedAt,
+        gracePeriodEndsAt: selectedAt + 7 * 24 * 60 * 60 * 1000,
+        lockedAt: null,
+        locked: false,
       }),
     );
 
@@ -284,8 +295,13 @@ test("native app restores logged-in learners from home to the free mobile practi
   });
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page).toHaveURL(/\/mobile-quizzes$/);
-  await expect(page.getByRole("heading", { name: "Practice quizzes and past papers" })).toBeVisible();
+  await expect(page).toHaveURL(/\/login\?native=1$/);
+  await expect(page.getByText("Sign in to continue")).toBeVisible();
+  await expect(page.getByLabel("Email")).toHaveValue("native.learner@intellectx.local");
+  await page.getByRole("button", { name: "Log in", exact: true }).click();
+  await expect(page).toHaveURL(/\/mobile-study$/);
+  await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /AI Study Systems/i })).toBeVisible();
 });
 
 test("mobile practice hub loads and exposes quiz links", async ({ page }) => {
@@ -638,17 +654,21 @@ test.describe("mobile smoke", () => {
     });
   }
 
-  test("mobile free navigation only exposes quizzes and flashcards", async ({ page }) => {
+  test("mobile learner navigation exposes the current four-tab shell", async ({ page }) => {
     await page.goto("/mobile-quizzes");
 
-    const bottomNav = page.locator("nav").filter({ has: page.getByRole("link", { name: "Flashcards" }) });
-    await expect(bottomNav.getByRole("link", { name: "Quizzes" })).toBeVisible();
-    await expect(bottomNav.getByRole("link", { name: "Flashcards" })).toBeVisible();
+    const bottomNav = page.getByRole("navigation", { name: "Mobile study navigation" });
+    for (const tab of ["Home", "Infographies", "Quizzes", "Exams"]) {
+      await expect(bottomNav.getByRole("link", { name: tab, exact: true })).toBeVisible();
+    }
+    await expect(bottomNav.getByRole("link", { name: "Quizzes", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(bottomNav.getByRole("link", { name: "Flashcards" })).toHaveCount(0);
     await expect(bottomNav.getByRole("link", { name: "Notes" })).toHaveCount(0);
     await expect(bottomNav.getByRole("link", { name: "Courses" })).toHaveCount(0);
     await expect(bottomNav.getByRole("link", { name: "Pricing" })).toHaveCount(0);
     await expect(bottomNav.getByRole("link", { name: "Dashboard" })).toHaveCount(0);
     await expect(bottomNav.getByRole("link", { name: "Progress" })).toHaveCount(0);
+    await expect(bottomNav.getByRole("link", { name: "Profile" })).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText("premium");
     await expect(page.locator("body")).not.toContainText("checkout");
   });
