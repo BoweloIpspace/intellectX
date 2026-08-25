@@ -7,7 +7,7 @@ import { SubjectMark } from "@/components/education/subject-mark";
 import { VideoPlayer } from "@/components/education/video-player";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getLearnerLessonDetail } from "@/lib/learner-catalog";
+import { getLearnerLessonPageDetail } from "@/lib/learner-detail";
 import { ArrowRightIcon, ClockIcon, FileQuestionIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -19,7 +19,7 @@ type LessonPageProps = {
 
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
   const { lessonId } = await params;
-  const detail = await getLearnerLessonDetail(lessonId);
+  const detail = await getLearnerLessonPageDetail(lessonId);
   const lesson = detail?.lesson;
 
   return {
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
 
 export default async function LessonPage({ params }: LessonPageProps) {
   const { lessonId } = await params;
-  const detail = await getLearnerLessonDetail(lessonId);
+  const detail = await getLearnerLessonPageDetail(lessonId);
   const lesson = detail?.lesson;
   const course = detail?.course;
 
