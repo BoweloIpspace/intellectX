@@ -7,7 +7,6 @@ import { SubjectMark } from "@/components/education/subject-mark";
 import { VideoPlayer } from "@/components/education/video-player";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getLesson, lessons } from "@/data/lessons";
 import { getLearnerLessonDetail } from "@/lib/learner-catalog";
 import { ArrowRightIcon, ClockIcon, FileQuestionIcon } from "lucide-react";
 import type { Metadata } from "next";
@@ -18,14 +17,10 @@ type LessonPageProps = {
   params: Promise<{ lessonId: string }>;
 };
 
-export function generateStaticParams() {
-  return lessons.map((lesson) => ({ lessonId: lesson.id }));
-}
-
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
   const { lessonId } = await params;
   const detail = await getLearnerLessonDetail(lessonId);
-  const lesson = detail?.lesson ?? getLesson(lessonId);
+  const lesson = detail?.lesson;
 
   return {
     title: lesson ? `${lesson.title} - IntellectX` : "Lesson - IntellectX",
