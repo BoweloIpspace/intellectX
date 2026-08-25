@@ -1,5 +1,5 @@
 import { QuizPageContent } from "@/components/education/quiz-page-content";
-import { getLearnerQuizDetail } from "@/lib/learner-catalog";
+import { getLearnerQuizPageDetail } from "@/lib/learner-detail";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -29,7 +29,7 @@ function getMobileReturnTarget(
 
 export async function generateMetadata({ params }: QuizPageProps): Promise<Metadata> {
   const { quizId } = await params;
-  const detail = await getLearnerQuizDetail(quizId);
+  const detail = await getLearnerQuizPageDetail(quizId);
   const quiz = detail?.quiz;
 
   return {
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: QuizPageProps): Promise<Metad
 export default async function QuizPage({ params, searchParams }: QuizPageProps) {
   const { quizId } = await params;
   const { from, course: requestedCourseId, topic: requestedTopicId } = await searchParams;
-  const detail = await getLearnerQuizDetail(quizId);
+  const detail = await getLearnerQuizPageDetail(quizId);
   const quiz = detail?.quiz;
   const course = detail?.course;
 
