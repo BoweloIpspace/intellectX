@@ -1,8 +1,11 @@
 "use client";
 
-import type { Course } from "@/data/courses";
-import type { Lesson } from "@/data/lessons";
-import type { Quiz } from "@/data/quizzes";
+import { courses as staticCourses, type Course } from "@/data/courses";
+import { lessons as staticLessons, type Lesson } from "@/data/lessons";
+import { MAT111_COURSE_ID, mat111Course } from "@/data/mat111-course";
+import { mat111Lessons } from "@/data/mat111-lessons";
+import { mat111Quizzes } from "@/data/mat111-quizzes";
+import { quizzes as staticQuizzes, type Quiz } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
 import {
@@ -27,11 +30,43 @@ export type LearnerCatalog = {
   isLoading: boolean;
 };
 
+const e2eCatalogFixturesEnabled = process.env.NEXT_PUBLIC_E2E_CATALOG_FIXTURES === "1";
+
+function buildE2eFixtureCatalog(): LearnerCatalog {
+  const courses = staticCourses.some((course) => course.id === MAT111_COURSE_ID)
+    ? [...staticCourses]
+    : [...staticCourses, mat111Course];
+  const existingLessonIds = new Set(staticLessons.map((lesson) => lesson.id));
+  const existingQuizIds = new Set(staticQuizzes.map((quiz) => quiz.id));
+  const lessons = [...staticLessons, ...mat111Lessons.filter((lesson) => !existingLessonIds.has(lesson.id))];
+  const quizzes = [...staticQuizzes, ...mat111Quizzes.filter((quiz) => !existingQuizIds.has(quiz.id))];
+  const coursesWithRelationships = courses.map((course) => ({
+    ...course,
+    lessonIds: lessons.filter((lesson) => lesson.courseId === course.id).map((lesson) => lesson.id),
+    quizIds: quizzes.filter((quiz) => quiz.courseId === course.id).map((quiz) => quiz.id),
+  }));
+
+  return {
+    courses: coursesWithRelationships,
+    lessons,
+    quizzes,
+    courseById: new Map(coursesWithRelationships.map((course) => [course.id, course])),
+    lessonById: new Map(lessons.map((lesson) => [lesson.id, lesson])),
+    quizById: new Map(quizzes.map((quiz) => [quiz.id, quiz])),
+    isLive: false,
+    isLoading: false,
+  };
+}
+
 export function buildLearnerCatalog(input?: {
   convexCourses?: ConvexCourseRecord[] | null;
   convexLessons?: ConvexLessonRecord[] | null;
   convexQuizzes?: ConvexQuizRecord[] | null;
 }): LearnerCatalog {
+  if (!input && e2eCatalogFixturesEnabled) {
+    return buildE2eFixtureCatalog();
+  }
+
   const normalizedCourses = (input?.convexCourses ?? [])
     .map((course) => normalizeLearnerCourse(course))
     .filter((course): course is Course => Boolean(course));
