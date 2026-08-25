@@ -1,7 +1,6 @@
 import { ConvexQuizzesSection } from "@/components/education/convex-quizzes-section";
 import { PageShell } from "@/components/education/page-shell";
 import { Badge } from "@/components/ui/badge";
-import { educationData } from "@/lib/education-data";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,8 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default function QuizzesPage() {
-  const quizzes = educationData.listQuizzes();
-
   return (
     <PageShell>
       <section className="mb-10 flex flex-col items-center gap-5 text-center">
@@ -22,10 +19,10 @@ export default function QuizzesPage() {
           Practice where learning becomes visible
         </h1>
         <p className="text-muted-foreground max-w-2xl leading-6 md:text-lg">
-          Choose a knowledge check, review explanations after each answer, and finish with a clear score summary.
+          Choose a published knowledge check, review explanations after each answer, and finish with a clear score summary.
         </p>
       </section>
-      <ConvexQuizzesSection fallbackQuizzes={quizzes} />
+      <ConvexQuizzesSection />
     </PageShell>
   );
 }
