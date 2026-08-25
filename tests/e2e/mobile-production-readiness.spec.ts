@@ -116,7 +116,7 @@ test("existing native learner profile still requires explicit launch login", asy
   await expect(page.getByText("Sign in to continue")).toHaveCount(0);
 });
 
-test("selected course opens topics and each topic opens its quiz list", async ({ page }) => {
+test("selected course exposes only topics with published catalog quizzes", async ({ page }) => {
   await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
@@ -127,14 +127,13 @@ test("selected course opens topics and each topic opens its quiz list", async ({
   await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems$/);
   await expect(page.getByRole("heading", { name: "AI Study Systems", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /Prompting for Learning/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Memory Systems/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Weekly Review/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Memory Systems/i })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Weekly Review/i })).toHaveCount(0);
 
-  await page.getByRole("link", { name: /Memory Systems/i }).click();
-  await expect(page).toHaveURL(/topic=memory-systems$/);
-  await expect(page.getByRole("heading", { name: "Memory Systems", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Memory Systems Check", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Weekly Review Check", exact: true })).toHaveCount(0);
+  await page.getByRole("link", { name: /Prompting for Learning/i }).click();
+  await expect(page).toHaveURL(/topic=prompting-for-learning$/);
+  await expect(page.getByRole("heading", { name: "Prompting for Learning", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AI Study Systems Check", exact: true })).toBeVisible();
 });
 
 test("mobile quiz detail preserves topic context inside the native quiz shell", async ({ page }) => {
@@ -249,7 +248,7 @@ test("native profile logout goes straight to launch login without visiting the p
   navigatedPaths.length = 0;
   await logoutButton.click();
 
-  await expect(page).toHaveURL(/\/login\?native=1$/);
+  await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByText("Sign in to continue")).toBeVisible();
   expect(navigatedPaths).not.toContain("/");
 });
