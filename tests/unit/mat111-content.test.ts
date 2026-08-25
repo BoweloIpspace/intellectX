@@ -36,7 +36,7 @@ const expectedLessonIds = [
 ];
 
 describe("MAT111 supplied lecture-note course", () => {
-  it("keeps all supplied lecture weeks inside one MAT111 course with two quizzes per topic", () => {
+  it("keeps all supplied lecture weeks inside one MAT111 seed course with two quizzes per topic", () => {
     expect(mat111Course.lessonIds).toEqual(expectedLessonIds);
     expect(mat111Lessons.map((lesson) => lesson.id)).toEqual(expectedLessonIds);
     expect(mat111Lessons).toHaveLength(10);
@@ -50,7 +50,7 @@ describe("MAT111 supplied lecture-note course", () => {
     }
   });
 
-  it("keeps public answers hidden while every MAT111 quiz question has server authority", () => {
+  it("keeps public answers hidden while every MAT111 seed quiz question has server authority", () => {
     for (const quiz of mat111Quizzes) {
       expect(quiz.courseId).toBe(MAT111_COURSE_ID);
       expect(quiz.questions).toHaveLength(4);
@@ -72,7 +72,7 @@ describe("MAT111 supplied lecture-note course", () => {
     }
   });
 
-  it("adds three structured MAT111 practice papers without labelling them official past papers", () => {
+  it("keeps three structured MAT111 seed practice papers without labelling them official past papers", () => {
     expect(mat111ExamPapers).toHaveLength(3);
     expect(mat111ExamPapers.map((paper) => paper.paperCode)).toEqual(["MAT111-P1", "MAT111-P2", "MAT111-P3"]);
     for (const paper of mat111ExamPapers) {
@@ -84,26 +84,28 @@ describe("MAT111 supplied lecture-note course", () => {
     }
   });
 
-  it("resolves MAT111 through server fallbacks for direct quiz routes", () => {
+  it("keeps MAT111 seed records available only for explicit import and seeding", () => {
     expect(getCourse(MAT111_COURSE_ID)?.title).toBe("MAT111 Introductory Mathematics I");
     expect(getQuiz("mat111-week15-de-moivre-roots")?.courseId).toBe(MAT111_COURSE_ID);
   });
 
-  it("overlays complete MAT111 onto a healthy live catalog but stays fail-closed if no live course is learner-visible", () => {
+  it("does not inject bundled MAT111 into the production learner catalog", () => {
     const healthyCatalog = buildLearnerCatalog({
       convexCourses: [liveCourse],
       convexLessons: [],
       convexQuizzes: [],
     });
-    expect(healthyCatalog.courseById.get(MAT111_COURSE_ID)?.title).toBe(mat111Course.title);
-    expect(healthyCatalog.lessons.filter((lesson) => lesson.courseId === MAT111_COURSE_ID)).toHaveLength(10);
-    expect(healthyCatalog.quizzes.filter((quiz) => quiz.courseId === MAT111_COURSE_ID)).toHaveLength(20);
+    expect(healthyCatalog.courseById.get("live-course")?.title).toBe("Live Course");
+    expect(healthyCatalog.courseById.has(MAT111_COURSE_ID)).toBe(false);
+    expect(healthyCatalog.lessons.some((lesson) => lesson.courseId === MAT111_COURSE_ID)).toBe(false);
+    expect(healthyCatalog.quizzes.some((quiz) => quiz.courseId === MAT111_COURSE_ID)).toBe(false);
 
     const failClosedCatalog = buildLearnerCatalog({
       convexCourses: [{ ...liveCourse, publicationStatus: "unpublished" as const }],
       convexLessons: [],
       convexQuizzes: [],
     });
+    expect(failClosedCatalog.courses).toEqual([]);
     expect(failClosedCatalog.courseById.has(MAT111_COURSE_ID)).toBe(false);
   });
 });
