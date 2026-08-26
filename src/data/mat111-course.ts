@@ -48,6 +48,9 @@ export const mat111Course: Course = {
     "mat111-week15-de-moivre-roots",
   ],
   accent: "from-indigo-500/20 via-white to-cyan-400/20",
+  educationLevel: "University / Varsity",
+  curriculumOrInstitution: "UB",
+  gradeOrYear: "Year 1",
   reviewStatus: APPROVED,
   publicationStatus: PUBLISHED,
 };
