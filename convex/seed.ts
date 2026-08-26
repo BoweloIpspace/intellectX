@@ -1,5 +1,8 @@
 import { courses } from "../src/data/courses";
 import { lessons } from "../src/data/lessons";
+import { mat111Course } from "../src/data/mat111-course";
+import { mat111Lessons } from "../src/data/mat111-lessons";
+import { mat111Quizzes } from "../src/data/mat111-quizzes";
 import { quizzes } from "../src/data/quizzes";
 import { internalMutationGeneric } from "convex/server";
 import { v } from "convex/values";
@@ -11,7 +14,11 @@ import { getSeedQuizAnswer } from "./seedQuizAnswers";
 
 type CatalogTable = "courses" | "lessons" | "quizzes" | "questions";
 
-const courseDocs = courses.map((course) => ({
+const seedCourses = [...courses, mat111Course];
+const seedLessons = [...lessons, ...mat111Lessons];
+const seedQuizzes = [...quizzes, ...mat111Quizzes];
+
+const courseDocs = seedCourses.map((course) => ({
   stableId: course.id,
   slug: course.slug,
   title: course.title,
@@ -22,10 +29,13 @@ const courseDocs = courses.map((course) => ({
   accent: course.accent,
   reviewStatus: course.reviewStatus,
   publicationStatus: course.publicationStatus,
+  ...(course.educationLevel ? { educationLevel: course.educationLevel } : {}),
+  ...(course.curriculumOrInstitution ? { curriculumOrInstitution: course.curriculumOrInstitution } : {}),
+  ...(course.gradeOrYear ? { gradeOrYear: course.gradeOrYear } : {}),
   seedManaged: true,
 }));
 
-const lessonDocs = lessons.map((lesson) => ({
+const lessonDocs = seedLessons.map((lesson) => ({
   stableId: lesson.id,
   courseStableId: lesson.courseId,
   title: lesson.title,
@@ -34,11 +44,11 @@ const lessonDocs = lessons.map((lesson) => ({
   content: lesson.content,
   ...(lesson.videoUrl ? { videoUrl: lesson.videoUrl } : {}),
   ...(lesson.posterUrl ? { posterUrl: lesson.posterUrl } : {}),
-  order: (courses.find((course) => course.id === lesson.courseId)?.lessonIds.indexOf(lesson.id) ?? -1) + 1,
+  order: (seedCourses.find((course) => course.id === lesson.courseId)?.lessonIds.indexOf(lesson.id) ?? -1) + 1,
   seedManaged: true,
 }));
 
-const quizDocs = quizzes.map((quiz) => ({
+const quizDocs = seedQuizzes.map((quiz) => ({
   stableId: quiz.id,
   courseStableId: quiz.courseId,
   ...(quiz.lessonId ? { lessonStableId: quiz.lessonId } : {}),
@@ -48,7 +58,7 @@ const quizDocs = quizzes.map((quiz) => ({
   seedManaged: true,
 }));
 
-const questionDocs = quizzes.flatMap((quiz) =>
+const questionDocs = seedQuizzes.flatMap((quiz) =>
   quiz.questions.map((question, index) => {
     const answer = getSeedQuizAnswer(quiz.id, question.id);
 
