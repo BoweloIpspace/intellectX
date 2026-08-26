@@ -49,6 +49,12 @@ async function createLocalProfile(page: import("@playwright/test").Page, email: 
   await page.getByRole("button", { name: "Log in", exact: true }).click();
 }
 
+async function openHomeFromProfile(page: import("@playwright/test").Page) {
+  const mobileNav = page.getByRole("navigation", { name: "Mobile study navigation" });
+  await mobileNav.getByRole("link", { name: "Home", exact: true }).click();
+  await expect(page).toHaveURL(/\/mobile-study$/);
+}
+
 test("corrupt session is discarded and orphaned course state is not inherited by the next learner", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/login");
@@ -72,8 +78,9 @@ test("corrupt session is discarded and orphaned course state is not inherited by
   await page.getByLabel("Email").fill("fresh-after-corruption@intellectx.local");
   await page.getByRole("button", { name: "Log in", exact: true }).click();
 
-  await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
-  await expect(page.getByText("0 / 5 selected")).toBeVisible();
+  await expect(page).toHaveURL(/\/mobile-profile#course-selection$/);
+  await expect(page.getByRole("heading", { name: "Learner profile" })).toBeVisible();
+  await expect(page.getByText("0 / 5", { exact: true })).toBeVisible();
 });
 
 test("webview reload preserves the authorized learner and selected-course launch state", async ({ page }) => {
@@ -125,19 +132,19 @@ test("mobile shell remains usable across portrait and landscape viewport changes
 test("logging out preserves one local profile without exposing it to a different email", async ({ page }) => {
   await simulateNativeAndroid(page);
   await createLocalProfile(page, "profile-a@intellectx.local");
+  await expect(page).toHaveURL(/\/mobile-profile#course-selection$/);
   await page.getByRole("button", { name: /AI Study Systems/i }).click();
-  await page.getByRole("button", { name: "Continue to Home" }).click();
-  await expect(page).toHaveURL(/\/mobile-study$/);
+  await openHomeFromProfile(page);
+  await expect(page.getByRole("link", { name: /AI Study Systems/i })).toBeVisible();
 
   await page.goto("/mobile-profile");
   await page.getByRole("button", { name: "Logout", exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
 
   await createLocalProfile(page, "profile-b@intellectx.local");
-  await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
-  await expect(page.getByText("0 / 5 selected")).toBeVisible();
+  await expect(page).toHaveURL(/\/mobile-profile#course-selection$/);
+  await expect(page.getByText("0 / 5", { exact: true })).toBeVisible();
 
-  await page.goto("/mobile-profile");
   await page.getByRole("button", { name: "Logout", exact: true }).click();
   await createLocalProfile(page, "profile-a@intellectx.local");
 
@@ -148,18 +155,17 @@ test("logging out preserves one local profile without exposing it to a different
 test("delete local profile requires confirmation and removes only that profile state", async ({ page }) => {
   await simulateNativeAndroid(page);
   await createLocalProfile(page, "delete-me@intellectx.local");
+  await expect(page).toHaveURL(/\/mobile-profile#course-selection$/);
   await page.getByRole("button", { name: /AI Study Systems/i }).click();
-  await page.getByRole("button", { name: "Continue to Home" }).click();
 
-  await page.goto("/mobile-profile");
   await page.getByRole("button", { name: "Delete local profile & data" }).click();
   await expect(page.getByText("Delete this local profile and its study data?")).toBeVisible();
   await page.getByRole("button", { name: "Delete profile", exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
 
   await createLocalProfile(page, "delete-me@intellectx.local");
-  await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
-  await expect(page.getByText("0 / 5 selected")).toBeVisible();
+  await expect(page).toHaveURL(/\/mobile-profile#course-selection$/);
+  await expect(page.getByText("0 / 5", { exact: true })).toBeVisible();
 });
 
 test("known stale Android shell is visibly blocked and routed to the update-required screen", async ({ page }) => {
