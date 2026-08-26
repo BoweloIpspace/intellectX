@@ -88,6 +88,17 @@ export function CourseSelectionCard({
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {showContinue ? (
+          <Button
+            type="button"
+            className="min-h-12 w-full"
+            disabled={selectedCourses.length === 0}
+            onClick={() => onContinue?.(selection)}
+          >
+            {continueLabel}
+          </Button>
+        ) : null}
+
         {catalog.courses.length === 0 ? (
           <div className="rounded-lg border border-dashed p-5 text-center">
             <BookOpenIcon className="mx-auto size-6" />
@@ -134,17 +145,6 @@ export function CourseSelectionCard({
           <p className="text-muted-foreground text-sm">Your saved course selection is locked under the existing course-selection policy.</p>
         ) : null}
         {error ? <p className="text-destructive text-sm" role="alert">{error}</p> : null}
-
-        {showContinue ? (
-          <Button
-            type="button"
-            className="min-h-12 w-full"
-            disabled={selectedCourses.length === 0}
-            onClick={() => onContinue?.(selection)}
-          >
-            {continueLabel}
-          </Button>
-        ) : null}
       </CardContent>
     </Card>
   );
