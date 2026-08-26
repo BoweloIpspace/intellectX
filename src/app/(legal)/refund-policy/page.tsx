@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/legal-page";
+import { INTELLECTX_PUBLIC_SITE_URL } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Refund Policy - IntellectX",
@@ -15,7 +16,7 @@ export default function RefundPolicy() {
         {
           title: "Overview",
           body: [
-            "IntellectX is an education platform available at https://intellect-x-coral.vercel.app. Some releases may include paid plans, checkout, subscriptions, or preview pricing.",
+            `IntellectX is an education platform available at ${INTELLECTX_PUBLIC_SITE_URL}. Some releases may include paid plans, checkout, subscriptions, or preview pricing.`,
             "This refund policy is general product guidance and should be reviewed by a qualified legal professional before a full commercial launch.",
           ],
         },
@@ -72,4 +73,3 @@ export default function RefundPolicy() {
     />
   );
 }
-

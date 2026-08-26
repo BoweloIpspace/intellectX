@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/legal-page";
+import { INTELLECTX_PUBLIC_SITE_URL } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Terms and Conditions - IntellectX",
@@ -15,7 +16,7 @@ export default function TermsAndConditions() {
         {
           title: "Overview",
           body: [
-            "IntellectX is an education platform available at https://intellect-x-coral.vercel.app. By using the product, you agree to use it responsibly and only for lawful learning, study, and productivity purposes.",
+            `IntellectX is an education platform available at ${INTELLECTX_PUBLIC_SITE_URL}. By using the product, you agree to use it responsibly and only for lawful learning, study, and productivity purposes.`,
             "These terms are general product terms and should be reviewed by a qualified legal professional before a full commercial launch.",
           ],
         },
@@ -86,8 +87,3 @@ export default function TermsAndConditions() {
     />
   );
 }
-
-
-
-
-

@@ -16,14 +16,15 @@ describe("mobile learner UX checklist", () => {
     expect(activity).toContain("fallBackToSystemBack");
   });
 
-  it("keeps the requested native header and four bottom destinations", () => {
+  it("keeps the requested native header and four bottom destinations without placeholder notifications", () => {
     const shell = source("src/components/education/mobile-app-shell.tsx");
     expect(shell).toContain("intellectX");
     expect(shell).toContain('label: "Home"');
     expect(shell).toContain('label: "Infographies"');
     expect(shell).toContain('label: "Quizzes"');
     expect(shell).toContain('label: "Exams"');
-    expect(shell).toContain('aria-label="Notifications"');
+    expect(shell).not.toContain('aria-label="Notifications"');
+    expect(shell).not.toContain("No new notifications.");
     expect(shell).toContain('aria-label="Progress"');
     expect(shell).toContain('aria-label="Profile"');
     expect(shell).toContain("grid-cols-4");

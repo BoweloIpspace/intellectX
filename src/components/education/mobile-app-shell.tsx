@@ -4,7 +4,6 @@ import { BackgroundBlur } from "@/components/ui/background-blur";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
 import { cn } from "@/lib/utils";
 import {
-  BellIcon,
   BookOpenCheckIcon,
   FileTextIcon,
   GalleryVerticalEndIcon,
@@ -44,7 +43,6 @@ function isTabActive(pathname: string, href: string) {
 export function MobileAppShell({ children }: MobileAppShellProps) {
   const pathname = usePathname();
   const [nativeAppSurface, setNativeAppSurface] = useState(true);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   useEffect(() => {
     setNativeAppSurface(isMobileAppRuntime());
@@ -65,15 +63,6 @@ export function MobileAppShell({ children }: MobileAppShellProps) {
         </Link>
 
         <div className="relative flex items-center gap-1" aria-label="Learner shortcuts">
-          <button
-            type="button"
-            aria-label="Notifications"
-            aria-expanded={notificationsOpen}
-            onClick={() => setNotificationsOpen((open) => !open)}
-            className="grid size-10 place-items-center rounded-full text-foreground transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <BellIcon className="size-5" />
-          </button>
           <Link
             href="/mobile-progress"
             aria-label="Progress"
@@ -94,13 +83,6 @@ export function MobileAppShell({ children }: MobileAppShellProps) {
           >
             <UserCircleIcon className="size-5" />
           </Link>
-
-          {notificationsOpen ? (
-            <div className="absolute right-0 top-12 z-40 w-64 rounded-2xl border border-border/70 bg-background/95 p-4 shadow-xl backdrop-blur">
-              <p className="text-sm font-semibold">Notifications</p>
-              <p className="mt-1 text-sm leading-5 text-muted-foreground">No new notifications.</p>
-            </div>
-          ) : null}
         </div>
       </div>
 
