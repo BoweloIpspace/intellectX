@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   shouldRemoveObsoleteSeedManagedCatalogRecord,
   shouldRunSeedCleanup,
+  shouldUpdateSeedManagedCatalogRecord,
 } from "../../convex/lib/seedCatalogSafety";
 
 describe("seed catalog safety", () => {
@@ -10,6 +11,12 @@ describe("seed catalog safety", () => {
     expect(shouldRunSeedCleanup(undefined)).toBe(false);
     expect(shouldRunSeedCleanup(false)).toBe(false);
     expect(shouldRunSeedCleanup(true)).toBe(true);
+  });
+
+  it("updates only records explicitly owned by the repository seed", () => {
+    expect(shouldUpdateSeedManagedCatalogRecord({ stableId: "seed-course", seedManaged: true })).toBe(true);
+    expect(shouldUpdateSeedManagedCatalogRecord({ stableId: "manual-course", seedManaged: false })).toBe(false);
+    expect(shouldUpdateSeedManagedCatalogRecord({ stableId: "legacy-or-manual-course" })).toBe(false);
   });
 
   it("never removes instructor or legacy records that are not explicitly seed-managed", () => {
