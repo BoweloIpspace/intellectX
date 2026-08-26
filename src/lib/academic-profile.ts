@@ -152,19 +152,22 @@ export function normalizeAcademicProfileForLevel(profile: AcademicProfile): Acad
   };
 }
 
-export function isAcademicProfileComplete(profile: AcademicProfile | null) {
+export function isAcademicTrackComplete(profile: AcademicProfile | null) {
   if (!profile) return false;
 
   const normalizedProfile = normalizeAcademicProfileForLevel(profile);
-  const hasSubjects = normalizedProfile.subjectsOrModules.length > 0;
-
-  if (!hasSubjects) return false;
 
   if (isUniversityLevel(normalizedProfile.educationLevel)) {
     return institutionOptions.includes(normalizedProfile.curriculumOrInstitution as (typeof institutionOptions)[number]);
   }
 
   return normalizedProfile.curriculumOrInstitution === schoolCurriculum && normalizedProfile.gradeOrYear.length > 0;
+}
+
+export function isAcademicProfileComplete(profile: AcademicProfile | null) {
+  if (!profile || !isAcademicTrackComplete(profile)) return false;
+
+  return normalizeAcademicProfileForLevel(profile).subjectsOrModules.length > 0;
 }
 
 export function loadAcademicProfile(): AcademicProfile | null {
