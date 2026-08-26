@@ -1,30 +1,19 @@
-import { courses } from "@/data/courses";
-import { lessons } from "@/data/lessons";
-import { quizzes } from "@/data/quizzes";
 import { INTELLECTX_PUBLIC_SITE_URL } from "@/lib/site-config";
 import type { MetadataRoute } from "next";
 
-const staticRoutes = [
+const publicRoutes = [
   "/",
-  "/courses",
-  "/quizzes",
-  "/dashboard",
-  "/progress",
-  "/profile",
   "/pricing",
+  "/privacy-policy",
+  "/terms-and-conditions",
+  "/refund-policy",
   "/login",
   "/signup",
-];
+  "/forgot-password",
+] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = [
-    ...staticRoutes,
-    ...courses.map((course) => `/courses/${course.id}`),
-    ...lessons.map((lesson) => `/learn/${lesson.id}`),
-    ...quizzes.map((quiz) => `/quiz/${quiz.id}`),
-  ];
-
-  return routes.map((route) => ({
+  return publicRoutes.map((route) => ({
     url: `${INTELLECTX_PUBLIC_SITE_URL}${route}`,
     lastModified: new Date(),
   }));
