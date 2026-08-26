@@ -208,7 +208,7 @@ export function loadAcademicProfileDraft(scope: string): AcademicProfile | null 
 
   try {
     const parsedDraft = JSON.parse(storedDraft);
-    return isAcademicProfile(parsedProfile) ? parsedProfile : null;
+    return isAcademicProfile(parsedDraft) ? parsedDraft : null;
   } catch {
     window.localStorage.removeItem(draftKey);
     return null;
