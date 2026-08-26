@@ -23,6 +23,9 @@ export type Course = CourseWorkflowState & {
   quizIds: string[];
   accent: string;
   accessLevel?: ContentAccessLevel;
+  educationLevel?: string;
+  curriculumOrInstitution?: string;
+  gradeOrYear?: string;
 };
 
 const courseRecords: Course[] = [
