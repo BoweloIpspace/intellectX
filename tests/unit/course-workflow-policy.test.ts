@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
   ADMIN,
@@ -123,11 +123,14 @@ describe("course workflow policy", () => {
     expect(isLearnerVisibleCourse({ id: "ai-study-systems", publicationStatus: PUBLISHED }, options)).toBe(false);
   });
 
-  it("keeps current demo courses learner-visible", () => {
+  it("keeps current published static courses learner-visible", () => {
     expect(courses.map((course) => course.id)).toEqual([
       "ai-study-systems",
       "critical-thinking",
       "exam-accelerator",
+      "biology-101",
+      "physics-101",
+      "chemistry-101",
     ]);
   });
 
