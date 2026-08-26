@@ -13,17 +13,13 @@ function run(command, args) {
     throw result.error;
   }
 
-  process.exit(result.status ?? 1);
+  if ((result.status ?? 1) !== 0) {
+    process.exit(result.status ?? 1);
+  }
 }
 
 if (process.env.CONVEX_DEPLOY_KEY?.trim()) {
-  console.log("Vercel build mode: deploy Convex production backend, reconcile learner catalog, then build frontend.");
-  const releaseBuildCommand = [
-    `npx convex run seed:seedEducationCatalog '{"reset":false}' --prod`,
-    `npx convex run seedBiologyPastPaperRelease:run '{"reset":false}' --prod`,
-    `npx convex run reconcileAcademicCourseTargets:reconcile '{}' --prod`,
-    "npm run build",
-  ].join(" && ");
+  console.log("Vercel build mode: build frontend against the production Convex URL, deploy Convex, then reconcile production catalog data.");
 
   run("npx", [
     "convex",
@@ -31,8 +27,13 @@ if (process.env.CONVEX_DEPLOY_KEY?.trim()) {
     "--cmd-url-env-var-name",
     "NEXT_PUBLIC_CONVEX_URL",
     "--cmd",
-    releaseBuildCommand,
+    "npm run build",
   ]);
+
+  run("npx", ["convex", "run", "seed:seedEducationCatalog", '{"reset":false}', "--prod"]);
+  run("npx", ["convex", "run", "seedBiologyPastPaperRelease:run", '{"reset":false}', "--prod"]);
+  run("npx", ["convex", "run", "reconcileAcademicCourseTargets:reconcile", "{}", "--prod"]);
+  process.exit(0);
 }
 
 console.log("Vercel build mode: frontend-only; CONVEX_DEPLOY_KEY is not configured for this deployment.");
