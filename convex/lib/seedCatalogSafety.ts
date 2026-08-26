@@ -7,6 +7,10 @@ export function shouldRunSeedCleanup(reset: boolean | undefined) {
   return reset === true;
 }
 
+export function shouldUpdateSeedManagedCatalogRecord(record: SeedManagedCatalogRecord) {
+  return record.seedManaged === true;
+}
+
 export function shouldRemoveObsoleteSeedManagedCatalogRecord(
   record: SeedManagedCatalogRecord,
   currentSeedStableIds: ReadonlySet<string>,
