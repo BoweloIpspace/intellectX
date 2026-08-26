@@ -241,6 +241,27 @@ export function formatAcademicProfile(profile: AcademicProfile) {
   return `${profile.educationLevel} / ${profile.curriculumOrInstitution} / ${label}: ${profile.gradeOrYear}`;
 }
 
+function academicTargetMatches(target: string | undefined, profileValue: string) {
+  return Boolean(target && target.trim().toLowerCase() === profileValue.trim().toLowerCase());
+}
+
+export function courseMatchesAcademicTrack(course: Course, profile: AcademicProfile) {
+  const normalizedProfile = normalizeAcademicProfileForLevel(profile);
+
+  if (!isAcademicTrackComplete(normalizedProfile)) {
+    return false;
+  }
+
+  if (
+    !academicTargetMatches(course.educationLevel, normalizedProfile.educationLevel) ||
+    !academicTargetMatches(course.curriculumOrInstitution, normalizedProfile.curriculumOrInstitution)
+  ) {
+    return false;
+  }
+
+  return !course.gradeOrYear || academicTargetMatches(course.gradeOrYear, normalizedProfile.gradeOrYear);
+}
+
 export function courseMatchesAcademicProfile(course: Course, profile: AcademicProfile) {
   return profile.subjectsOrModules.some((subject) => {
     const normalizedSubject = subject.toLowerCase();
