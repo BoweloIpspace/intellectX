@@ -9,10 +9,13 @@ import { v } from "convex/values";
 import {
   shouldRemoveObsoleteSeedManagedCatalogRecord,
   shouldRunSeedCleanup,
+  shouldUpdateSeedManagedCatalogRecord,
 } from "./lib/seedCatalogSafety";
 import { getSeedQuizAnswer } from "./seedQuizAnswers";
 
 type CatalogTable = "courses" | "lessons" | "quizzes" | "questions";
+
+type SeedUpsertResult = "inserted" | "updated" | "skipped";
 
 const seedCourses = [...courses, mat111Course];
 const seedLessons = [...lessons, ...mat111Lessons];
@@ -82,10 +85,14 @@ async function getByStableId(ctx: any, table: CatalogTable, stableId: string) {
     .first();
 }
 
-async function upsertByStableId(ctx: any, table: CatalogTable, doc: { stableId: string }) {
+async function upsertByStableId(ctx: any, table: CatalogTable, doc: { stableId: string }): Promise<SeedUpsertResult> {
   const existing = await getByStableId(ctx, table, doc.stableId);
 
   if (existing) {
+    if (!shouldUpdateSeedManagedCatalogRecord(existing)) {
+      return "skipped";
+    }
+
     await ctx.db.patch(existing._id, doc);
     return "updated";
   }
@@ -112,10 +119,10 @@ export const seedEducationCatalog = internalMutationGeneric({
   args: { reset: v.optional(v.boolean()) },
   handler: async (ctx, args) => {
     const counts = {
-      courses: { seeded: courseDocs.length, inserted: 0, updated: 0, removed: 0 },
-      lessons: { seeded: lessonDocs.length, inserted: 0, updated: 0, removed: 0 },
-      quizzes: { seeded: quizDocs.length, inserted: 0, updated: 0, removed: 0 },
-      questions: { seeded: questionDocs.length, inserted: 0, updated: 0, removed: 0 },
+      courses: { seeded: courseDocs.length, inserted: 0, updated: 0, skipped: 0, removed: 0 },
+      lessons: { seeded: lessonDocs.length, inserted: 0, updated: 0, skipped: 0, removed: 0 },
+      quizzes: { seeded: quizDocs.length, inserted: 0, updated: 0, skipped: 0, removed: 0 },
+      questions: { seeded: questionDocs.length, inserted: 0, updated: 0, skipped: 0, removed: 0 },
     };
 
     for (const course of courseDocs) {
