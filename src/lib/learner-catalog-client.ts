@@ -7,6 +7,7 @@ import {
   ACADEMIC_PROFILE_CHANGE_EVENT,
   type AcademicProfile,
   courseMatchesAcademicTrack,
+  getDefaultAcademicProfile,
   isAcademicTrackComplete,
   loadAcademicProfile,
 } from "@/lib/academic-profile";
@@ -179,10 +180,11 @@ export function useLearnerCatalog() {
     const native = isMobileAppRuntime();
 
     function syncProfile() {
+      const savedProfile = native ? loadAcademicProfile() : null;
       setNativeProfileState({
         ready: true,
         native,
-        profile: native ? loadAcademicProfile() : null,
+        profile: savedProfile ?? (native && e2eCatalogFixturesEnabled ? getDefaultAcademicProfile() : null),
       });
     }
 
