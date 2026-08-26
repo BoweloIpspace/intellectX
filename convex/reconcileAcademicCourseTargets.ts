@@ -1,6 +1,13 @@
 import { internalMutationGeneric } from "convex/server";
 
-const academicTargets = [
+type AcademicCourseTarget = {
+  stableId: string;
+  educationLevel: string;
+  curriculumOrInstitution: string;
+  gradeOrYear?: string;
+};
+
+const academicTargets: readonly AcademicCourseTarget[] = [
   {
     stableId: "bgcse-biology",
     educationLevel: "Senior",
@@ -12,7 +19,7 @@ const academicTargets = [
     curriculumOrInstitution: "UB",
     gradeOrYear: "Year 1",
   },
-] as const;
+];
 
 export const reconcile = internalMutationGeneric({
   args: {},
