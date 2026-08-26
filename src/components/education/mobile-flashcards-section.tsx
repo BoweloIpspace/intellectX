@@ -4,6 +4,7 @@ import { MobileFlashcardReview } from "@/components/education/mobile-flashcard-r
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Button } from "@/components/ui/button";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
+import { isMobileAppRuntime } from "@/lib/feature-scope";
 import { buildFlashcardReviewCards } from "@/lib/flashcard-review";
 import { useLearnerCatalog } from "@/lib/learner-catalog-client";
 import { Layers3Icon } from "lucide-react";
@@ -13,8 +14,11 @@ import { useEffect, useMemo, useState } from "react";
 export function MobileFlashcardsSection() {
   const catalog = useLearnerCatalog();
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[] | null>(null);
+  const [nativeAppSurface, setNativeAppSurface] = useState<boolean | null>(null);
 
   useEffect(() => {
+    setNativeAppSurface(isMobileAppRuntime());
+
     function syncSelection() {
       setSelectedCourseIds(loadCourseSelection().selectedCourseIds);
     }
@@ -32,13 +36,19 @@ export function MobileFlashcardsSection() {
   }, []);
 
   const cards = useMemo(() => {
-    if (!selectedCourseIds) return [];
-    return buildFlashcardReviewCards(
-      catalog.lessons.filter((lesson) => selectedCourseIds.includes(lesson.courseId)),
-    );
-  }, [catalog.lessons, selectedCourseIds]);
+    if (!selectedCourseIds || nativeAppSurface === null) return [];
 
-  if (catalog.isLoading || selectedCourseIds === null) {
+    const lessons =
+      selectedCourseIds.length > 0
+        ? catalog.lessons.filter((lesson) => selectedCourseIds.includes(lesson.courseId))
+        : nativeAppSurface
+          ? []
+          : catalog.lessons;
+
+    return buildFlashcardReviewCards(lessons);
+  }, [catalog.lessons, nativeAppSurface, selectedCourseIds]);
+
+  if (catalog.isLoading || selectedCourseIds === null || nativeAppSurface === null) {
     return (
       <div className="flex min-h-48 items-center justify-center">
         <AppLoadingSpinner label="Loading mobile flashcards" showLabel />
@@ -46,7 +56,7 @@ export function MobileFlashcardsSection() {
     );
   }
 
-  if (selectedCourseIds.length === 0) {
+  if (nativeAppSurface && selectedCourseIds.length === 0) {
     return (
       <section className="grid min-h-[55dvh] place-items-center text-center">
         <div>
