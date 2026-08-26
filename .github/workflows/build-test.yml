@@ -42,7 +42,7 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
       - name: Install Playwright browsers
-        run: npm exec playwright install --with-deps chromium firefox webkit
+        run: npm exec -- playwright install --with-deps chromium firefox webkit
 
       - name: Typecheck
         run: npm run typecheck
