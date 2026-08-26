@@ -4,8 +4,8 @@ test("public landing renders core navigation", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.locator("body")).not.toContainText("Application error");
-  await expect(page.getByText("IntellectX").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Login", exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Signup", exact: true }).first()).toBeVisible();
 });
 
 test("learner login renders usable credentials fields", async ({ page }) => {
