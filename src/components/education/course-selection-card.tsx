@@ -84,7 +84,7 @@ export function CourseSelectionCard({
           </span>
         </div>
         <p className="text-muted-foreground text-sm leading-6">
-          Every published course appears here automatically. Pick the courses you study; only those courses will appear on Home and drive your mobile study filters.
+          Only published courses matching your Study Profile appear here. Nothing is selected automatically; choose the courses you actually study.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -102,8 +102,10 @@ export function CourseSelectionCard({
         {catalog.courses.length === 0 ? (
           <div className="rounded-lg border border-dashed p-5 text-center">
             <BookOpenIcon className="mx-auto size-6" />
-            <p className="mt-3 font-medium">No published courses yet</p>
-            <p className="text-muted-foreground mt-1 text-sm">Courses will appear here after they are published to the learner catalog.</p>
+            <p className="mt-3 font-medium">No matching published courses yet</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Courses appear here only when their published academic track matches your Study Profile.
+            </p>
           </div>
         ) : (
           <div className="grid gap-3">
