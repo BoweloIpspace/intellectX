@@ -25,11 +25,12 @@ describe("GIC programming pass 1", () => {
     expect(universityModuleOptions).toContain("Chemistry");
   });
 
-  it("does not expose the unavailable AI lesson tutor on learner lesson pages", () => {
-    const lessonPage = source("src/app/learn/[lessonId]/page.tsx");
+  it("fails closed instead of publishing an invalid Apple association when iOS identity is absent", () => {
+    const appleAssociation = source("src/app/.well-known/apple-app-site-association/route.ts");
 
-    expect(lessonPage).not.toContain("AiLessonTutorPanel");
-    expect(lessonPage).not.toContain("AI lesson tutor");
+    expect(appleAssociation).toContain("if (!appleTeamId || !bundleId)");
+    expect(appleAssociation).toContain("status: 404");
+    expect(appleAssociation).not.toContain("`${appleTeamId}.${bundleId}`;\n\nexport async function GET");
   });
 
   it("skips manual catalog collisions instead of overwriting them during seed reconciliation", () => {
