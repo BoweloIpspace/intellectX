@@ -2,32 +2,64 @@
 
 import { MobileFlashcardReview } from "@/components/education/mobile-flashcard-review";
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
-import { convexEnv } from "@/lib/education-data";
+import { Button } from "@/components/ui/button";
+import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
 import { buildFlashcardReviewCards } from "@/lib/flashcard-review";
-import { buildLearnerCatalog, type LearnerCatalog, useLearnerCatalog } from "@/lib/learner-catalog-client";
-import { useMemo } from "react";
+import { useLearnerCatalog } from "@/lib/learner-catalog-client";
+import { Layers3Icon } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 export function MobileFlashcardsSection() {
-  if (!convexEnv.isConfigured) {
-    return <MobileFlashcardsContent catalog={buildLearnerCatalog()} />;
-  }
-
-  return <ConvexMobileFlashcardsSection />;
-}
-
-function ConvexMobileFlashcardsSection() {
   const catalog = useLearnerCatalog();
-  return <MobileFlashcardsContent catalog={catalog} />;
-}
+  const [selectedCourseIds, setSelectedCourseIds] = useState<string[] | null>(null);
 
-function MobileFlashcardsContent({ catalog }: { catalog: LearnerCatalog }) {
-  const cards = useMemo(() => buildFlashcardReviewCards(catalog.lessons), [catalog.lessons]);
+  useEffect(() => {
+    function syncSelection() {
+      setSelectedCourseIds(loadCourseSelection().selectedCourseIds);
+    }
 
-  if (catalog.isLoading) {
+    syncSelection();
+    window.addEventListener(COURSE_SELECTION_CHANGE_EVENT, syncSelection);
+    window.addEventListener("storage", syncSelection);
+    window.addEventListener("pageshow", syncSelection);
+
+    return () => {
+      window.removeEventListener(COURSE_SELECTION_CHANGE_EVENT, syncSelection);
+      window.removeEventListener("storage", syncSelection);
+      window.removeEventListener("pageshow", syncSelection);
+    };
+  }, []);
+
+  const cards = useMemo(() => {
+    if (!selectedCourseIds) return [];
+    return buildFlashcardReviewCards(
+      catalog.lessons.filter((lesson) => selectedCourseIds.includes(lesson.courseId)),
+    );
+  }, [catalog.lessons, selectedCourseIds]);
+
+  if (catalog.isLoading || selectedCourseIds === null) {
     return (
       <div className="flex min-h-48 items-center justify-center">
         <AppLoadingSpinner label="Loading mobile flashcards" showLabel />
       </div>
+    );
+  }
+
+  if (selectedCourseIds.length === 0) {
+    return (
+      <section className="grid min-h-[55dvh] place-items-center text-center">
+        <div>
+          <Layers3Icon className="mx-auto size-8" />
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight">Choose courses first</h1>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Flashcards only use published lessons from the courses you selected in Profile.
+          </p>
+          <Button asChild className="mt-5">
+            <Link href="/mobile-profile#course-selection">Choose courses in Profile</Link>
+          </Button>
+        </div>
+      </section>
     );
   }
 
