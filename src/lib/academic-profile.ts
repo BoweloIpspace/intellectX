@@ -55,6 +55,9 @@ export const schoolSubjectOptions = [
 
 export const universityModuleOptions = [
   "Mathematics",
+  "Biology",
+  "Physics",
+  "Chemistry",
   "Computer Science",
   "Accounting",
   "Business Studies",
