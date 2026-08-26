@@ -208,7 +208,7 @@ export function loadAcademicProfileDraft(scope: string): AcademicProfile | null 
 
   try {
     const parsedDraft = JSON.parse(storedDraft);
-    return isAcademicProfile(parsedDraft) ? parsedDraft : null;
+    return isAcademicProfile(parsedProfile) ? parsedProfile : null;
   } catch {
     window.localStorage.removeItem(draftKey);
     return null;
@@ -263,6 +263,14 @@ export function courseMatchesAcademicTrack(course: Course, profile: AcademicProf
 }
 
 export function courseMatchesAcademicProfile(course: Course, profile: AcademicProfile) {
+  const hasExplicitAcademicTarget = Boolean(
+    course.educationLevel || course.curriculumOrInstitution || course.gradeOrYear,
+  );
+
+  if (hasExplicitAcademicTarget && !courseMatchesAcademicTrack(course, profile)) {
+    return false;
+  }
+
   return profile.subjectsOrModules.some((subject) => {
     const normalizedSubject = subject.toLowerCase();
 
