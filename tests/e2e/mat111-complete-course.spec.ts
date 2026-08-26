@@ -15,6 +15,15 @@ async function seedMat111NativeLearner(page: import("@playwright/test").Page) {
       "intellectx:learner-session",
       JSON.stringify({ name: "MAT111 Learner", email: "mat111.learner@intellectx.local", role: "student" }),
     );
+    window.localStorage.setItem(
+      "intellectx:academic-profile",
+      JSON.stringify({
+        educationLevel: "University / Varsity",
+        curriculumOrInstitution: "UB",
+        gradeOrYear: "Year 1",
+        subjectsOrModules: [],
+      }),
+    );
     const selectedAt = Date.now();
     window.localStorage.setItem(
       "intellectx:course-selection",
