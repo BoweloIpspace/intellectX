@@ -1,4 +1,5 @@
 import { MobileAppShell } from "@/components/education/mobile-app-shell";
+import { MobilePastPaperSelectionGuard } from "@/components/education/mobile-past-paper-selection-guard";
 import { MobilePastPaperRunner } from "@/components/education/mobile-past-papers";
 import type { Metadata } from "next";
 import styles from "./exam-diagrams.module.css";
@@ -17,9 +18,11 @@ export default async function MobilePastPaperPage({ params }: MobilePastPaperPag
 
   return (
     <MobileAppShell>
-      <div className={styles.examSurface}>
-        <MobilePastPaperRunner paperId={id} />
-      </div>
+      <MobilePastPaperSelectionGuard paperId={id}>
+        <div className={styles.examSurface}>
+          <MobilePastPaperRunner paperId={id} />
+        </div>
+      </MobilePastPaperSelectionGuard>
     </MobileAppShell>
   );
 }

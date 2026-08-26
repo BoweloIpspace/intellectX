@@ -51,22 +51,12 @@ test("MAT111 infographies use lecture-note visuals and link back to topic quizze
   await expect(firstInfography.getByRole("link", { name: /Open topic quizzes/i })).toBeVisible();
 });
 
-test("MAT111 Exams exposes three structured practice papers with protected answer reveal", async ({ page }) => {
+test("MAT111 Exams does not inject fixture-backed practice papers into the learner runtime", async ({ page }) => {
   await seedMat111NativeLearner(page);
   await page.goto("/mobile-past-papers");
 
-  await expect(page.getByText("MAT111 Introductory Mathematics I", { exact: true })).toBeVisible();
-  await expect(page.getByText("3 exam papers", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: /MAT111 Introductory Mathematics I/i }).click();
-
-  await expect(page.getByRole("heading", { name: "Practice papers" })).toBeVisible();
-  await expect(page.getByText("MAT111 Practice Paper 1: Functions and Geometry", { exact: true })).toBeVisible();
-  await expect(page.getByText("MAT111 Practice Paper 2: Exponentials and Trigonometry", { exact: true })).toBeVisible();
-  await expect(page.getByText("MAT111 Practice Paper 3: Complex Numbers", { exact: true })).toBeVisible();
-
-  await page.getByRole("link", { name: /MAT111 Practice Paper 1: Functions and Geometry/i }).click();
-  await expect(page.getByRole("heading", { name: "Question 1" })).toBeVisible();
-  await page.getByRole("button", { name: "Reveal answer" }).click();
-  await expect(page.getByText("Model answer", { exact: true })).toBeVisible();
-  await expect(page.getByText(/x\^2\+2x-4/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Long-form exam practice" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No exams for your selected courses yet" })).toBeVisible();
+  await expect(page.getByText("Only published production exam content for your selected courses appears here.")).toBeVisible();
+  await expect(page.getByText("MAT111 Practice Paper 1: Functions and Geometry", { exact: true })).toHaveCount(0);
 });

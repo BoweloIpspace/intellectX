@@ -89,7 +89,8 @@ describe("mobile learner UX checklist", () => {
     expect(infographies).toContain("snap-start snap-always");
     expect(infographies).not.toContain("setInterval");
     expect(exams).toContain("Long-form exam practice");
-    expect(exams).toContain("published structured papers");
+    expect(exams).toContain("selectedCourseIds.includes(course.id)");
+    expect(exams).toContain("published production exam content for your selected courses");
   });
 
   it("starts native launches on authentication without painting protected study content first", () => {

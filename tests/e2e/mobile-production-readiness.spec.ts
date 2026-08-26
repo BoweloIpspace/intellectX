@@ -79,7 +79,7 @@ test("native signup keeps the authenticated hamburger gated", async ({ page }) =
   await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
 });
 
-test("new native signup completes Study Profile, chooses courses, then lands on Home", async ({ page }) => {
+test("new native signup completes academic Profile, chooses published courses, then lands on Home", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/signup");
 
@@ -89,13 +89,15 @@ test("new native signup completes Study Profile, chooses courses, then lands on 
 
   await expect(page).toHaveURL(/\/onboarding$/);
   await expect(page.getByRole("heading", { name: "Set up your Study Profile" })).toBeVisible();
-  await page.getByRole("button", { name: "Mathematics", exact: true }).click();
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Biology", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Mathematics", exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Continue to choose courses", exact: true }).click();
 
-  await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
-  await expect(page.getByRole("heading", { name: "Choose your courses" })).toBeVisible();
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
+  await expect(page.getByText("Nothing is selected by default")).toBeVisible();
   await page.getByRole("button", { name: /AI Study Systems/i }).click();
-  await expect(page.getByText("1 / 5 selected")).toBeVisible();
+  await expect(page.getByText("1 / 5", { exact: true })).toBeVisible();
   const continueButton = page.getByRole("button", { name: "Continue to Home" });
   await expect(continueButton).toBeInViewport();
   await continueButton.click();
@@ -221,18 +223,20 @@ test("signed-out native course access returns to launch login before course sele
   await page.goto("/mobile-quizzes");
 
   await expect(page).toHaveURL(/\/login\?native=1$/);
-  await expect(page.getByRole("heading", { name: "Choose your courses" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Your courses" })).toHaveCount(0);
 });
 
-test("native login with no course selection sends learner to course setup", async ({ page }) => {
+test("native login with no course selection sends learner to Profile course setup", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/login");
 
   await page.getByLabel("Email").fill("mobile.return@intellectx.local");
   await page.getByRole("button", { name: "Log in", exact: true }).click();
 
-  await expect(page).toHaveURL(/\/mobile-quizzes\?setup=1$/);
-  await expect(page.getByRole("heading", { name: "Choose your courses" })).toBeVisible();
+  await expect(page).toHaveURL(/\/mobile-profile#course-selection$/);
+  await expect(page.getByRole("heading", { name: "Learner profile" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
+  await expect(page.getByText("0 / 5", { exact: true })).toBeVisible();
 });
 
 test("native profile logout goes straight to launch login without visiting the public landing route", async ({ page }) => {

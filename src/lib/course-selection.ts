@@ -109,6 +109,26 @@ export function saveCourseSelection(selection: CourseSelection) {
   return normalizedSelection;
 }
 
+export function reconcileCourseSelectionWithCatalog(
+  selection: CourseSelection,
+  availableCourseIds: string[],
+): CourseSelection {
+  const availableCourseIdSet = new Set(availableCourseIds);
+  const selectedCourseIds = selection.selectedCourseIds.filter((courseId) => availableCourseIdSet.has(courseId));
+
+  if (
+    selectedCourseIds.length === selection.selectedCourseIds.length &&
+    selectedCourseIds.every((courseId, index) => courseId === selection.selectedCourseIds[index])
+  ) {
+    return normalizeCourseSelection(selection);
+  }
+
+  return saveCourseSelection({
+    ...selection,
+    selectedCourseIds,
+  });
+}
+
 export function clearCourseSelection() {
   window.localStorage.removeItem(COURSE_SELECTION_KEY);
   window.dispatchEvent(new Event(COURSE_SELECTION_CHANGE_EVENT));

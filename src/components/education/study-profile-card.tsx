@@ -15,6 +15,7 @@ import {
   getAcademicProfileOptions,
   getDefaultAcademicProfile,
   isAcademicProfileComplete,
+  isAcademicTrackComplete,
   loadAcademicProfile,
   loadAcademicProfileDraft,
   normalizeAcademicProfileForLevel,
@@ -32,6 +33,8 @@ type StudyProfileCardProps = {
   showReset?: boolean;
   loadSavedProfile?: boolean;
   draftScope?: string;
+  showSubjectPreferences?: boolean;
+  requireSubjectPreferences?: boolean;
 };
 
 function academicProfilesMatch(left: AcademicProfile, right: AcademicProfile) {
@@ -59,6 +62,8 @@ export function StudyProfileCard({
   showReset = true,
   loadSavedProfile = true,
   draftScope,
+  showSubjectPreferences = true,
+  requireSubjectPreferences = true,
 }: StudyProfileCardProps) {
   const [profile, setProfile] = useState<AcademicProfile>(getDefaultAcademicProfile);
   const [savedProfile, setSavedProfile] = useState<AcademicProfile | null>(null);
@@ -68,7 +73,9 @@ export function StudyProfileCard({
   const [syncStatus, setSyncStatus] = useState<AcademicProfileSyncStatus>("idle");
   const normalizedProfile = normalizeAcademicProfileForLevel(profile);
   const profileOptions = getAcademicProfileOptions(normalizedProfile);
-  const profileComplete = isAcademicProfileComplete(normalizedProfile);
+  const profileComplete = requireSubjectPreferences
+    ? isAcademicProfileComplete(normalizedProfile)
+    : isAcademicTrackComplete(normalizedProfile);
   const hasUnsavedChanges = !savedProfile || !academicProfilesMatch(normalizedProfile, savedProfile);
   const canSave = profileComplete && hasUnsavedChanges;
 
@@ -95,12 +102,14 @@ export function StudyProfileCard({
     }
 
     const storedProfile = loadAcademicProfile();
+    const isStoredProfileComplete = (candidate: AcademicProfile) =>
+      requireSubjectPreferences ? isAcademicProfileComplete(candidate) : isAcademicTrackComplete(candidate);
 
     if (storedProfile) {
       const normalizedStoredProfile = normalizeAcademicProfileForLevel(storedProfile);
       setProfile(normalizedStoredProfile);
 
-      if (isAcademicProfileComplete(normalizedStoredProfile)) {
+      if (isStoredProfileComplete(normalizedStoredProfile)) {
         setSavedProfile(normalizedStoredProfile);
         setIsEditing(false);
         if (draftScope) clearAcademicProfileDraft(draftScope);
@@ -119,7 +128,7 @@ export function StudyProfileCard({
     }
 
     setProfileReady(true);
-  }, [draftScope, loadSavedProfile]);
+  }, [draftScope, loadSavedProfile, requireSubjectPreferences]);
 
   function updateProfile(updater: (currentProfile: AcademicProfile) => AcademicProfile) {
     if (!isEditing) return;
@@ -151,6 +160,7 @@ export function StudyProfileCard({
     if (!profileComplete) return;
     if (!hasUnsavedChanges && savedProfile) {
       if (loadSavedProfile) setIsEditing(false);
+      onSaved?.(savedProfile);
       return;
     }
 
@@ -220,7 +230,7 @@ export function StudyProfileCard({
       </CardHeader>
       <CardContent className="space-y-5">
         <p className="text-muted-foreground text-sm leading-6">
-          Choose your academic track so IntellectX can prioritize relevant courses, quizzes, and study tools.
+          Choose your academic track. Your actual courses are selected separately from the published learner catalog.
         </p>
         <div className="grid gap-4 md:grid-cols-3">
           <ProfileSelect
@@ -233,7 +243,7 @@ export function StudyProfileCard({
                 normalizeAcademicProfileForLevel({
                   ...currentProfile,
                   educationLevel: educationLevel as AcademicProfile["educationLevel"],
-                  subjectsOrModules: [],
+                  subjectsOrModules: showSubjectPreferences ? [] : currentProfile.subjectsOrModules,
                 }),
               )
             }
@@ -259,43 +269,47 @@ export function StudyProfileCard({
             }
           />
         </div>
-        <div>
-          <p className="mb-3 text-sm font-medium">{profileOptions.subjectLabel}</p>
-          <div className="flex flex-wrap gap-2">
-            {profileOptions.subjectOptions.map((subject) => {
-              const selected = normalizedProfile.subjectsOrModules.includes(subject);
+        {showSubjectPreferences ? (
+          <div>
+            <p className="mb-3 text-sm font-medium">{profileOptions.subjectLabel}</p>
+            <div className="flex flex-wrap gap-2">
+              {profileOptions.subjectOptions.map((subject) => {
+                const selected = normalizedProfile.subjectsOrModules.includes(subject);
 
-              return (
-                <button
-                  key={subject}
-                  type="button"
-                  aria-pressed={selected}
-                  disabled={!isEditing}
-                  onClick={() => toggleSubject(subject)}
-                  className={cn(
-                    "min-h-11 touch-manipulation rounded-full border px-3 py-2 text-sm transition-all",
-                    selected
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background/70 text-muted-foreground hover:text-foreground",
-                    !isEditing && "cursor-default opacity-75",
-                  )}
-                >
-                  {subject}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={subject}
+                    type="button"
+                    aria-pressed={selected}
+                    disabled={!isEditing}
+                    onClick={() => toggleSubject(subject)}
+                    className={cn(
+                      "min-h-11 touch-manipulation rounded-full border px-3 py-2 text-sm transition-all",
+                      selected
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background/70 text-muted-foreground hover:text-foreground",
+                      !isEditing && "cursor-default opacity-75",
+                    )}
+                  >
+                    {subject}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          {attemptedSave && !profileComplete ? (
-            <p className="text-destructive mt-3 text-sm" role="alert">
-              Complete the required profile fields and choose at least one {profileOptions.subjectLabel.toLowerCase()}.
-            </p>
-          ) : null}
-          {isEditing && savedProfile && hasUnsavedChanges ? (
-            <p className="text-muted-foreground mt-3 text-sm" role="status">
-              Unsaved changes
-            </p>
-          ) : null}
-        </div>
+        ) : null}
+        {attemptedSave && !profileComplete ? (
+          <p className="text-destructive text-sm" role="alert">
+            {requireSubjectPreferences
+              ? `Complete the required profile fields and choose at least one ${profileOptions.subjectLabel.toLowerCase()}.`
+              : "Complete the required academic profile fields."}
+          </p>
+        ) : null}
+        {isEditing && savedProfile && hasUnsavedChanges ? (
+          <p className="text-muted-foreground text-sm" role="status">
+            Unsaved changes
+          </p>
+        ) : null}
         <div className="flex flex-col gap-3 sm:flex-row">
           {isEditing ? (
             <Button type="button" className="min-h-12" disabled={!canSave} onClick={saveProfile}>

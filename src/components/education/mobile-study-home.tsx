@@ -5,7 +5,7 @@ import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
-import { loadCourseSelection } from "@/lib/course-selection";
+import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
@@ -91,12 +91,31 @@ function MobileStudyHomeContent({
 
     const selection = loadCourseSelection();
     if (selection.selectedCourseIds.length === 0) {
-      router.replace("/mobile-quizzes?setup=1");
+      router.replace("/mobile-profile#course-selection");
       return;
     }
 
     setSelectedCourseIds(selection.selectedCourseIds);
   }, [auth.isLoaded, auth.isSignedIn, router]);
+
+  useEffect(() => {
+    if (nativeAppSurface !== true) return;
+
+    function syncSelection() {
+      const selection = loadCourseSelection();
+      setSelectedCourseIds(selection.selectedCourseIds);
+    }
+
+    window.addEventListener(COURSE_SELECTION_CHANGE_EVENT, syncSelection);
+    window.addEventListener("storage", syncSelection);
+    window.addEventListener("pageshow", syncSelection);
+
+    return () => {
+      window.removeEventListener(COURSE_SELECTION_CHANGE_EVENT, syncSelection);
+      window.removeEventListener("storage", syncSelection);
+      window.removeEventListener("pageshow", syncSelection);
+    };
+  }, [nativeAppSurface]);
 
   useEffect(() => {
     function syncActivity() {
@@ -169,13 +188,12 @@ function MobileStudyHomeContent({
     return (
       <section className="rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
         <BookOpenIcon className="mx-auto size-6" />
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Selected courses are unavailable</h1>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Choose your courses</h1>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Your saved courses are no longer available in the current learner catalog. Choose from the published study
-          content instead.
+          Home only shows courses you selected in Profile. Choose from the currently published learner catalog to continue.
         </p>
         <Button asChild className="mt-5 w-full">
-          <Link href="/mobile-quizzes?setup=1">Choose available courses</Link>
+          <Link href="/mobile-profile#course-selection">Choose courses in Profile</Link>
         </Button>
       </section>
     );
@@ -189,7 +207,7 @@ function MobileStudyHomeContent({
         </Badge>
         <h1 className="text-3xl leading-[1.08] font-medium tracking-tight">Your courses</h1>
         <p className="text-muted-foreground text-base leading-7">
-          Open a course to continue with quizzes, past papers, or both.
+          These are the courses you chose in Profile. Open one to continue with its published study content.
         </p>
       </section>
 
@@ -257,7 +275,7 @@ function MobileStudyHomeContent({
         })}
 
         <Button asChild variant="outline" className="mt-1 min-h-11 w-full">
-          <Link href="/mobile-quizzes?setup=1">Change courses</Link>
+          <Link href="/mobile-profile#course-selection">Change courses in Profile</Link>
         </Button>
       </section>
     </>

@@ -23,9 +23,11 @@ describe("learner onboarding flow", () => {
     expect(onboardingSource).toContain("router.replace(returnTo ?? getLearnerHomeRouteForCurrentRuntime())");
   });
 
-  it("continues returning learners when a complete Study Profile is already available or hydrates later", () => {
-    expect(onboardingSource).toContain("continueIfProfileComplete");
-    expect(onboardingSource).toContain("isAcademicProfileComplete(loadAcademicProfile())");
+  it("continues completed web profiles while keeping native learners in course setup until they choose courses", () => {
+    expect(onboardingSource).toContain("continueIfSetupComplete");
+    expect(onboardingSource).toContain("isAcademicTrackComplete(storedProfile)");
+    expect(onboardingSource).toContain("isAcademicProfileComplete(storedProfile)");
+    expect(onboardingSource).toContain("hasSelectedCourses(loadCourseSelection())");
     expect(onboardingSource).toContain("ACADEMIC_PROFILE_CHANGE_EVENT");
     expect(onboardingSource).toContain("Checking your Study Profile…");
   });

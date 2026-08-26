@@ -7,10 +7,8 @@ import { Button } from "@/components/ui/button";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
 import {
   COURSE_SELECTION_CHANGE_EVENT,
-  COURSE_SELECTION_LIMIT,
   type CourseSelection,
   loadCourseSelection,
-  toggleSelectedCourse,
 } from "@/lib/course-selection";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
 import { type LearnerCatalog, useLearnerCatalog } from "@/lib/learner-catalog-client";
@@ -27,7 +25,6 @@ import {
   BookOpenCheckIcon,
   BookOpenIcon,
   CheckCircle2Icon,
-  CheckIcon,
   ListChecksIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -66,7 +63,6 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   const setupRequested = searchParams.get("setup") === "1";
   const [accessReady, setAccessReady] = useState(false);
   const [selection, setSelection] = useState<CourseSelection | null>(null);
-  const [selectionError, setSelectionError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isClerkAuthEnabled()) {
@@ -90,38 +86,31 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
     syncSelection();
     window.addEventListener(COURSE_SELECTION_CHANGE_EVENT, syncSelection);
     window.addEventListener("storage", syncSelection);
+    window.addEventListener("pageshow", syncSelection);
     return () => {
       window.removeEventListener(COURSE_SELECTION_CHANGE_EVENT, syncSelection);
       window.removeEventListener("storage", syncSelection);
+      window.removeEventListener("pageshow", syncSelection);
     };
   }, [accessReady]);
 
-  if (!accessReady || !selection) {
+  const selectedCourses = useMemo(() => {
+    if (!selection) return [];
+    return catalog.courses.filter((course) => selection.selectedCourseIds.includes(course.id));
+  }, [catalog.courses, selection]);
+
+  useEffect(() => {
+    if (!accessReady || !selection) return;
+    if (setupRequested || selectedCourses.length === 0) {
+      router.replace("/mobile-profile#course-selection");
+    }
+  }, [accessReady, router, selectedCourses.length, selection, setupRequested]);
+
+  if (!accessReady || !selection || setupRequested || selectedCourses.length === 0) {
     return (
       <div className="flex min-h-48 items-center justify-center">
-        <AppLoadingSpinner label="Loading your courses" showLabel />
+        <AppLoadingSpinner label="Opening your Profile courses" showLabel />
       </div>
-    );
-  }
-
-  const selectedCourses = catalog.courses.filter((course) => selection.selectedCourseIds.includes(course.id));
-
-  function toggleCourse(courseId: string) {
-    const update = toggleSelectedCourse(courseId, selection ?? undefined);
-    setSelection(update.selection);
-    setSelectionError(update.error ?? null);
-  }
-
-  if (setupRequested || selectedCourses.length === 0) {
-    return (
-      <CourseSelectionStep
-        courses={catalog.courses}
-        catalog={catalog}
-        selection={selection}
-        error={selectionError}
-        onToggle={toggleCourse}
-        onContinue={() => router.replace("/mobile-study")}
-      />
     );
   }
 
@@ -130,7 +119,7 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
     : null;
 
   if (requestedCourseId && !selectedCourse) {
-    return <MessageState title="Course unavailable" description="Choose a course from Home to continue." />;
+    return <MessageState title="Course unavailable" description="Only courses selected in Profile can be opened here." />;
   }
 
   if (selectedCourse && requestedTopicId) {
@@ -142,85 +131,6 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   }
 
   return <SelectedCourseList catalog={catalog} courses={selectedCourses} selection={selection} />;
-}
-
-function CourseSelectionStep({
-  courses,
-  catalog,
-  selection,
-  error,
-  onToggle,
-  onContinue,
-}: {
-  courses: LearnerCatalog["courses"];
-  catalog: LearnerCatalog;
-  selection: CourseSelection;
-  error: string | null;
-  onToggle: (courseId: string) => void;
-  onContinue: () => void;
-}) {
-  const selectedAvailableCount = courses.filter((course) => selection.selectedCourseIds.includes(course.id)).length;
-
-  return (
-    <section className="space-y-4">
-      <div className="rounded-2xl border border-border/70 bg-background/70 p-5">
-        <Badge variant="secondary">Course setup</Badge>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Choose your courses</h1>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">
-          These are the courses that will appear on Home. Choose up to {COURSE_SELECTION_LIMIT}.
-        </p>
-        <p className="mt-3 text-sm font-medium">
-          {selection.selectedCourseIds.length} / {COURSE_SELECTION_LIMIT} selected
-        </p>
-      </div>
-
-      {courses.length === 0 ? (
-        <MessageState title="No published courses yet" description="The learner catalog is currently empty." />
-      ) : (
-        <div className="grid gap-3">
-          {courses.map((course) => {
-            const selected = selection.selectedCourseIds.includes(course.id);
-            const quizCount = catalog.quizzes.filter((quiz) => quiz.courseId === course.id).length;
-            const topicCount = catalog.lessons.filter((lesson) => lesson.courseId === course.id).length;
-
-            return (
-              <button
-                key={course.id}
-                type="button"
-                aria-pressed={selected}
-                disabled={selection.locked}
-                onClick={() => onToggle(course.id)}
-                className="flex min-h-24 w-full items-start gap-4 rounded-2xl border border-border/70 bg-background/70 p-4 text-left transition hover:bg-secondary/50 disabled:opacity-60"
-              >
-                <span
-                  className={`grid size-9 shrink-0 place-items-center rounded-full border ${
-                    selected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background"
-                  }`}
-                >
-                  {selected ? <CheckIcon className="size-4" /> : <BookOpenIcon className="size-4" />}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">{course.title}</span>
-                  <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
-                  <span className="text-muted-foreground mt-2 block text-xs">
-                    {topicCount} {topicCount === 1 ? "topic" : "topics"} · {quizCount} {quizCount === 1 ? "quiz" : "quizzes"}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {selection.locked ? <p className="text-muted-foreground text-sm">Your course selection is locked.</p> : null}
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
-
-      <Button className="min-h-12 w-full" disabled={selectedAvailableCount === 0} onClick={onContinue}>
-        Continue to Home
-        <ArrowRightIcon className="size-4" />
-      </Button>
-    </section>
-  );
 }
 
 function SelectedCourseList({
@@ -238,11 +148,11 @@ function SelectedCourseList({
         <div>
           <Badge variant="secondary">Quizzes</Badge>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight">Choose a course</h1>
-          <p className="text-muted-foreground mt-2 text-sm">Course → topic → quiz.</p>
+          <p className="text-muted-foreground mt-2 text-sm">Only courses chosen in Profile appear here.</p>
         </div>
         {!selection.locked ? (
           <Button asChild size="sm" variant="outline">
-            <Link href="/mobile-quizzes?setup=1">Change</Link>
+            <Link href="/mobile-profile#course-selection">Change</Link>
           </Button>
         ) : null}
       </div>

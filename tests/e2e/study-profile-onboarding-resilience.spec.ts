@@ -25,7 +25,7 @@ test("interrupted Study Profile onboarding survives refresh and completes into c
   const restoredMathematics = page.getByRole("button", { name: "Mathematics", exact: true });
   await expect(restoredMathematics).toHaveAttribute("aria-pressed", "true");
 
-  await page.getByRole("button", { name: "Continue to course selection" }).click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(page).toHaveURL(/\/courses$/);
 
   const storageState = await page.evaluate(() => ({
