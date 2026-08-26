@@ -84,7 +84,7 @@ export function CourseSelectionCard({
           </span>
         </div>
         <p className="text-muted-foreground text-sm leading-6">
-          Only published courses matching your Study Profile appear here. Nothing is selected automatically; choose the courses you actually study.
+          Only published courses matching your Study Profile appear here. Nothing is selected by default. Choose the courses you actually study.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
