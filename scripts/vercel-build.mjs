@@ -17,14 +17,21 @@ function run(command, args) {
 }
 
 if (process.env.CONVEX_DEPLOY_KEY?.trim()) {
-  console.log("Vercel build mode: deploy Convex production backend, then build frontend with its URL.");
+  console.log("Vercel build mode: deploy Convex production backend, reconcile learner catalog, then build frontend.");
+  const releaseBuildCommand = [
+    `npx convex run seed:seedEducationCatalog '{"reset":false}' --prod`,
+    `npx convex run seedBiologyPastPaperRelease:run '{"reset":false}' --prod`,
+    `npx convex run reconcileAcademicCourseTargets:reconcile '{}' --prod`,
+    "npm run build",
+  ].join(" && ");
+
   run("npx", [
     "convex",
     "deploy",
     "--cmd-url-env-var-name",
     "NEXT_PUBLIC_CONVEX_URL",
     "--cmd",
-    "npm run build",
+    releaseBuildCommand,
   ]);
 }
 
