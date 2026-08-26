@@ -3,9 +3,17 @@
 import type { Course } from "@/data/courses";
 import type { Lesson } from "@/data/lessons";
 import type { Quiz } from "@/data/quizzes";
+import {
+  ACADEMIC_PROFILE_CHANGE_EVENT,
+  type AcademicProfile,
+  courseMatchesAcademicTrack,
+  isAcademicTrackComplete,
+  loadAcademicProfile,
+} from "@/lib/academic-profile";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
 import { getE2eLearnerCatalogFixtures } from "@/lib/e2e-learner-catalog-fixtures";
+import { isMobileAppRuntime } from "@/lib/feature-scope";
 import {
   normalizeLearnerCourse,
   normalizeLearnerLesson,
@@ -15,7 +23,7 @@ import {
   type ConvexQuizRecord,
 } from "@/lib/learner-catalog";
 import { useQuery } from "convex/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type LearnerCatalog = {
   courses: Course[];
@@ -117,6 +125,35 @@ export function buildLearnerCatalog(input?: {
   };
 }
 
+function filterCatalogForAcademicProfile(catalog: LearnerCatalog, profile: AcademicProfile | null): LearnerCatalog {
+  if (!profile || !isAcademicTrackComplete(profile)) {
+    return {
+      ...catalog,
+      courses: [],
+      lessons: [],
+      quizzes: [],
+      courseById: new Map(),
+      lessonById: new Map(),
+      quizById: new Map(),
+    };
+  }
+
+  const courses = catalog.courses.filter((course) => courseMatchesAcademicTrack(course, profile));
+  const courseIds = new Set(courses.map((course) => course.id));
+  const lessons = catalog.lessons.filter((lesson) => courseIds.has(lesson.courseId));
+  const quizzes = catalog.quizzes.filter((quiz) => courseIds.has(quiz.courseId));
+
+  return {
+    ...catalog,
+    courses,
+    lessons,
+    quizzes,
+    courseById: new Map(courses.map((course) => [course.id, course])),
+    lessonById: new Map(lessons.map((lesson) => [lesson.id, lesson])),
+    quizById: new Map(quizzes.map((quiz) => [quiz.id, quiz])),
+  };
+}
+
 type ConvexCatalogQuery = Parameters<typeof useQuery>[0];
 
 function useOptionalConvexQuery(query: ConvexCatalogQuery) {
@@ -132,8 +169,41 @@ export function useLearnerCatalog() {
   const convexCourses = useOptionalConvexQuery(convexApi.courses.listCourses);
   const convexLessons = useOptionalConvexQuery(convexApi.lessons.listLessons);
   const convexQuizzes = useOptionalConvexQuery(convexApi.quizzes.listQuizzes);
+  const [nativeProfileState, setNativeProfileState] = useState<{
+    ready: boolean;
+    native: boolean;
+    profile: AcademicProfile | null;
+  }>({ ready: false, native: false, profile: null });
 
-  return useMemo(() => {
+  useEffect(() => {
+    const native = isMobileAppRuntime();
+
+    function syncProfile() {
+      setNativeProfileState({
+        ready: true,
+        native,
+        profile: native ? loadAcademicProfile() : null,
+      });
+    }
+
+    syncProfile();
+
+    if (!native) {
+      return;
+    }
+
+    window.addEventListener(ACADEMIC_PROFILE_CHANGE_EVENT, syncProfile);
+    window.addEventListener("storage", syncProfile);
+    window.addEventListener("pageshow", syncProfile);
+
+    return () => {
+      window.removeEventListener(ACADEMIC_PROFILE_CHANGE_EVENT, syncProfile);
+      window.removeEventListener("storage", syncProfile);
+      window.removeEventListener("pageshow", syncProfile);
+    };
+  }, []);
+
+  const catalog = useMemo(() => {
     if (!convexEnv.isConfigured) {
       return buildLearnerCatalog();
     }
@@ -151,4 +221,16 @@ export function useLearnerCatalog() {
       convexQuizzes: convexQuizzes as ConvexQuizRecord[],
     });
   }, [convexCourses, convexLessons, convexQuizzes]);
+
+  return useMemo(() => {
+    if (!nativeProfileState.ready) {
+      return { ...catalog, isLoading: true };
+    }
+
+    if (!nativeProfileState.native || catalog.isLoading) {
+      return catalog;
+    }
+
+    return filterCatalogForAcademicProfile(catalog, nativeProfileState.profile);
+  }, [catalog, nativeProfileState]);
 }
