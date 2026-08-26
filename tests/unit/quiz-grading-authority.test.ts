@@ -24,8 +24,6 @@ vi.mock("@/lib/convex-api", () => ({
 }));
 vi.mock("convex/browser", () => ({
   ConvexHttpClient: class {
-    constructor(_url: string) {}
-
     query(...args: unknown[]) {
       return convexQueryMock(...args);
     }
