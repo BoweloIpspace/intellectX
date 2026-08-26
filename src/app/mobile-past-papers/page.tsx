@@ -1,6 +1,7 @@
 import { MobileAppShell } from "@/components/education/mobile-app-shell";
 import { MobileExamsHome } from "@/components/education/mobile-exams-home";
 import { MobilePastPaperList } from "@/components/education/mobile-past-papers";
+import { MobileSelectedCourseGuard } from "@/components/education/mobile-selected-course-guard";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -16,6 +17,14 @@ export default async function MobilePastPapersPage({ searchParams }: MobilePastP
   const { course } = await searchParams;
 
   return (
-    <MobileAppShell>{course ? <MobilePastPaperList courseId={course} /> : <MobileExamsHome />}</MobileAppShell>
+    <MobileAppShell>
+      {course ? (
+        <MobileSelectedCourseGuard courseId={course}>
+          <MobilePastPaperList courseId={course} />
+        </MobileSelectedCourseGuard>
+      ) : (
+        <MobileExamsHome />
+      )}
+    </MobileAppShell>
   );
 }
