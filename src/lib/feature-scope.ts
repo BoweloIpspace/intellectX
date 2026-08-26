@@ -13,7 +13,6 @@ const mobileAllowedRoutePrefixes = [
   "/mobile-infographies",
   "/mobile-quizzes",
   "/mobile-past-papers",
-  "/mobile-mat111-exams",
   "/mobile-progress",
   "/mobile-profile",
   "/mobile-update-required",
