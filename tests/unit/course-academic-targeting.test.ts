@@ -1,4 +1,4 @@
-import type { Course } from "../../src/data/courses";
+import { listLearnerVisibleCourses, type Course } from "../../src/data/courses";
 import { courseMatchesAcademicTrack, type AcademicProfile } from "../../src/lib/academic-profile";
 import { APPROVED, PUBLISHED } from "../../src/lib/course-workflow-policy";
 import { describe, expect, it } from "vitest";
@@ -72,5 +72,31 @@ describe("course academic targeting", () => {
 
   it("does not expose a published course with no academic target to native matching", () => {
     expect(courseMatchesAcademicTrack(makeCourse(), seniorBotswanaForm5)).toBe(false);
+  });
+
+  it("publishes only the canonical UB Year 1 course set for that academic track", () => {
+    const matchingCourseIds = listLearnerVisibleCourses()
+      .filter((course) => courseMatchesAcademicTrack(course, ubYear1))
+      .map((course) => course.id)
+      .sort();
+
+    expect(matchingCourseIds).toEqual(
+      [
+        "biology-101",
+        "chemistry-101",
+        "mat111-introductory-mathematics-i",
+        "physics-101",
+      ].sort(),
+    );
+  });
+
+  it("does not leak UB Year 1 science courses into another year", () => {
+    const ubYear2 = { ...ubYear1, gradeOrYear: "Year 2" };
+    const matchingScienceIds = listLearnerVisibleCourses()
+      .filter((course) => ["biology-101", "physics-101", "chemistry-101"].includes(course.id))
+      .filter((course) => courseMatchesAcademicTrack(course, ubYear2))
+      .map((course) => course.id);
+
+    expect(matchingScienceIds).toEqual([]);
   });
 });

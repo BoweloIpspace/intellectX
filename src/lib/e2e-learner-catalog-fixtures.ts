@@ -6,12 +6,16 @@ import { mat111Quizzes } from "@/data/mat111-quizzes";
 import { quizzes } from "@/data/quizzes";
 
 export function getE2eLearnerCatalogFixtures() {
-  const schoolCourses = courses.map((course) => ({
-    ...course,
-    educationLevel: "Senior",
-    curriculumOrInstitution: "Botswana curriculum",
-    gradeOrYear: "Form 5",
-  }));
+  const schoolCourses = courses.map((course) =>
+    course.educationLevel || course.curriculumOrInstitution || course.gradeOrYear
+      ? course
+      : {
+          ...course,
+          educationLevel: "Senior",
+          curriculumOrInstitution: "Botswana curriculum",
+          gradeOrYear: "Form 5",
+        },
+  );
   const fixtureCourses = schoolCourses.some((course) => course.id === MAT111_COURSE_ID)
     ? [...schoolCourses]
     : [...schoolCourses, mat111Course];
