@@ -1,4 +1,3 @@
-import { AiLessonTutorPanel } from "@/components/education/ai-lesson-tutor-panel";
 import { LessonBlockRenderer } from "@/components/education/lesson-block-renderer";
 import { LessonCompletionAction } from "@/components/education/lesson-completion-action";
 import { LessonProgressSync } from "@/components/education/lesson-progress-sync";
@@ -78,7 +77,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 {lesson.blocks && <LessonBlockRenderer blocks={lesson.blocks} />}
               </div>
             </section>
-            <AiLessonTutorPanel lesson={lesson} />
           </div>
         </section>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">

@@ -157,8 +157,11 @@ test.describe("production support routes", () => {
     const sitemap = await request.get("/sitemap.xml");
     expect(sitemap.ok()).toBeTruthy();
     const sitemapText = await sitemap.text();
-    expect(sitemapText).toContain("https://intellectx-lovat.vercel.app/courses");
-    expect(sitemapText).toContain("https://intellectx-lovat.vercel.app/quiz/ai-study-systems-check");
+    expect(sitemapText).toContain("https://intellectx-lovat.vercel.app/privacy-policy");
+    expect(sitemapText).toContain("https://intellectx-lovat.vercel.app/terms-and-conditions");
+    expect(sitemapText).not.toContain("https://intellectx-lovat.vercel.app/dashboard");
+    expect(sitemapText).not.toContain("https://intellectx-lovat.vercel.app/learn/");
+    expect(sitemapText).not.toContain("https://intellectx-lovat.vercel.app/quiz/");
   });
 
   test("low-risk security headers are present", async ({ request }) => {
@@ -315,25 +318,14 @@ test("mobile practice hub loads and exposes quiz links", async ({ page }) => {
   );
 });
 
-test("mobile notes and flashcards entry routes load", async ({ page }) => {
+test("retired mobile notes and flashcards routes return to mobile Home", async ({ page }) => {
   await page.goto("/mobile-notes");
-  await expect(
-    page.getByRole("heading", { name: "Lesson notes stay with the full lesson experience" }),
-  ).toBeVisible();
-  await expect(page.getByText(/Notes remain attached to full lessons in the web experience\./)).toBeVisible();
-  await expect(page.getByText(/The native learner app uses selected courses, quizzes, past papers, Progress, and Profile instead\./)).toBeVisible();
-  await expect(page.getByRole("link", { name: "Open flashcards" })).toHaveAttribute("href", "/mobile-flashcards");
-  await expect(page.getByRole("link", { name: "Browse lessons" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Open lesson notes" })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/mobile-study$/);
+  await expect(page.getByRole("heading", { name: "Lesson notes stay with the full lesson experience" })).toHaveCount(0);
 
   await page.goto("/mobile-flashcards");
-  await expect(page.getByRole("heading", { name: "Flashcards from lesson cards" })).toBeVisible();
-  await expect(page.getByRole("region", { name: "AI lesson tutor" })).toHaveCount(0);
-  await expect(page.getByText("Tutor, not answer machine")).toBeVisible();
-  await expect(page.getByText("Card 1 of")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Source lesson" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Reveal answer" }).click();
-  await expect(page.getByRole("button", { name: "Hide answer" })).toBeVisible();
+  await expect(page).toHaveURL(/\/mobile-study$/);
+  await expect(page.getByRole("heading", { name: "Flashcards from lesson cards" })).toHaveCount(0);
 });
 
 test("lesson page keeps instructor course content and removes editable student notes", async ({ page }) => {
@@ -343,15 +335,13 @@ test("lesson page keeps instructor course content and removes editable student n
   await expect(page.getByRole("heading", { name: "Prompting for Learning", level: 1 })).toBeVisible();
   await expect(page.getByText("A strong learning prompt gives the AI a role")).toBeVisible();
   await expect(page.getByText("Learning loop")).toBeVisible();
-  await expect(page.getByRole("region", { name: "AI lesson tutor" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Get lesson help" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "AI lesson tutor" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Get lesson help" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Related quiz/i })).toHaveAttribute(
     "href",
     "/quiz/ai-study-systems-check",
   );
   await expectNoGenericChat(page);
-  await page.getByRole("button", { name: "Get lesson help" }).click();
-  await expect(page.getByText("Lesson tutor support for Prompting for Learning is not configured yet.")).toBeVisible();
   await expect(page.getByPlaceholder("Capture key ideas, questions, and next actions while you learn...")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Lesson notes" })).toHaveCount(0);
@@ -633,8 +623,6 @@ test.describe("mobile smoke", () => {
   const mobileRoutes = [
     { route: "/", text: "IntellectX" },
     { route: "/mobile-quizzes", text: "Practice quizzes and past papers" },
-    { route: "/mobile-flashcards", text: "Flashcards from lesson cards" },
-    { route: "/mobile-notes", text: "Lesson notes stay with the full lesson experience" },
     { route: "/courses", text: "Choose your next intelligent learning path" },
     { route: "/quizzes", text: "Practice where learning becomes visible" },
     { route: "/privacy-policy", text: "Privacy Policy" },
@@ -679,7 +667,7 @@ test.describe("mobile smoke", () => {
 
     await expect(page.getByRole("heading", { name: "Prompting for Learning", level: 1 })).toBeVisible();
     await expect(page.getByText("A strong learning prompt gives the AI a role")).toBeVisible();
-    await expect(page.getByRole("region", { name: "AI lesson tutor" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "AI lesson tutor" })).toHaveCount(0);
     await expectNoGenericChat(page);
     await expect(page.getByRole("heading", { name: "Lesson notes" })).toHaveCount(0);
     await expect(page.getByPlaceholder("Capture key ideas, questions, and next actions while you learn...")).toHaveCount(0);
