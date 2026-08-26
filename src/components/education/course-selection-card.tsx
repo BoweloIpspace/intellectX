@@ -3,7 +3,7 @@
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   COURSE_SELECTION_CHANGE_EVENT,
   COURSE_SELECTION_LIMIT,
@@ -77,7 +77,7 @@ export function CourseSelectionCard({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <Badge variant="secondary">Choose courses</Badge>
-            <CardTitle className="mt-3">Your courses</CardTitle>
+            <h2 className="mt-3 leading-none font-semibold">Your courses</h2>
           </div>
           <span className="text-muted-foreground text-sm font-medium">
             {selectedCourses.length} / {COURSE_SELECTION_LIMIT}
