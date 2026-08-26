@@ -70,7 +70,7 @@ export function MobileInfographies() {
             Infographies are built from the published topics in the courses you keep on Home.
           </p>
           <Button asChild className="mt-5">
-            <Link href="/mobile-quizzes?setup=1">Choose courses</Link>
+            <Link href="/mobile-profile#course-selection">Choose courses in Profile</Link>
           </Button>
         </div>
       </section>
