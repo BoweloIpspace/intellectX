@@ -1,11 +1,13 @@
 "use client";
 
+import { CourseSelectionCard } from "@/components/education/course-selection-card";
 import { StudyProfileCard } from "@/components/education/study-profile-card";
 import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runtime-provider";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ACADEMIC_PROFILE_CHANGE_EVENT,
   isAcademicProfileComplete,
+  isAcademicTrackComplete,
   loadAcademicProfile,
 } from "@/lib/academic-profile";
 import { getSafeMobileReturnTo } from "@/lib/auth-return-route";
@@ -21,23 +23,29 @@ export function LearnerOnboarding() {
   const { mode, userId } = useLearnerAuthRuntime();
   const [nativeMobile, setNativeMobile] = useState(false);
   const [profileCheckComplete, setProfileCheckComplete] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
   const draftScope = mode === "clerk" ? userId ?? undefined : "local";
 
   useEffect(() => {
-    setNativeMobile(isMobileAppRuntime());
-  }, []);
+    const native = isMobileAppRuntime();
+    setNativeMobile(native);
 
-  useEffect(() => {
     function destination() {
-      if (isMobileAppRuntime() && !hasSelectedCourses(loadCourseSelection())) {
-        return "/mobile-quizzes?setup=1";
-      }
-
       return returnTo ?? getLearnerHomeRouteForCurrentRuntime();
     }
 
-    function continueIfProfileComplete() {
-      if (!isAcademicProfileComplete(loadAcademicProfile())) {
+    function continueIfSetupComplete() {
+      const storedProfile = loadAcademicProfile();
+      const complete = native ? isAcademicTrackComplete(storedProfile) : isAcademicProfileComplete(storedProfile);
+      setProfileComplete(complete);
+
+      if (!complete) {
+        setProfileCheckComplete(true);
+        return false;
+      }
+
+      if (native && !hasSelectedCourses(loadCourseSelection())) {
+        setProfileCheckComplete(true);
         return false;
       }
 
@@ -45,12 +53,12 @@ export function LearnerOnboarding() {
       return true;
     }
 
-    if (!continueIfProfileComplete()) {
+    if (!continueIfSetupComplete()) {
       setProfileCheckComplete(true);
     }
 
     function handleProfileChange() {
-      continueIfProfileComplete();
+      continueIfSetupComplete();
     }
 
     window.addEventListener(ACADEMIC_PROFILE_CHANGE_EVENT, handleProfileChange);
@@ -61,11 +69,15 @@ export function LearnerOnboarding() {
   }, [returnTo, router, userId]);
 
   function continueAfterProfile() {
-    if (isMobileAppRuntime() && !hasSelectedCourses(loadCourseSelection())) {
-      router.replace("/mobile-quizzes?setup=1");
+    if (nativeMobile) {
+      setProfileComplete(true);
       return;
     }
 
+    router.replace(returnTo ?? getLearnerHomeRouteForCurrentRuntime());
+  }
+
+  function continueAfterCourses() {
     router.replace(returnTo ?? getLearnerHomeRouteForCurrentRuntime());
   }
 
@@ -79,19 +91,34 @@ export function LearnerOnboarding() {
     );
   }
 
+  if (nativeMobile && profileComplete) {
+    return (
+      <div className="space-y-5">
+        <Card className="rounded-lg border-dashed">
+          <CardContent className="text-muted-foreground py-5 text-sm leading-6">
+            Choose the published courses you actually study. Nothing is selected by default, and these choices are the courses that appear on Home.
+          </CardContent>
+        </Card>
+        <CourseSelectionCard showContinue continueLabel="Continue to Home" onContinue={continueAfterCourses} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       <Card className="rounded-lg border-dashed">
         <CardContent className="text-muted-foreground py-5 text-sm leading-6">
           {nativeMobile
-            ? "Complete your Study Profile first. If you have not chosen courses yet, course selection comes next before you open quizzes."
-            : "Complete your Study Profile first. Next, continue to course selection, where the 5-course limit, 7-day grace period, and selection lock remain authoritative."}
+            ? "Set your academic track first. Course selection is the next step of this Profile setup, and only published courses are offered."
+            : "Complete your Study Profile first. Your existing web subject preferences remain available here."}
         </CardContent>
       </Card>
       <StudyProfileCard
         showReset={false}
-        submitLabel={nativeMobile ? "Continue" : "Continue to course selection"}
+        submitLabel={nativeMobile ? "Continue to choose courses" : "Continue"}
         draftScope={draftScope}
+        showSubjectPreferences={!nativeMobile}
+        requireSubjectPreferences={!nativeMobile}
         onSaved={continueAfterProfile}
       />
     </div>
