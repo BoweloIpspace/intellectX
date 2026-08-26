@@ -47,7 +47,7 @@ describe("GIC programming pass 2", () => {
     expect(playwright).toContain('name: "firefox"');
     expect(playwright).toContain('name: "webkit"');
     expect(playwright).toContain("cross-browser-smoke\\.spec\\.ts");
-    expect(workflow).toContain("playwright install --with-deps chromium firefox webkit");
+    expect(workflow).toContain("npm exec -- playwright install --with-deps chromium firefox webkit");
     expect(smoke).toContain("public landing renders core navigation");
     expect(smoke).toContain("learner login renders usable credentials fields");
     expect(smoke).toContain("privacy policy renders as a public support page");
