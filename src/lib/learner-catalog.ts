@@ -19,6 +19,9 @@ export type ConvexCourseRecord = {
   accessLevel?: ContentAccessLevel;
   reviewStatus?: Course["reviewStatus"];
   publicationStatus?: Course["publicationStatus"];
+  educationLevel?: string;
+  curriculumOrInstitution?: string;
+  gradeOrYear?: string;
 };
 
 export type ConvexLessonRecord = {
@@ -110,6 +113,9 @@ export function normalizeLearnerCourse(course: ConvexCourseRecord, fallback?: Co
     accessLevel: course.accessLevel ?? fallback?.accessLevel,
     reviewStatus: workflowState.reviewStatus,
     publicationStatus: workflowState.publicationStatus,
+    educationLevel: course.educationLevel ?? fallback?.educationLevel,
+    curriculumOrInstitution: course.curriculumOrInstitution ?? fallback?.curriculumOrInstitution,
+    gradeOrYear: course.gradeOrYear ?? fallback?.gradeOrYear,
   };
 }
 

@@ -95,7 +95,7 @@ test("new native signup completes academic Profile, chooses published courses, t
 
   await expect(page).toHaveURL(/\/onboarding$/);
   await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
-  await expect(page.getByText("Nothing is selected by default")).toBeVisible();
+  await expect(page.getByText("Nothing is selected by default").first()).toBeVisible();
   await page.getByRole("button", { name: /AI Study Systems/i }).click();
   await expect(page.getByText("1 / 5", { exact: true })).toBeVisible();
   const continueButton = page.getByRole("button", { name: "Continue to Home" });
