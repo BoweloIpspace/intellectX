@@ -92,8 +92,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const authoritative = getAuthoritativeFallbackQuiz(payload.quizId);
-    const convexClient = authoritative ? null : getConvexClient();
+    // Convex question stable IDs are the IDs rendered by the live learner
+    // catalog. When Convex is configured it must therefore be the grading
+    // authority too; the static source fallback is only for frontend-only
+    // builds where no Convex deployment is available.
+    const convexClient = getConvexClient();
+    const authoritative = convexClient ? null : getAuthoritativeFallbackQuiz(payload.quizId);
 
     if (payload.action === "reveal") {
       if (typeof payload.questionId !== "string") {
