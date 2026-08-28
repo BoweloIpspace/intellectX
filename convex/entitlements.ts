@@ -71,12 +71,11 @@ export const applyVerifiedBillingEntitlementEvent = internalMutationGeneric({
     const existingEntitlement = await ctx.db
       .query("entitlements")
       .withIndex("by_user_product_provider_subscription", (q) =>
-        q
-          .eq("userKey", entitlementWrite.userKey)
-          .eq("productKey", entitlementWrite.productKey)
-          .eq("provider", entitlementWrite.provider)
-          .eq("providerSubscriptionId", entitlementWrite.providerSubscriptionId),
+        q.eq("userKey", entitlementWrite.userKey),
       )
+      .filter((q) => q.eq(q.field("productKey"), entitlementWrite.productKey))
+      .filter((q) => q.eq(q.field("provider"), entitlementWrite.provider))
+      .filter((q) => q.eq(q.field("providerSubscriptionId"), entitlementWrite.providerSubscriptionId))
       .first();
 
     const patch = {
@@ -138,7 +137,8 @@ export const applyVerifiedBillingWebhookEvent = internalMutationGeneric({
 
     const receipt = await ctx.db
       .query("billingWebhookEvents")
-      .withIndex("by_provider_event", (q) => q.eq("provider", provider).eq("providerEventId", providerEventId))
+      .withIndex("by_provider_event", (q) => q.eq("provider", provider))
+      .filter((q) => q.eq(q.field("providerEventId"), providerEventId))
       .first();
 
     if (receipt) {
@@ -151,9 +151,8 @@ export const applyVerifiedBillingWebhookEvent = internalMutationGeneric({
 
     const existingEntitlement = await ctx.db
       .query("entitlements")
-      .withIndex("by_provider_subscription", (q) =>
-        q.eq("provider", provider).eq("providerSubscriptionId", providerSubscriptionId),
-      )
+      .withIndex("by_provider_subscription", (q) => q.eq("provider", provider))
+      .filter((q) => q.eq(q.field("providerSubscriptionId"), providerSubscriptionId))
       .first();
 
     const suppliedUserKey = normalizeOptional(args.userKey);
