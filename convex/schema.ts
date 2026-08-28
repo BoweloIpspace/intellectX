@@ -1,6 +1,16 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+const billingEventType = v.union(
+  v.literal("checkout_completed"),
+  v.literal("subscription_created"),
+  v.literal("subscription_renewed"),
+  v.literal("subscription_cancelled"),
+  v.literal("subscription_expired"),
+  v.literal("payment_failed"),
+  v.literal("payment_refunded"),
+);
+
 export default defineSchema({
   users: defineTable({
     name: v.string(),
@@ -250,20 +260,29 @@ export default defineSchema({
     providerCustomerId: v.optional(v.string()),
     providerSubscriptionId: v.optional(v.string()),
     providerEventId: v.optional(v.string()),
-    lastBillingEventType: v.optional(
-      v.union(
-        v.literal("checkout_completed"),
-        v.literal("subscription_created"),
-        v.literal("subscription_renewed"),
-        v.literal("subscription_cancelled"),
-        v.literal("subscription_expired"),
-        v.literal("payment_failed"),
-        v.literal("payment_refunded"),
-      ),
-    ),
+    lastBillingEventType: v.optional(billingEventType),
     updatedAt: v.number(),
   })
     .index("by_user", ["userKey"])
     .index("by_product", ["productKey"])
-    .index("by_provider_event", ["providerEventId"]),
+    .index("by_provider_event", ["providerEventId"])
+    .index("by_provider_subscription", ["provider", "providerSubscriptionId"])
+    .index("by_user_product_provider_subscription", [
+      "userKey",
+      "productKey",
+      "provider",
+      "providerSubscriptionId",
+    ]),
+  billingWebhookEvents: defineTable({
+    provider: v.string(),
+    providerEventId: v.string(),
+    billingEventType,
+    providerCustomerId: v.string(),
+    providerSubscriptionId: v.string(),
+    userKey: v.string(),
+    productKey: v.string(),
+    occurredAt: v.optional(v.number()),
+    processedAt: v.number(),
+    entitlementId: v.id("entitlements"),
+  }).index("by_provider_event", ["provider", "providerEventId"]),
 });
