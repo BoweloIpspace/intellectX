@@ -50,12 +50,14 @@ async function seedCourseSelection(
   }, selectedCourseIds);
 }
 
-async function openPromptingTopic(page: import("@playwright/test").Page) {
+async function openPromptingInfographic(page: import("@playwright/test").Page) {
   await page.goto("/mobile-study");
   await page.getByRole("link", { name: /AI Study Systems/i }).click();
-  await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems$/);
+  await expect(page).toHaveURL(/\/mobile-study\/ai-study-systems$/);
   await page.getByRole("link", { name: /Prompting for Learning/i }).click();
-  await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems&topic=prompting-for-learning$/);
+  await expect(page).toHaveURL(
+    /\/mobile-infographies\?course=ai-study-systems&topic=prompting-for-learning$/,
+  );
 }
 
 const contextualMobileQuizUrl =
@@ -131,25 +133,40 @@ test("selected course exposes only topics with published catalog quizzes", async
   await page.goto("/mobile-study");
   await page.getByRole("link", { name: /AI Study Systems/i }).click();
 
-  await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems$/);
+  await expect(page).toHaveURL(/\/mobile-study\/ai-study-systems$/);
   await expect(page.getByRole("heading", { name: "AI Study Systems", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Mobile study navigation" }).getByRole("link", { name: "Home", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("link", { name: /Prompting for Learning/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /Memory Systems/i })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Weekly Review/i })).toHaveCount(0);
 
   await page.getByRole("link", { name: /Prompting for Learning/i }).click();
-  await expect(page).toHaveURL(/topic=prompting-for-learning$/);
+  await expect(page).toHaveURL(
+    /\/mobile-infographies\?course=ai-study-systems&topic=prompting-for-learning$/,
+  );
   await expect(page.getByRole("heading", { name: "Prompting for Learning", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "AI Study Systems Check", exact: true })).toBeVisible();
+  await expect(page.getByText("AI Study Systems", { exact: true })).toBeVisible();
+  await expect(
+    page
+      .getByRole("navigation", { name: "Mobile study navigation" })
+      .getByRole("link", { name: "Infographies", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  const startTopicQuiz = page.getByRole("link", { name: "Start topic quiz", exact: true });
+  await expect(startTopicQuiz).toHaveAttribute(
+    "href",
+    "/quiz/ai-study-systems-check?from=mobile&course=ai-study-systems&topic=prompting-for-learning",
+  );
 });
 
 test("mobile quiz detail preserves topic context inside the native quiz shell", async ({ page }) => {
   await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
-  await openPromptingTopic(page);
+  await openPromptingInfographic(page);
 
-  const startQuiz = page.getByRole("link", { name: /Start quiz/i }).first();
+  const startQuiz = page.getByRole("link", { name: "Start topic quiz", exact: true });
   await expect(startQuiz).toHaveAttribute(
     "href",
     "/quiz/ai-study-systems-check?from=mobile&course=ai-study-systems&topic=prompting-for-learning",
@@ -166,13 +183,15 @@ test("mobile quiz detail preserves topic context inside the native quiz shell", 
   await expect(page.locator("footer")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Submit answer" })).toBeInViewport();
 
-  const backToTopic = page.getByRole("link", { name: "Back to topic" });
-  await expect(backToTopic).toHaveAttribute(
+  const backToInfographic = page.getByRole("link", { name: "Back to infographic" });
+  await expect(backToInfographic).toHaveAttribute(
     "href",
-    "/mobile-quizzes?course=ai-study-systems&topic=prompting-for-learning",
+    "/mobile-infographies?course=ai-study-systems&topic=prompting-for-learning",
   );
-  await backToTopic.click();
-  await expect(page).toHaveURL(/\/mobile-quizzes\?course=ai-study-systems&topic=prompting-for-learning$/);
+  await backToInfographic.click();
+  await expect(page).toHaveURL(
+    /\/mobile-infographies\?course=ai-study-systems&topic=prompting-for-learning$/,
+  );
   await expect(page.getByRole("heading", { name: "Prompting for Learning", exact: true })).toBeVisible();
 });
 
@@ -180,9 +199,9 @@ test("unfinished native quiz restores checked state after reload and resumes fro
   await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
   await seedCourseSelection(page);
-  await openPromptingTopic(page);
+  await openPromptingInfographic(page);
 
-  await page.getByRole("link", { name: /Start quiz/i }).first().click();
+  await page.getByRole("link", { name: "Start topic quiz", exact: true }).click();
   await expect(page).toHaveURL(contextualMobileQuizUrl);
 
   const choices = page.getByRole("radio");
