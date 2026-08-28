@@ -50,7 +50,7 @@ export function QuizPageContent({
   }, [courseId, mobileSurface, quiz.id, quiz.title]);
 
   const returnHref = mobileSurface
-    ? mobileReturnHref ?? `/mobile-quizzes?course=${encodeURIComponent(courseId)}`
+    ? mobileReturnHref ?? `/mobile-study/${encodeURIComponent(courseId)}`
     : `/courses/${courseId}`;
   const returnLabel = mobileReturnLabel ?? "Back to course";
 
