@@ -16,13 +16,13 @@ function getMobileReturnTarget(
 ) {
   if (requestedCourseId === courseId && requestedTopicId && lessonId === requestedTopicId) {
     return {
-      href: `/mobile-quizzes?course=${encodeURIComponent(courseId)}&topic=${encodeURIComponent(requestedTopicId)}`,
-      label: "Back to topic",
+      href: `/mobile-infographies?course=${encodeURIComponent(courseId)}&topic=${encodeURIComponent(requestedTopicId)}`,
+      label: "Back to infographic",
     };
   }
 
   return {
-    href: `/mobile-quizzes?course=${encodeURIComponent(courseId)}`,
+    href: `/mobile-study/${encodeURIComponent(courseId)}`,
     label: "Back to course",
   };
 }
