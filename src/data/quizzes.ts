@@ -1,4 +1,8 @@
 import type { ContentAccessLevel } from "../lib/entitlements";
+import {
+  getMat111FeynmanQuiz,
+  getMat111FeynmanQuizzesByCourse,
+} from "./mat111-feynman-quizzes";
 import { getMat111Quiz, getMat111QuizzesByCourse } from "./mat111-quizzes";
 
 export type QuizQuestion = {
@@ -167,9 +171,13 @@ export const quizzes: Quiz[] = [
 ];
 
 export function getQuiz(id: string) {
-  return quizzes.find((quiz) => quiz.id === id) ?? getMat111Quiz(id);
+  return quizzes.find((quiz) => quiz.id === id) ?? getMat111Quiz(id) ?? getMat111FeynmanQuiz(id);
 }
 
 export function getQuizzesByCourse(courseId: string) {
-  return [...quizzes.filter((quiz) => quiz.courseId === courseId), ...getMat111QuizzesByCourse(courseId)];
+  return [
+    ...quizzes.filter((quiz) => quiz.courseId === courseId),
+    ...getMat111QuizzesByCourse(courseId),
+    ...getMat111FeynmanQuizzesByCourse(courseId),
+  ];
 }
