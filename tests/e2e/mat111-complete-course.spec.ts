@@ -40,7 +40,7 @@ async function seedMat111NativeLearner(page: import("@playwright/test").Page) {
 
 test("MAT111 stays one course with all supplied lecture-note topics", async ({ page }) => {
   await seedMat111NativeLearner(page);
-  await page.goto(`/mobile-quizzes?course=${MAT111}`);
+  await page.goto(`/mobile-study/${MAT111}`);
 
   await expect(page.getByRole("heading", { name: "MAT111 Introductory Mathematics I" })).toBeVisible();
   await expect(page.getByText("Combinations, Composition and Inverse Functions", { exact: true })).toBeVisible();
@@ -57,7 +57,7 @@ test("MAT111 infographies use lecture-note visuals and link back to topic quizze
   const firstInfography = page.getByRole("article").first();
   await expect(firstInfography.getByRole("heading", { name: "Combinations, Composition and Inverse Functions" })).toBeVisible();
   await expect(firstInfography.getByRole("img", { name: "Combinations, Composition and Inverse Functions study diagram" })).toBeVisible();
-  await expect(firstInfography.getByRole("link", { name: /Open topic quizzes/i })).toBeVisible();
+  await expect(firstInfography.getByRole("link", { name: /topic quiz/i })).toBeVisible();
 });
 
 test("MAT111 Exams does not inject fixture-backed practice papers into the learner runtime", async ({ page }) => {

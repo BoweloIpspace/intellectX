@@ -25,7 +25,6 @@ import {
   BookOpenCheckIcon,
   BookOpenIcon,
   CheckCircle2Icon,
-  ListChecksIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -127,7 +126,7 @@ function NativeCourseTopicQuizFlow({ catalog }: { catalog: LearnerCatalog }) {
   }
 
   if (selectedCourse) {
-    return <CourseTopicList catalog={catalog} courseId={selectedCourse.id} />;
+    return <CourseRouteRedirect courseId={selectedCourse.id} />;
   }
 
   return <SelectedCourseList catalog={catalog} courses={selectedCourses} selection={selection} />;
@@ -167,7 +166,7 @@ function SelectedCourseList({
           return (
             <Link
               key={course.id}
-              href={`/mobile-quizzes?course=${encodeURIComponent(course.id)}`}
+              href={`/mobile-study/${encodeURIComponent(course.id)}`}
               className="flex min-h-28 items-center gap-4 rounded-2xl border border-border/70 bg-background/70 p-5 transition hover:bg-secondary/50"
             >
               <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-full">
@@ -189,57 +188,17 @@ function SelectedCourseList({
   );
 }
 
-function CourseTopicList({ catalog, courseId }: { catalog: LearnerCatalog; courseId: string }) {
-  const course = catalog.courseById.get(courseId);
-  const topics = catalog.lessons.filter(
-    (lesson) => lesson.courseId === courseId && catalog.quizzes.some((quiz) => quiz.courseId === courseId && quiz.lessonId === lesson.id),
-  );
+function CourseRouteRedirect({ courseId }: { courseId: string }) {
+  const router = useRouter();
 
-  if (!course) return <MessageState title="Course unavailable" />;
+  useEffect(() => {
+    router.replace(`/mobile-study/${encodeURIComponent(courseId)}`);
+  }, [courseId, router]);
 
   return (
-    <section className="space-y-4">
-      <Button asChild size="sm" variant="ghost" className="-ml-2">
-        <Link href="/mobile-study">
-          <ArrowLeftIcon className="size-4" />
-          Home
-        </Link>
-      </Button>
-
-      <div>
-        <Badge variant="secondary">{course.subject}</Badge>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">{course.title}</h1>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">Choose a topic to see its quizzes.</p>
-      </div>
-
-      {topics.length === 0 ? (
-        <MessageState title="No quiz topics published yet" description="This course has no published topic quizzes yet." />
-      ) : (
-        <div className="grid gap-3">
-          {topics.map((topic) => {
-            const count = catalog.quizzes.filter((quiz) => quiz.courseId === courseId && quiz.lessonId === topic.id).length;
-            return (
-              <Link
-                key={topic.id}
-                href={`/mobile-quizzes?course=${encodeURIComponent(courseId)}&topic=${encodeURIComponent(topic.id)}`}
-                className="flex min-h-24 items-center gap-4 rounded-2xl border border-border/70 bg-background/70 p-4 transition hover:bg-secondary/50"
-              >
-                <span className="bg-secondary grid size-10 shrink-0 place-items-center rounded-full">
-                  <ListChecksIcon className="size-5" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">{topic.title}</span>
-                  <span className="text-muted-foreground mt-1 block text-xs">
-                    {count} {count === 1 ? "quiz" : "quizzes"} · {topic.duration}
-                  </span>
-                </span>
-                <ArrowRightIcon className="size-5" />
-              </Link>
-            );
-          })}
-        </div>
-      )}
-    </section>
+    <div className="flex min-h-48 items-center justify-center">
+      <AppLoadingSpinner label="Opening course topics" showLabel />
+    </div>
   );
 }
 
@@ -254,9 +213,9 @@ function TopicQuizList({ catalog, courseId, topicId }: { catalog: LearnerCatalog
   return (
     <section className="space-y-4">
       <Button asChild size="sm" variant="ghost" className="-ml-2">
-        <Link href={`/mobile-quizzes?course=${encodeURIComponent(courseId)}`}>
+        <Link href={`/mobile-infographies?course=${encodeURIComponent(courseId)}&topic=${encodeURIComponent(topicId)}`}>
           <ArrowLeftIcon className="size-4" />
-          Course
+          Infographic
         </Link>
       </Button>
       <div>

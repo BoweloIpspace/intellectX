@@ -255,7 +255,7 @@ function MobileStudyHomeContent({
           return (
             <Link
               key={course.id}
-              href={`/mobile-quizzes?course=${encodeURIComponent(course.id)}`}
+              href={`/mobile-study/${encodeURIComponent(course.id)}`}
               className="animate-widget flex min-h-36 items-center gap-4 rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-card/60"
             >
               <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-full">

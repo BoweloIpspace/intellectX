@@ -28,6 +28,7 @@ describe("mobile learner UX checklist", () => {
     expect(shell).toContain('aria-label="Progress"');
     expect(shell).toContain('aria-label="Profile"');
     expect(shell).toContain("grid-cols-4");
+    expect(shell).toContain('pathname.startsWith("/mobile-study/")');
   });
 
   it("keeps the original timed player for pure MCQ and uses mixed behavior only when structured questions exist", () => {
@@ -55,13 +56,17 @@ describe("mobile learner UX checklist", () => {
     const catalog = source("src/lib/learner-catalog-client.ts");
     const learnerCatalog = source("src/lib/learner-catalog.ts");
     const quizzes = source("src/components/education/mobile-quizzes-section.tsx");
+    const courseTopics = source("src/components/education/mobile-course-topics.tsx");
+    const infographies = source("src/components/education/mobile-infographies.tsx");
     expect(catalog).not.toContain("mobileTopicQuizzes");
     expect(catalog).not.toContain("staticCourses");
     expect(catalog).not.toContain("MAT111_COURSE_ID");
     expect(catalog).not.toContain("mat111Course");
     expect(learnerCatalog).not.toContain("getStaticCourseDetail");
     expect(existsSync(resolve(process.cwd(), "src/data/mobile-topic-quizzes.ts"))).toBe(false);
-    expect(quizzes).toContain("/mobile-quizzes?course=");
+    expect(courseTopics).toContain("/mobile-infographies?course=");
+    expect(infographies).toContain("/mobile-quizzes?course=");
+    expect(infographies).toContain("/quiz/${card.quizIds[0]}?from=mobile&course=");
     expect(quizzes).toContain("&topic=");
     expect(quizzes).toContain("latestByQuizId");
     expect(quizzes).toContain("{attempt.score}/{attempt.totalQuestions} · {attempt.percentage}%");
