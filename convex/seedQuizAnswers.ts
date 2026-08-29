@@ -1,3 +1,4 @@
+import { mat111FeynmanSeedQuizAnswers } from "./mat111FeynmanSeedQuizAnswers";
 import { mat111SeedQuizAnswers } from "./mat111SeedQuizAnswers";
 
 export type SeedQuizAnswer = {
@@ -99,6 +100,7 @@ export const seedQuizAnswers: SeedQuizAnswer[] = [
     explanation: "Timed practice improves when you inspect both the answer and the decision process.",
   },
   ...mat111SeedQuizAnswers,
+  ...mat111FeynmanSeedQuizAnswers,
 ];
 
 export function getSeedQuizAnswer(quizId: string, questionId: string) {
