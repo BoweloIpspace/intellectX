@@ -1,6 +1,7 @@
 import { courses } from "../src/data/courses";
 import { lessons } from "../src/data/lessons";
 import { mat111Course } from "../src/data/mat111-course";
+import { mat111FeynmanQuizzes } from "../src/data/mat111-feynman-quizzes";
 import { mat111Lessons } from "../src/data/mat111-lessons";
 import { mat111Quizzes } from "../src/data/mat111-quizzes";
 import { quizzes } from "../src/data/quizzes";
@@ -19,7 +20,7 @@ type SeedUpsertResult = "inserted" | "updated" | "skipped";
 
 const seedCourses = [...courses, mat111Course];
 const seedLessons = [...lessons, ...mat111Lessons];
-const seedQuizzes = [...quizzes, ...mat111Quizzes];
+const seedQuizzes = [...quizzes, ...mat111Quizzes, ...mat111FeynmanQuizzes];
 
 const courseDocs = seedCourses.map((course) => ({
   stableId: course.id,
