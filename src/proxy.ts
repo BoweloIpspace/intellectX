@@ -1,5 +1,5 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import {
   isServerRouteGuardEnabled,
   resolveRouteGuardDecision,
@@ -20,30 +20,32 @@ import {
  * state. Shared free-mobile APIs remain public unless a route handler protects
  * itself explicitly; this proxy does not turn them into Clerk-only endpoints.
  */
-export default function proxy(request: NextRequest, event: NextFetchEvent) {
+const guardedProxy = clerkMiddleware(async (auth, req) => {
+  const { userId, sessionClaims } = await auth();
+
+  const decision = resolveRouteGuardDecision({
+    pathname: req.nextUrl.pathname,
+    authenticated: Boolean(userId),
+    claims: sessionClaims,
+  });
+
+  if (decision === "redirect-login") {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  if (decision === "redirect-courses") {
+    return NextResponse.redirect(new URL("/courses", req.url));
+  }
+
+  return NextResponse.next();
+});
+
+export default function proxy(request: NextRequest) {
   if (!isServerRouteGuardEnabled()) {
     return NextResponse.next();
   }
 
-  return clerkMiddleware(async (auth, req) => {
-    const { userId, sessionClaims } = await auth();
-
-    const decision = resolveRouteGuardDecision({
-      pathname: req.nextUrl.pathname,
-      authenticated: Boolean(userId),
-      claims: sessionClaims,
-    });
-
-    if (decision === "redirect-login") {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-
-    if (decision === "redirect-courses") {
-      return NextResponse.redirect(new URL("/courses", req.url));
-    }
-
-    return NextResponse.next();
-  })(request, event);
+  return guardedProxy(request);
 }
 
 export const config = {
