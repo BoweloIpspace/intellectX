@@ -4,6 +4,7 @@ import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runti
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MAT111_COURSE_ID } from "@/data/mat111-course";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
 import { useLearnerCatalog } from "@/lib/learner-catalog-client";
@@ -119,9 +120,10 @@ export function MobileCourseTopics({ courseId }: { courseId: string }) {
       ) : (
         <div className="grid gap-3">
           {topics.map((topic) => {
-            const quizCount = catalog.quizzes.filter(
+            const catalogQuizCount = catalog.quizzes.filter(
               (quiz) => quiz.courseId === courseId && quiz.lessonId === topic.id,
             ).length;
+            const quizCount = courseId === MAT111_COURSE_ID ? 7 : catalogQuizCount;
 
             return (
               <Link
@@ -135,7 +137,8 @@ export function MobileCourseTopics({ courseId }: { courseId: string }) {
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold">{topic.title}</span>
                   <span className="text-muted-foreground mt-1 block text-xs">
-                    Infographic · {quizCount} {quizCount === 1 ? "quiz" : "quizzes"} · {topic.duration}
+                    {courseId === MAT111_COURSE_ID ? "10-page infographic" : "Infographic"} · {quizCount}{" "}
+                    {quizCount === 1 ? "quiz" : "quizzes"} · {topic.duration}
                   </span>
                 </span>
                 <ArrowRightIcon className="size-5" />
