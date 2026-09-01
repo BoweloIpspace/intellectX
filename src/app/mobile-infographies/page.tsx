@@ -16,7 +16,7 @@ type MobileInfographiesPageProps = {
 
 export default async function MobileInfographiesPage({ searchParams }: MobileInfographiesPageProps) {
   const { course, topic } = await searchParams;
-  const mat111Focused = course === MAT111_COURSE_ID && Boolean(topic);
+  const mat111Focused = course === MAT111_COURSE_ID;
 
   return (
     <MobileAppShell>
