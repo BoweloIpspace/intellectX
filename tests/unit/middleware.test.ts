@@ -2,7 +2,7 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextRequest, type NextFetchEvent, type NextResponse } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import middleware, { config } from "@/middleware";
+import proxy, { config } from "@/proxy";
 
 type ClerkAuthResult = {
   userId: string | null;
@@ -18,7 +18,8 @@ const clerkMock = vi.hoisted(() => {
     state,
     clerkMiddleware: vi.fn(
       (handler: (auth: () => Promise<ClerkAuthResult>, request: NextRequest) => Promise<unknown>) =>
-        async (request: NextRequest) => handler(async () => state.authResult, request),
+        async (request: NextRequest, _event: NextFetchEvent) =>
+          handler(async () => state.authResult, request),
     ),
   };
 });
@@ -35,12 +36,12 @@ function enableGuard() {
   vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", CLERK_PUBLISHABLE_KEY);
 }
 
-async function runMiddleware(pathname: string): Promise<NextResponse | Response> {
+async function runProxy(pathname: string): Promise<NextResponse | Response> {
   const request = new NextRequest(`https://intellectx.test${pathname}`);
-  const response = await middleware(request, {} as NextFetchEvent);
+  const response = await proxy(request, {} as NextFetchEvent);
 
   if (!response) {
-    throw new Error(`Middleware returned no response for ${pathname}`);
+    throw new Error(`Proxy returned no response for ${pathname}`);
   }
 
   return response;
@@ -51,7 +52,7 @@ function expectRedirectTo(response: NextResponse | Response, location: string) {
   expect(response.headers.get("location")).toBe(`https://intellectx.test${location}`);
 }
 
-describe("server route guard middleware wiring", () => {
+describe("server route guard proxy wiring", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clerkMock.state.authResult = { userId: null, sessionClaims: {} };
@@ -66,7 +67,7 @@ describe("server route guard middleware wiring", () => {
       vi.stubEnv("CLERK_SECRET_KEY", "");
       vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "");
 
-      const response = await runMiddleware("/dashboard");
+      const response = await runProxy("/dashboard");
 
       expect(response.status).toBe(200);
       expect(clerkMiddleware).not.toHaveBeenCalled();
@@ -77,7 +78,7 @@ describe("server route guard middleware wiring", () => {
     it("redirects signed-out users on protected learner routes to /login", async () => {
       enableGuard();
 
-      const response = await runMiddleware("/dashboard");
+      const response = await runProxy("/dashboard");
 
       expectRedirectTo(response, "/login");
       expect(clerkMiddleware).toHaveBeenCalledTimes(1);
@@ -86,18 +87,19 @@ describe("server route guard middleware wiring", () => {
     it("redirects signed-out users on staff routes to /login", async () => {
       enableGuard();
 
-      expectRedirectTo(await runMiddleware("/admin"), "/login");
-      expectRedirectTo(await runMiddleware("/admin/course-review"), "/login");
-      expectRedirectTo(await runMiddleware("/instructor"), "/login");
-      expectRedirectTo(await runMiddleware("/instructor/courses/new"), "/login");
+      expectRedirectTo(await runProxy("/admin"), "/login");
+      expectRedirectTo(await runProxy("/admin/course-review"), "/login");
+      expectRedirectTo(await runProxy("/instructor"), "/login");
+      expectRedirectTo(await runProxy("/instructor/courses/new"), "/login");
     });
 
     it("allows signed-out users through public routes", async () => {
       enableGuard();
 
-      expect((await runMiddleware("/")).status).toBe(200);
-      expect((await runMiddleware("/pricing")).status).toBe(200);
-      expect((await runMiddleware("/login")).status).toBe(200);
+      expect((await runProxy("/")).status).toBe(200);
+      expect((await runProxy("/pricing")).status).toBe(200);
+      expect((await runProxy("/login")).status).toBe(200);
+      expect((await runProxy("/api/quiz-grading")).status).toBe(200);
     });
 
     it("redirects authenticated users without a trusted staff role away from staff routes to /courses", async () => {
@@ -107,9 +109,9 @@ describe("server route guard middleware wiring", () => {
         sessionClaims: { metadata: { role: "learner" } },
       };
 
-      expectRedirectTo(await runMiddleware("/admin"), "/courses");
-      expectRedirectTo(await runMiddleware("/admin/instructors"), "/courses");
-      expectRedirectTo(await runMiddleware("/instructor"), "/courses");
+      expectRedirectTo(await runProxy("/admin"), "/courses");
+      expectRedirectTo(await runProxy("/admin/instructors"), "/courses");
+      expectRedirectTo(await runProxy("/instructor"), "/courses");
     });
 
     it("redirects staff whose role is out of scope for the route to /courses", async () => {
@@ -119,7 +121,7 @@ describe("server route guard middleware wiring", () => {
         sessionClaims: { publicMetadata: { role: "instructor" } },
       };
 
-      expectRedirectTo(await runMiddleware("/admin"), "/courses");
+      expectRedirectTo(await runProxy("/admin"), "/courses");
     });
 
     it("allows admin claims through authorized admin routes", async () => {
@@ -129,9 +131,9 @@ describe("server route guard middleware wiring", () => {
         sessionClaims: { staff: { role: "admin" } },
       };
 
-      expect((await runMiddleware("/admin")).status).toBe(200);
-      expect((await runMiddleware("/admin/course-review")).status).toBe(200);
-      expect((await runMiddleware("/admin/instructors")).status).toBe(200);
+      expect((await runProxy("/admin")).status).toBe(200);
+      expect((await runProxy("/admin/course-review")).status).toBe(200);
+      expect((await runProxy("/admin/instructors")).status).toBe(200);
     });
 
     it("allows instructor claims through authorized instructor routes", async () => {
@@ -141,9 +143,9 @@ describe("server route guard middleware wiring", () => {
         sessionClaims: { metadata: { role: "instructor" } },
       };
 
-      expect((await runMiddleware("/instructor")).status).toBe(200);
-      expect((await runMiddleware("/instructor/courses")).status).toBe(200);
-      expect((await runMiddleware("/instructor/courses/new")).status).toBe(200);
+      expect((await runProxy("/instructor")).status).toBe(200);
+      expect((await runProxy("/instructor/courses")).status).toBe(200);
+      expect((await runProxy("/instructor/courses/new")).status).toBe(200);
     });
 
     it("allows authenticated learners through learner routes regardless of claims", async () => {
@@ -153,16 +155,17 @@ describe("server route guard middleware wiring", () => {
         sessionClaims: { metadata: { role: "learner" } },
       };
 
-      expect((await runMiddleware("/courses")).status).toBe(200);
-      expect((await runMiddleware("/progress")).status).toBe(200);
-      expect((await runMiddleware("/quiz/ai-study-systems-check")).status).toBe(200);
+      expect((await runProxy("/courses")).status).toBe(200);
+      expect((await runProxy("/progress")).status).toBe(200);
+      expect((await runProxy("/quiz/ai-study-systems-check")).status).toBe(200);
     });
   });
 
   describe("matcher behavior", () => {
-    it("matches app routes so the guard runs on them", () => {
-      const matcher = new RegExp(config.matcher[0]);
+    const matchesProxy = (pathname: string) =>
+      config.matcher.some((pattern) => new RegExp(pattern).test(pathname));
 
+    it("matches app and API routes so Clerk can expose verified session state", () => {
       for (const pathname of [
         "/",
         "/login",
@@ -176,23 +179,22 @@ describe("server route guard middleware wiring", () => {
         "/instructor/courses/new",
         "/mobile-quizzes",
         "/checkout",
+        "/api/trpc/catalog.search",
+        "/api/quiz-grading",
       ]) {
-        expect(matcher.test(pathname), pathname).toBe(true);
+        expect(matchesProxy(pathname), pathname).toBe(true);
       }
     });
 
-    it("excludes static assets, Next internals, and API routes from the guard", () => {
-      const matcher = new RegExp(config.matcher[0]);
-
+    it("excludes static assets and Next internals", () => {
       for (const pathname of [
         "/favicon.ico",
         "/robots.txt",
         "/sitemap.xml",
         "/_next/static/chunks/app/page-abc.js",
         "/_next/image?url=/hero.png",
-        "/api/trpc/catalog.search",
       ]) {
-        expect(matcher.test(pathname), pathname).toBe(false);
+        expect(matchesProxy(pathname), pathname).toBe(false);
       }
     });
   });
