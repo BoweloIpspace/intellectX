@@ -1,5 +1,5 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import {
   isServerRouteGuardEnabled,
   resolveRouteGuardDecision,
@@ -40,12 +40,12 @@ const guardedProxy = clerkMiddleware(async (auth, req) => {
   return NextResponse.next();
 });
 
-export default function proxy(request: NextRequest) {
+export default function proxy(request: NextRequest, event: NextFetchEvent) {
   if (!isServerRouteGuardEnabled()) {
     return NextResponse.next();
   }
 
-  return guardedProxy(request);
+  return guardedProxy(request, event);
 }
 
 export const config = {
