@@ -16,6 +16,23 @@ describe("auth environment mode detection", () => {
     });
   });
 
+  it("treats whitespace-only Clerk and Convex values as missing", () => {
+    expect(
+      getAuthEnvironmentStatus({
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "   ",
+        NEXT_PUBLIC_CONVEX_URL: "\t\n",
+      }),
+    ).toMatchObject({
+      clerkPublishableKeyPresent: false,
+      convexUrlPresent: false,
+      mode: "local-fallback",
+      usesLocalFallbackGuard: true,
+      usesClerkGuard: false,
+      canRunConvexSync: false,
+      canRunLocalToAuthMigration: false,
+    });
+  });
+
   it("detects Clerk-only mode without enabling Convex migration", () => {
     expect(getAuthEnvironmentStatus({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_example" })).toMatchObject({
       clerkPublishableKeyPresent: true,
