@@ -9,6 +9,7 @@ import {
 } from "@/data/mat111-mobile-study";
 import type { Mat111MobileExamPaper } from "@/data/mat111-mobile-study-types";
 import {
+  MOBILE_STUDY_STATE_CHANGE_EVENT,
   clearMobilePastPaperProgress,
   readMobilePastPaperProgress,
   readMobilePastPaperProgresses,
@@ -28,10 +29,25 @@ import { useEffect, useMemo, useState } from "react";
 
 export function Mat111MobileExamPracticeList({ topicId }: { topicId?: string }) {
   const papers = topicId ? getMat111MobileExamPapersByLesson(topicId) : mat111MobileExamPapers;
-  const progressByPaperId = useMemo(
-    () => new Map(readMobilePastPaperProgresses().map((progress) => [progress.paperId, progress])),
-    [],
-  );
+  const [progressByPaperId, setProgressByPaperId] = useState<
+    Map<string, ReturnType<typeof readMobilePastPaperProgresses>[number]>
+  >(() => new Map());
+
+  useEffect(() => {
+    const syncProgress = () => {
+      setProgressByPaperId(
+        new Map(readMobilePastPaperProgresses().map((progress) => [progress.paperId, progress])),
+      );
+    };
+    syncProgress();
+    window.addEventListener(MOBILE_STUDY_STATE_CHANGE_EVENT, syncProgress);
+    window.addEventListener("storage", syncProgress);
+    return () => {
+      window.removeEventListener(MOBILE_STUDY_STATE_CHANGE_EVENT, syncProgress);
+      window.removeEventListener("storage", syncProgress);
+    };
+  }, []);
+
   const groups = useMemo(() => {
     const grouped = new Map<string, Mat111MobileExamPaper[]>();
     for (const paper of papers) {
