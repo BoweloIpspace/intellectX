@@ -72,6 +72,16 @@ describe("server route guard proxy wiring", () => {
       expect(response.status).toBe(200);
       expect(clerkMiddleware).not.toHaveBeenCalled();
     });
+
+    it("treats whitespace-only Clerk keys as missing", async () => {
+      vi.stubEnv("CLERK_SECRET_KEY", "   ");
+      vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "\t");
+
+      const response = await runProxy("/dashboard");
+
+      expect(response.status).toBe(200);
+      expect(clerkMiddleware).not.toHaveBeenCalled();
+    });
   });
 
   describe("guard enabled with Clerk keys", () => {
