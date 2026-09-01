@@ -6,8 +6,8 @@ import {
   getMat111MobileExamPaper,
   getMat111MobileExamPapersByLesson,
   mat111MobileExamPapers,
-  type Mat111MobileExamPaper,
 } from "@/data/mat111-mobile-study";
+import type { Mat111MobileExamPaper } from "@/data/mat111-mobile-study-types";
 import {
   clearMobilePastPaperProgress,
   readMobilePastPaperProgress,
