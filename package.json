@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack",
     "prebuild": "npm run check:mobile-prod-env:strict",
     "build": "next build",
+    "build:web": "npm run check:prod-env:strict && next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
