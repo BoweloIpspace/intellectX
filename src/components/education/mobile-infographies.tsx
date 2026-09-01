@@ -3,6 +3,10 @@
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  getMat111FeynmanPages,
+  type Mat111FeynmanPage,
+} from "@/data/mat111-feynman-pages";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
 import { useLearnerCatalog } from "@/lib/learner-catalog-client";
 import {
@@ -10,12 +14,16 @@ import {
   ArrowRightIcon,
   BookOpenIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
   GalleryVerticalEndIcon,
+  LightbulbIcon,
+  MessageCircleQuestionIcon,
+  SparklesIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type InfographyCard = {
   id: string;
@@ -27,6 +35,14 @@ type InfographyCard = {
   posterUrl?: string;
   keyIdeas: string[];
   quizIds: string[];
+  pages: Mat111FeynmanPage[];
+};
+
+type FocusedInfographySlide = {
+  card: InfographyCard;
+  page: Mat111FeynmanPage;
+  pageIndex: number;
+  topicIndex: number;
 };
 
 function getTopicPracticeHref(card: InfographyCard) {
@@ -43,8 +59,34 @@ function getTopicPracticeHref(card: InfographyCard) {
 
 function getTopicPracticeLabel(card: InfographyCard) {
   if (card.quizIds.length === 1) return "Start topic quiz";
-  if (card.quizIds.length > 1) return "Choose topic quiz";
+  if (card.quizIds.length > 1) return `Choose ${card.quizIds.length} topic quizzes`;
   return null;
+}
+
+function getInfographyPages(title: string, summary: string, keyIdeas: string[], lessonId: string) {
+  const mat111Pages = getMat111FeynmanPages(lessonId);
+  if (mat111Pages.length > 0) return mat111Pages;
+
+  const fallbackIdeas = keyIdeas.length > 0 ? keyIdeas : [summary];
+  return fallbackIdeas.map((idea, index) => ({
+    title: `${index + 1}. ${index === 0 ? "The big idea" : "Build the idea"}`,
+    simpleExplanation: idea,
+    workedExample: index === 0 ? summary : `Connect this idea back to ${title} and identify one example from your course material.`,
+    teachBack: `Explain this part of ${title} in your own words without looking back at the infographic.`,
+  }));
+}
+
+export function buildFocusedInfographySlides(cards: InfographyCard[], courseId: string): FocusedInfographySlide[] {
+  return cards
+    .filter((card) => card.courseId === courseId)
+    .flatMap((card, topicIndex) =>
+      card.pages.map((page, pageIndex) => ({
+        card,
+        page,
+        pageIndex,
+        topicIndex,
+      })),
+    );
 }
 
 export function MobileInfographies() {
@@ -95,6 +137,7 @@ export function MobileInfographies() {
           posterUrl: lesson.posterUrl,
           keyIdeas,
           quizIds,
+          pages: getInfographyPages(lesson.title, lesson.summary, keyIdeas, lesson.id),
         };
       });
   }, [catalog.courseById, catalog.isLoading, catalog.lessons, catalog.quizzes, hydrated, selectedCourseIds]);
@@ -149,7 +192,7 @@ export function MobileInfographies() {
       );
     }
 
-    return <FocusedInfography card={focusedCard} />;
+    return <FocusedInfography card={focusedCard} cards={cards} />;
   }
 
   if (cards.length === 0) {
@@ -207,35 +250,146 @@ export function MobileInfographies() {
   );
 }
 
-function FocusedInfography({ card }: { card: InfographyCard }) {
-  const practiceHref = getTopicPracticeHref(card);
-  const practiceLabel = getTopicPracticeLabel(card);
+function FocusedInfography({ card, cards }: { card: InfographyCard; cards: InfographyCard[] }) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const courseCards = useMemo(() => cards.filter((candidate) => candidate.courseId === card.courseId), [card.courseId, cards]);
+  const slides = useMemo(() => buildFocusedInfographySlides(courseCards, card.courseId), [card.courseId, courseCards]);
+  const initialSlideIndex = Math.max(
+    0,
+    slides.findIndex((slide) => slide.card.id === card.id && slide.pageIndex === 0),
+  );
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const scroller = scrollerRef.current;
+      if (!scroller || scroller.clientWidth <= 0) return;
+      scroller.scrollLeft = initialSlideIndex * scroller.clientWidth;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [initialSlideIndex]);
 
   return (
-    <section className="space-y-4" aria-label="Topic infographic">
-      <Button asChild size="sm" variant="ghost" className="-ml-2">
-        <Link href={`/mobile-study/${encodeURIComponent(card.courseId)}`}>
-          <ArrowLeftIcon className="size-4" />
-          Course topics
-        </Link>
-      </Button>
+    <section className="space-y-3" aria-label="Topic infographic">
+      <div className="flex items-center justify-between gap-3">
+        <Button asChild size="sm" variant="ghost" className="-ml-2">
+          <Link href={`/mobile-study/${encodeURIComponent(card.courseId)}`}>
+            <ArrowLeftIcon className="size-4" />
+            Course topics
+          </Link>
+        </Button>
+        <span className="text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]">Swipe pages sideways</span>
+      </div>
 
-      <article className="overflow-hidden rounded-3xl border border-border/70 bg-background/80 p-6 shadow-sm">
-        <InfographyContent card={card} />
+      <div
+        ref={scrollerRef}
+        className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain rounded-3xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label={`${card.courseTitle} infographic pages`}
+      >
+        {slides.map((slide, slideIndex) => {
+          const pageCount = slide.card.pages.length;
+          const lastPageOfTopic = slide.pageIndex === pageCount - 1;
+          const nextSlide = slides[slideIndex + 1] ?? null;
+          const nextTopic = lastPageOfTopic && nextSlide?.card.id !== slide.card.id ? nextSlide.card : null;
+          const practiceHref = getTopicPracticeHref(slide.card);
+          const practiceLabel = getTopicPracticeLabel(slide.card);
 
-        <div className="mt-6 border-t border-border/60 pt-5">
-          {practiceHref && practiceLabel ? (
-            <Button asChild className="min-h-12 w-full">
-              <Link href={practiceHref}>
-                {practiceLabel}
-                <ArrowRightIcon className="size-4" />
-              </Link>
-            </Button>
-          ) : (
-            <p className="text-muted-foreground text-sm">No quiz is published for this topic yet.</p>
-          )}
-        </div>
-      </article>
+          return (
+            <article
+              key={`${slide.card.id}-page-${slide.pageIndex + 1}`}
+              className="w-full shrink-0 snap-start snap-always overflow-hidden rounded-3xl border border-border/70 bg-background/85 p-5 shadow-sm sm:p-6"
+              aria-label={`${slide.card.title}, page ${slide.pageIndex + 1} of ${pageCount}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="secondary">{slide.card.subject}</Badge>
+                    <Badge variant="outline" className="gap-1">
+                      <SparklesIcon className="size-3" />
+                      Feynman method
+                    </Badge>
+                  </div>
+                  <p className="text-muted-foreground mt-3 text-[11px] font-medium uppercase tracking-[0.13em]">
+                    Topic {slide.topicIndex + 1}/{courseCards.length} · Page {slide.pageIndex + 1}/{pageCount}
+                  </p>
+                </div>
+                <span className="text-muted-foreground text-xs tabular-nums">{slide.pageIndex + 1}/{pageCount}</span>
+              </div>
+
+              <p className="text-muted-foreground mt-5 text-xs font-medium uppercase tracking-[0.12em]">{slide.card.title}</p>
+              <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-[-0.035em]">{slide.page.title}</h1>
+
+              {slide.pageIndex === 0 && slide.card.posterUrl ? (
+                <div className="mt-5 overflow-hidden rounded-2xl border border-border/70 bg-white p-2 dark:bg-white">
+                  <Image
+                    src={slide.card.posterUrl}
+                    alt={`${slide.card.title} study diagram`}
+                    width={800}
+                    height={420}
+                    unoptimized
+                    className="h-auto max-h-40 w-full object-contain grayscale contrast-125"
+                  />
+                </div>
+              ) : null}
+
+              <div className="mt-5 space-y-4">
+                <section className="rounded-2xl border border-border/70 bg-muted/30 p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <LightbulbIcon className="size-4" />
+                    Say it simply
+                  </div>
+                  <p className="mt-2 text-sm leading-6">{slide.page.simpleExplanation}</p>
+                </section>
+
+                <section className="rounded-2xl border border-border/70 p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <BookOpenIcon className="size-4" />
+                    Work it through
+                  </div>
+                  <p className="mt-2 text-sm leading-6">{slide.page.workedExample}</p>
+                </section>
+
+                <section className="rounded-2xl border border-border/70 bg-foreground/[0.035] p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <MessageCircleQuestionIcon className="size-4" />
+                    Teach it back
+                  </div>
+                  <p className="mt-2 text-sm leading-6">{slide.page.teachBack}</p>
+                </section>
+              </div>
+
+              <div className="mt-5 border-t border-border/60 pt-4">
+                {lastPageOfTopic && practiceHref && practiceLabel ? (
+                  <Button asChild className="min-h-12 w-full">
+                    <Link href={practiceHref}>
+                      {practiceLabel}
+                      <ArrowRightIcon className="size-4" />
+                    </Link>
+                  </Button>
+                ) : null}
+
+                <div className="text-muted-foreground mt-3 flex items-center justify-end gap-1 text-xs">
+                  {lastPageOfTopic ? (
+                    nextTopic ? (
+                      <>
+                        Swipe for next topic: {nextTopic.title}
+                        <ChevronRightIcon className="size-4 shrink-0" />
+                      </>
+                    ) : (
+                      <span>Final MAT111 topic page</span>
+                    )
+                  ) : (
+                    <>
+                      Swipe to page {slide.pageIndex + 2}
+                      <ChevronRightIcon className="size-4" />
+                    </>
+                  )}
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
     </section>
   );
 }
