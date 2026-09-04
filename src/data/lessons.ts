@@ -3,6 +3,7 @@ import {
   BGCSE_MATHS_COURSE_ID,
   BGCSE_MATHS_TOPIC_1_ID,
   BGCSE_MATHS_TOPIC_2_ID,
+  BGCSE_MATHS_TOPIC_3_ID,
 } from "./bgcse-maths-course";
 
 export type LessonBlock =
@@ -218,6 +219,20 @@ export const lessons: Lesson[] = [
       "Convert common metric units accurately before combining quantities in a calculation.",
       "Translate a rounded measurement into its lower and upper bounds, remembering that the upper boundary is not included.",
       "Use the correct combination of bounds to find maximum or minimum possible values for speed, area and volume.",
+    ],
+    nextLessonId: BGCSE_MATHS_TOPIC_3_ID,
+  },
+  {
+    id: BGCSE_MATHS_TOPIC_3_ID,
+    courseId: BGCSE_MATHS_COURSE_ID,
+    title: "Algebraic Manipulation & Formulae",
+    duration: "3 quizzes",
+    summary: "Simplify and manipulate algebraic expressions, substitute into formulae, rearrange formulae and work with algebraic fractions.",
+    content: [
+      "Collect like terms, expand brackets and factorise common factors before substituting numerical values.",
+      "Substitute carefully into formulae, keeping negative values and powers inside brackets where needed.",
+      "Change the subject of a formula by applying inverse operations in a clear order, including square roots when the subject is squared.",
+      "Combine and simplify algebraic fractions using common denominators and cancellation while keeping denominator restrictions in mind.",
     ],
   },
 ];
