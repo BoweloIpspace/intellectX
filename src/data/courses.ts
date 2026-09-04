@@ -6,6 +6,7 @@ import {
   findLearnerVisibleCourse,
   type CourseWorkflowState,
 } from "../lib/course-workflow-policy";
+import { BGCSE_MATHS_COURSE_ID, bgcseMathsCourse } from "./bgcse-maths-course";
 import { MAT111_COURSE_ID, mat111Course } from "./mat111-course";
 
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
@@ -128,12 +129,14 @@ const courseRecords: Course[] = [
     reviewStatus: APPROVED,
     publicationStatus: PUBLISHED,
   },
+  bgcseMathsCourse,
 ];
 
 export const courses = filterLearnerVisibleCourses(courseRecords);
 
 export function getCourse(id: string) {
-  return findLearnerVisibleCourse(courses, id) ?? (id === MAT111_COURSE_ID ? mat111Course : undefined);
+  return findLearnerVisibleCourse(courses, id) ??
+    (id === MAT111_COURSE_ID ? mat111Course : id === BGCSE_MATHS_COURSE_ID ? bgcseMathsCourse : undefined);
 }
 
 export function listLearnerVisibleCourses() {
