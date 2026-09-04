@@ -1,10 +1,11 @@
 import type { Quiz } from "./quizzes";
-import { BGCSE_MATHS_COURSE_ID } from "./bgcse-maths-course";
+import { BGCSE_MATHS_COURSE_ID, BGCSE_MATHS_TOPIC_1_ID } from "./bgcse-maths-course";
 
 export const bgcseMathsQuizzes: Quiz[] = [
   {
     id: "bgcse-maths-t01-q1",
     courseId: BGCSE_MATHS_COURSE_ID,
+    lessonId: BGCSE_MATHS_TOPIC_1_ID,
     title: "Topic 1 Quiz 1 - Core Number & Fractions",
     difficulty: "Foundational",
     estimatedTime: "12 min",
@@ -24,6 +25,7 @@ export const bgcseMathsQuizzes: Quiz[] = [
   {
     id: "bgcse-maths-t01-q2",
     courseId: BGCSE_MATHS_COURSE_ID,
+    lessonId: BGCSE_MATHS_TOPIC_1_ID,
     title: "Topic 1 Quiz 2 - Percentages & Money",
     difficulty: "Applied",
     estimatedTime: "15 min",
@@ -43,6 +45,7 @@ export const bgcseMathsQuizzes: Quiz[] = [
   {
     id: "bgcse-maths-t01-q3",
     courseId: BGCSE_MATHS_COURSE_ID,
+    lessonId: BGCSE_MATHS_TOPIC_1_ID,
     title: "Topic 1 Quiz 3 - Ratio & Proportion",
     difficulty: "Applied",
     estimatedTime: "15 min",
@@ -62,6 +65,7 @@ export const bgcseMathsQuizzes: Quiz[] = [
   {
     id: "bgcse-maths-t01-q4",
     courseId: BGCSE_MATHS_COURSE_ID,
+    lessonId: BGCSE_MATHS_TOPIC_1_ID,
     title: "Topic 1 Quiz 4 - BGCSE Exam-Style Mixed",
     difficulty: "Challenge",
     estimatedTime: "18 min",
