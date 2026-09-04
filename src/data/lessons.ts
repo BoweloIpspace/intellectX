@@ -4,7 +4,9 @@ import {
   BGCSE_MATHS_TOPIC_1_ID,
   BGCSE_MATHS_TOPIC_2_ID,
   BGCSE_MATHS_TOPIC_3_ID,
+  BGCSE_MATHS_TOPIC_4_ID,
 } from "./bgcse-maths-course";
+import { bgcseMathsTopic4And5Lessons } from "./bgcse-maths-topic4-5-lessons";
 
 export type LessonBlock =
   | { type: "text"; body: string }
@@ -234,7 +236,9 @@ export const lessons: Lesson[] = [
       "Change the subject of a formula by applying inverse operations in a clear order, including square roots when the subject is squared.",
       "Combine and simplify algebraic fractions using common denominators and cancellation while keeping denominator restrictions in mind.",
     ],
+    nextLessonId: BGCSE_MATHS_TOPIC_4_ID,
   },
+  ...bgcseMathsTopic4And5Lessons,
 ];
 
 export function getLesson(id: string) {
