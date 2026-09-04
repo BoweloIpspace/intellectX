@@ -2,6 +2,7 @@ import type { Course } from "./courses";
 import { APPROVED, PUBLISHED } from "../lib/course-workflow-policy";
 
 export const BGCSE_MATHS_COURSE_ID = "bgcse-mathematics";
+export const BGCSE_MATHS_TOPIC_1_ID = "bgcse-maths-t01";
 
 export const bgcseMathsCourse: Course = {
   id: BGCSE_MATHS_COURSE_ID,
@@ -13,7 +14,7 @@ export const bgcseMathsCourse: Course = {
   level: "Beginner",
   duration: "4 quizzes",
   progress: 0,
-  lessonIds: [],
+  lessonIds: [BGCSE_MATHS_TOPIC_1_ID],
   quizIds: [
     "bgcse-maths-t01-q1",
     "bgcse-maths-t01-q2",
