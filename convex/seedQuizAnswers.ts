@@ -1,4 +1,5 @@
 import { bgcseMathsSeedQuizAnswers } from "./bgcseMathsSeedQuizAnswers";
+import { bgcseMathsTopic3SeedQuizAnswers } from "./bgcseMathsTopic3SeedQuizAnswers";
 import { mat111SeedQuizAnswers } from "./mat111SeedQuizAnswers";
 
 export type SeedQuizAnswer = {
@@ -100,6 +101,7 @@ export const seedQuizAnswers: SeedQuizAnswer[] = [
     explanation: "Timed practice improves when you inspect both the answer and the decision process.",
   },
   ...bgcseMathsSeedQuizAnswers,
+  ...bgcseMathsTopic3SeedQuizAnswers,
   ...mat111SeedQuizAnswers,
 ];
 
