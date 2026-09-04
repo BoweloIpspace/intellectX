@@ -1,5 +1,9 @@
 import type { Quiz } from "./quizzes";
-import { BGCSE_MATHS_COURSE_ID, BGCSE_MATHS_TOPIC_1_ID } from "./bgcse-maths-course";
+import {
+  BGCSE_MATHS_COURSE_ID,
+  BGCSE_MATHS_TOPIC_1_ID,
+  BGCSE_MATHS_TOPIC_2_ID,
+} from "./bgcse-maths-course";
 
 export const bgcseMathsQuizzes: Quiz[] = [
   {
@@ -80,6 +84,42 @@ export const bgcseMathsQuizzes: Quiz[] = [
       { id: "q8", prompt: "P626400 is shared among three organisations in the ratio 5:3:2. Find the smallest share.", choices: ["P62640", "P187920", "P313200", "P125280"], answerIndex: -1, explanation: "" },
       { id: "q9", prompt: "An organisation receives P125280 this year. This is 16% more than it received last year. Calculate the amount received last year.", choices: ["P105000", "P108000", "P109200", "P145325"], answerIndex: -1, explanation: "" },
       { id: "q10", prompt: "The cost of transporting some boxes is 8% of the cost of the boxes. The boxes cost P4375. Calculate the total cost of the boxes and transport.", choices: ["P4375", "P4600", "P4725", "P5075"], answerIndex: -1, explanation: "" },
+    ],
+  },
+  {
+    id: "bgcse-maths-t02-q1",
+    courseId: BGCSE_MATHS_COURSE_ID,
+    lessonId: BGCSE_MATHS_TOPIC_2_ID,
+    title: "Topic 2 Quiz 1 - Rounding, Estimation & Units",
+    difficulty: "Foundational",
+    estimatedTime: "12 min",
+    questions: [
+      { id: "q1", prompt: "Round 47.386 to 1 decimal place.", choices: ["47.3", "47.4", "47.39", "48"], answerIndex: -1, explanation: "" },
+      { id: "q2", prompt: "Round 0.006784 to 2 significant figures.", choices: ["0.0067", "0.0068", "0.00678", "0.007"], answerIndex: -1, explanation: "" },
+      { id: "q3", prompt: "Estimate (398 × 0.51) ÷ 19.8 by rounding each number to 1 significant figure first.", choices: ["1", "5", "10", "20"], answerIndex: -1, explanation: "" },
+      { id: "q4", prompt: "Convert 3.75 litres to millilitres.", choices: ["37.5 ml", "375 ml", "3750 ml", "37500 ml"], answerIndex: -1, explanation: "" },
+      { id: "q5", prompt: "Convert 4.2 metres to centimetres.", choices: ["42 cm", "420 cm", "4200 cm", "0.042 cm"], answerIndex: -1, explanation: "" },
+      { id: "q6", prompt: "A region has an area of 84,650 km² and a population density of 63 people per km². Calculate its population and give the answer correct to 2 significant figures.", choices: ["5,300,000", "5,330,000", "5,000,000", "53,000,000"], answerIndex: -1, explanation: "" },
+      { id: "q7", prompt: "Convert 2 hours 45 minutes to minutes.", choices: ["145 minutes", "155 minutes", "165 minutes", "175 minutes"], answerIndex: -1, explanation: "" },
+      { id: "q8", prompt: "A radius is 8.1 cm correct to 1 decimal place. Which interval contains the actual radius r?", choices: ["8.0 ≤ r < 8.2", "8.05 ≤ r < 8.15", "8.05 < r ≤ 8.15", "8.1 ≤ r < 8.2"], answerIndex: -1, explanation: "" },
+    ],
+  },
+  {
+    id: "bgcse-maths-t02-q2",
+    courseId: BGCSE_MATHS_COURSE_ID,
+    lessonId: BGCSE_MATHS_TOPIC_2_ID,
+    title: "Topic 2 Quiz 2 - Bounds & Accuracy",
+    difficulty: "Applied",
+    estimatedTime: "16 min",
+    questions: [
+      { id: "q1", prompt: "A length is 27 cm correct to the nearest centimetre. What is its lower bound?", choices: ["26 cm", "26.5 cm", "27 cm", "27.5 cm"], answerIndex: -1, explanation: "" },
+      { id: "q2", prompt: "A mass is 3.6 kg correct to 1 decimal place. What is its upper bound?", choices: ["3.55 kg", "3.60 kg", "3.65 kg", "3.70 kg"], answerIndex: -1, explanation: "" },
+      { id: "q3", prompt: "The radius of a sphere is 6.4 cm correct to 1 decimal place. What radius should be used to calculate the maximum possible volume?", choices: ["6.35 cm", "6.40 cm", "6.45 cm", "6.50 cm"], answerIndex: -1, explanation: "" },
+      { id: "q4", prompt: "The radius of a sphere is 6.4 cm correct to 1 decimal place. Calculate the upper bound for its volume, to the nearest cm³.", choices: ["1098 cm³", "1100 cm³", "1124 cm³", "1190 cm³"], answerIndex: -1, explanation: "" },
+      { id: "q5", prompt: "A runner's distance is 100 m correct to the nearest 10 m and the time is 12 s correct to the nearest second. Calculate the minimum possible speed.", choices: ["7.6 m/s", "8.0 m/s", "8.4 m/s", "9.1 m/s"], answerIndex: -1, explanation: "" },
+      { id: "q6", prompt: "A rectangle is measured as 18 cm by 12 cm, each correct to the nearest centimetre. What is the upper bound for its area?", choices: ["216 cm²", "225 cm²", "231.25 cm²", "240 cm²"], answerIndex: -1, explanation: "" },
+      { id: "q7", prompt: "An angle is 68° correct to the nearest degree. What is its upper bound?", choices: ["67.5°", "68°", "68.5°", "69°"], answerIndex: -1, explanation: "" },
+      { id: "q8", prompt: "Two sides of a triangular tile are 14 cm and 20 cm, each correct to the nearest centimetre. The included angle is 72° correct to the nearest degree. Calculate the upper bound for the area, correct to 1 decimal place.", choices: ["137.0 cm²", "140.8 cm²", "141.7 cm²", "148.6 cm²"], answerIndex: -1, explanation: "" },
     ],
   },
 ];
