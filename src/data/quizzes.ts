@@ -1,5 +1,6 @@
 import type { ContentAccessLevel } from "../lib/entitlements";
 import { bgcseMathsQuizzes } from "./bgcse-maths-quizzes";
+import { bgcseMathsTopic3Quizzes } from "./bgcse-maths-topic3-quizzes";
 import { getMat111Quiz, getMat111QuizzesByCourse } from "./mat111-quizzes";
 
 export type QuizQuestion = {
@@ -166,6 +167,7 @@ export const quizzes: Quiz[] = [
     ],
   },
   ...bgcseMathsQuizzes,
+  ...bgcseMathsTopic3Quizzes,
 ];
 
 export function getQuiz(id: string) {
