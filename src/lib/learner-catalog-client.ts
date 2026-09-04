@@ -38,6 +38,58 @@ export type LearnerCatalog = {
 };
 
 const e2eCatalogFixturesEnabled = process.env.NEXT_PUBLIC_E2E_CATALOG_FIXTURES === "1";
+const BGCSE_MATHS_COURSE_ID = "bgcse-mathematics";
+const BGCSE_MATHS_TOPIC_1_ID = "bgcse-maths-t01";
+const BGCSE_MATHS_TOPIC_1_QUIZ_PREFIX = "bgcse-maths-t01-q";
+
+function repairBGCSEMathsTopicLinks(input: {
+  courseById: Map<string, Course>;
+  lessons: Lesson[];
+  quizzes: Quiz[];
+}) {
+  if (!input.courseById.has(BGCSE_MATHS_COURSE_ID)) {
+    return { lessons: input.lessons, quizzes: input.quizzes };
+  }
+
+  const quizzes = input.quizzes.map((quiz) => {
+    if (
+      quiz.courseId === BGCSE_MATHS_COURSE_ID &&
+      quiz.id.startsWith(BGCSE_MATHS_TOPIC_1_QUIZ_PREFIX) &&
+      !quiz.lessonId
+    ) {
+      return { ...quiz, lessonId: BGCSE_MATHS_TOPIC_1_ID };
+    }
+
+    return quiz;
+  });
+
+  const hasTopic = input.lessons.some(
+    (lesson) => lesson.courseId === BGCSE_MATHS_COURSE_ID && lesson.id === BGCSE_MATHS_TOPIC_1_ID,
+  );
+  const hasTopicQuizzes = quizzes.some(
+    (quiz) => quiz.courseId === BGCSE_MATHS_COURSE_ID && quiz.lessonId === BGCSE_MATHS_TOPIC_1_ID,
+  );
+
+  if (hasTopic || !hasTopicQuizzes) {
+    return { lessons: input.lessons, quizzes };
+  }
+
+  const topic: Lesson = {
+    id: BGCSE_MATHS_TOPIC_1_ID,
+    courseId: BGCSE_MATHS_COURSE_ID,
+    title: "Number, Money, Fractions, Percentages, Ratio & Proportion",
+    duration: "4 quizzes",
+    summary: "Practice the core number skills used throughout BGCSE Mathematics Topic 1.",
+    content: [
+      "Convert between fractions, decimals and percentages, and simplify fractions and ratios before calculating.",
+      "Solve percentage and money problems including discounts, profit, loss, percentage change and reverse percentages.",
+      "Use ratio and direct proportion to share quantities, compare amounts and scale real-world rates.",
+      "Apply number skills in BGCSE exam-style contexts while keeping units, rounding and the size of the answer sensible.",
+    ],
+  };
+
+  return { lessons: [...input.lessons, topic], quizzes };
+}
 
 function buildE2eFixtureCatalog(): LearnerCatalog {
   const fixtures = getE2eLearnerCatalogFixtures();
@@ -87,7 +139,7 @@ export function buildLearnerCatalog(input?: {
     lessonsByCourseId.set(lesson.courseStableId, courseLessons);
   }
 
-  const quizzes = (input?.convexQuizzes ?? [])
+  const normalizedQuizzes = (input?.convexQuizzes ?? [])
     .map((quiz) =>
       normalizeLearnerQuiz(quiz, {
         course: initialCourseById.get(quiz.courseStableId) ?? null,
@@ -95,7 +147,7 @@ export function buildLearnerCatalog(input?: {
     )
     .filter((quiz): quiz is Quiz => Boolean(quiz));
 
-  const lessons = (input?.convexLessons ?? [])
+  const normalizedLessons = (input?.convexLessons ?? [])
     .map((lesson) =>
       normalizeLearnerLesson(lesson, {
         course: initialCourseById.get(lesson.courseStableId) ?? null,
@@ -104,6 +156,17 @@ export function buildLearnerCatalog(input?: {
       }),
     )
     .filter((lesson): lesson is Lesson => Boolean(lesson));
+
+  // Topic 1 was initially seeded with quizzes/questions but without a lesson row
+  // or lessonStableId links. Repair that legacy shape in the learner catalog so
+  // the mobile Course -> Topic -> Quiz flow remains usable before/after reseeds.
+  const repairedCatalog = repairBGCSEMathsTopicLinks({
+    courseById: initialCourseById,
+    lessons: normalizedLessons,
+    quizzes: normalizedQuizzes,
+  });
+  const lessons = repairedCatalog.lessons;
+  const quizzes = repairedCatalog.quizzes;
 
   const courses = normalizedCourses.map((course) => ({
     ...course,
