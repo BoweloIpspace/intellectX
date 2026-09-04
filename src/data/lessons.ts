@@ -1,5 +1,9 @@
 import type { ContentAccessLevel } from "../lib/entitlements";
-import { BGCSE_MATHS_COURSE_ID, BGCSE_MATHS_TOPIC_1_ID } from "./bgcse-maths-course";
+import {
+  BGCSE_MATHS_COURSE_ID,
+  BGCSE_MATHS_TOPIC_1_ID,
+  BGCSE_MATHS_TOPIC_2_ID,
+} from "./bgcse-maths-course";
 
 export type LessonBlock =
   | { type: "text"; body: string }
@@ -200,6 +204,20 @@ export const lessons: Lesson[] = [
       "Solve percentage and money problems including discounts, profit, loss, percentage change and reverse percentages.",
       "Use ratio and direct proportion to share quantities, compare amounts and scale real-world rates.",
       "Apply number skills in BGCSE exam-style contexts while keeping units, rounding and the size of the answer sensible.",
+    ],
+    nextLessonId: BGCSE_MATHS_TOPIC_2_ID,
+  },
+  {
+    id: BGCSE_MATHS_TOPIC_2_ID,
+    courseId: BGCSE_MATHS_COURSE_ID,
+    title: "Approximation, Accuracy, Bounds & Units",
+    duration: "2 quizzes",
+    summary: "Round, estimate, convert units and use upper and lower bounds in BGCSE-style calculations.",
+    content: [
+      "Round values to decimal places and significant figures, and use sensible rounded values to estimate calculations.",
+      "Convert common metric units accurately before combining quantities in a calculation.",
+      "Translate a rounded measurement into its lower and upper bounds, remembering that the upper boundary is not included.",
+      "Use the correct combination of bounds to find maximum or minimum possible values for speed, area and volume.",
     ],
   },
 ];
