@@ -44,4 +44,22 @@ export const bgcseMathsSeedQuizAnswers: SeedQuizAnswer[] = [
   { quizId: "bgcse-maths-t01-q4", questionId: "q8", answerIndex: 3, explanation: "There are 10 parts. One part is P62640, so the smallest share is 2 × P62640 = P125280." },
   { quizId: "bgcse-maths-t01-q4", questionId: "q9", answerIndex: 1, explanation: "P125280 is 116% of last year's amount, so 125280 ÷ 1.16 = P108000." },
   { quizId: "bgcse-maths-t01-q4", questionId: "q10", answerIndex: 2, explanation: "Transport costs 0.08 × P4375 = P350. Total = P4375 + P350 = P4725." },
+
+  { quizId: "bgcse-maths-t02-q1", questionId: "q1", answerIndex: 1, explanation: "47.386 rounds to 47.4 because the hundredths digit is 8." },
+  { quizId: "bgcse-maths-t02-q1", questionId: "q2", answerIndex: 1, explanation: "The first two significant digits are 6 and 7; the next digit is 8, so 0.006784 rounds to 0.0068." },
+  { quizId: "bgcse-maths-t02-q1", questionId: "q3", answerIndex: 2, explanation: "To 1 significant figure: 398 ≈ 400, 0.51 ≈ 0.5 and 19.8 ≈ 20. Then (400 × 0.5) ÷ 20 = 10." },
+  { quizId: "bgcse-maths-t02-q1", questionId: "q4", answerIndex: 2, explanation: "1 litre = 1000 ml, so 3.75 litres = 3750 ml." },
+  { quizId: "bgcse-maths-t02-q1", questionId: "q5", answerIndex: 1, explanation: "1 metre = 100 centimetres, so 4.2 m = 420 cm." },
+  { quizId: "bgcse-maths-t02-q1", questionId: "q6", answerIndex: 0, explanation: "84650 × 63 = 5,332,950, which is 5,300,000 to 2 significant figures." },
+  { quizId: "bgcse-maths-t02-q1", questionId: "q7", answerIndex: 2, explanation: "2 hours = 120 minutes, and 120 + 45 = 165 minutes." },
+  { quizId: "bgcse-maths-t02-q1", questionId: "q8", answerIndex: 1, explanation: "A value rounded to 8.1 to 1 decimal place lies from 8.05 inclusive up to, but not including, 8.15." },
+
+  { quizId: "bgcse-maths-t02-q2", questionId: "q1", answerIndex: 1, explanation: "27 cm correct to the nearest centimetre represents values from 26.5 cm up to, but not including, 27.5 cm." },
+  { quizId: "bgcse-maths-t02-q2", questionId: "q2", answerIndex: 2, explanation: "3.6 kg correct to 1 decimal place has upper bound 3.65 kg." },
+  { quizId: "bgcse-maths-t02-q2", questionId: "q3", answerIndex: 2, explanation: "6.4 cm correct to 1 decimal place has upper bound 6.45 cm." },
+  { quizId: "bgcse-maths-t02-q2", questionId: "q4", answerIndex: 2, explanation: "Use the upper-bound radius 6.45 cm. (4/3)π(6.45)^3 ≈ 1124 cm³." },
+  { quizId: "bgcse-maths-t02-q2", questionId: "q5", answerIndex: 0, explanation: "For the minimum speed use the least distance and greatest time: 95 ÷ 12.5 = 7.6 m/s." },
+  { quizId: "bgcse-maths-t02-q2", questionId: "q6", answerIndex: 2, explanation: "The upper bounds are 18.5 cm and 12.5 cm, so the area upper bound is 18.5 × 12.5 = 231.25 cm²." },
+  { quizId: "bgcse-maths-t02-q2", questionId: "q7", answerIndex: 2, explanation: "68° correct to the nearest degree has upper bound 68.5°." },
+  { quizId: "bgcse-maths-t02-q2", questionId: "q8", answerIndex: 2, explanation: "Use 14.5 cm, 20.5 cm and 72.5°. The area upper bound is 0.5 × 14.5 × 20.5 × sin(72.5°) ≈ 141.7 cm²." },
 ];
