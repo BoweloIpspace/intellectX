@@ -1,5 +1,6 @@
 import { bgcseMathsSeedQuizAnswers } from "./bgcseMathsSeedQuizAnswers";
 import { bgcseMathsTopic3SeedQuizAnswers } from "./bgcseMathsTopic3SeedQuizAnswers";
+import { bgcseMathsTopic4And5SeedQuizAnswers } from "./bgcseMathsTopic4And5SeedQuizAnswers";
 import { mat111SeedQuizAnswers } from "./mat111SeedQuizAnswers";
 
 export type SeedQuizAnswer = {
@@ -102,6 +103,7 @@ export const seedQuizAnswers: SeedQuizAnswer[] = [
   },
   ...bgcseMathsSeedQuizAnswers,
   ...bgcseMathsTopic3SeedQuizAnswers,
+  ...bgcseMathsTopic4And5SeedQuizAnswers,
   ...mat111SeedQuizAnswers,
 ];
 
