@@ -1,4 +1,5 @@
 import type { ContentAccessLevel } from "../lib/entitlements";
+import { BGCSE_MATHS_COURSE_ID, BGCSE_MATHS_TOPIC_1_ID } from "./bgcse-maths-course";
 
 export type LessonBlock =
   | { type: "text"; body: string }
@@ -187,6 +188,19 @@ export const lessons: Lesson[] = [
       "Raise difficulty gradually. Confidence grows when challenge is real but still within reach.",
     ],
     quizId: "exam-accelerator-check",
+  },
+  {
+    id: BGCSE_MATHS_TOPIC_1_ID,
+    courseId: BGCSE_MATHS_COURSE_ID,
+    title: "Number, Money, Fractions, Percentages, Ratio & Proportion",
+    duration: "4 quizzes",
+    summary: "Practice the core number skills used throughout BGCSE Mathematics Topic 1.",
+    content: [
+      "Convert between fractions, decimals and percentages, and simplify fractions and ratios before calculating.",
+      "Solve percentage and money problems including discounts, profit, loss, percentage change and reverse percentages.",
+      "Use ratio and direct proportion to share quantities, compare amounts and scale real-world rates.",
+      "Apply number skills in BGCSE exam-style contexts while keeping units, rounding and the size of the answer sensible.",
+    ],
   },
 ];
 
