@@ -4,6 +4,10 @@ import {
   BGCSE_MATHS_TOPIC_9_ID,
   BGCSE_MATHS_TOPIC_10_ID,
   BGCSE_MATHS_TOPIC_11_ID,
+  BGCSE_MATHS_TOPIC_12_ID,
+  BGCSE_MATHS_TOPIC_13_ID,
+  BGCSE_MATHS_TOPIC_14_ID,
+  BGCSE_MATHS_TOPIC_15_ID,
 } from "./bgcse-maths-course";
 
 export const bgcseMathsTopic9To11Lessons: Lesson[] = [
@@ -46,6 +50,62 @@ export const bgcseMathsTopic9To11Lessons: Lesson[] = [
       "Describe rotations using centre, angle and direction, then track each vertex accurately.",
       "For enlargements, use the centre and scale factor; a negative scale factor places the image on the opposite side of the centre.",
       "Identify line symmetry and rotational symmetry, and use coordinate rules to check transformed points.",
+    ],
+    nextLessonId: BGCSE_MATHS_TOPIC_12_ID,
+  },
+  {
+    id: BGCSE_MATHS_TOPIC_12_ID,
+    courseId: BGCSE_MATHS_COURSE_ID,
+    title: "Vectors",
+    duration: "3 quizzes",
+    summary: "Use column and position vectors, vector algebra, midpoint and ratio results, and BGCSE-style vector proofs and relationships.",
+    content: [
+      "Find displacement vectors from coordinates and calculate vector magnitude using Pythagoras.",
+      "Use position vectors such as OA = a and OB = b to express routes including AB = b - a.",
+      "Use midpoint and division ratios to find position vectors of points on a line segment.",
+      "Recognise parallel vectors as scalar multiples and combine vector routes in geometric diagrams.",
+    ],
+    nextLessonId: BGCSE_MATHS_TOPIC_13_ID,
+  },
+  {
+    id: BGCSE_MATHS_TOPIC_13_ID,
+    courseId: BGCSE_MATHS_COURSE_ID,
+    title: "Similarity, Enlargement & Scale",
+    duration: "2 quizzes",
+    summary: "Use similarity and scale factors for lengths, areas and volumes, including similar prisms and pyramids.",
+    content: [
+      "Find a linear scale factor from corresponding sides and use it to calculate missing lengths.",
+      "Square the linear scale factor for areas and cube it for volumes of similar solids.",
+      "Reverse area or volume ratios using square roots or cube roots to recover the linear scale factor.",
+      "Apply similarity to scale drawings, maps, prisms, pyramids and other BGCSE-style geometric problems.",
+    ],
+    nextLessonId: BGCSE_MATHS_TOPIC_14_ID,
+  },
+  {
+    id: BGCSE_MATHS_TOPIC_14_ID,
+    courseId: BGCSE_MATHS_COURSE_ID,
+    title: "Trigonometry & Bearings",
+    duration: "4 quizzes",
+    summary: "Solve right and non-right triangles, calculate areas, and use three-figure bearings in BGCSE-style problems.",
+    content: [
+      "Use sine, cosine and tangent in right-angled triangles to find missing sides and angles.",
+      "Use the sine rule and cosine rule for non-right-angled triangles and 1/2 ab sin C for triangle area.",
+      "Measure bearings clockwise from north using three figures and find reverse bearings by adding or subtracting 180°.",
+      "Combine bearings, trigonometry and perpendicular distances in multi-step exam-style questions.",
+    ],
+    nextLessonId: BGCSE_MATHS_TOPIC_15_ID,
+  },
+  {
+    id: BGCSE_MATHS_TOPIC_15_ID,
+    courseId: BGCSE_MATHS_COURSE_ID,
+    title: "Circle Geometry & Circle Theorems",
+    duration: "3 quizzes",
+    summary: "Apply circle theorems involving centre angles, cyclic quadrilaterals, chords and tangents.",
+    content: [
+      "Use the fact that the angle at the centre is twice the angle at the circumference standing on the same arc.",
+      "Use angles in the same segment, the angle in a semicircle and opposite angles of a cyclic quadrilateral.",
+      "Use radius-tangent perpendicularity, equal tangents from an external point and the alternate segment theorem.",
+      "Give clear reasons when applying circle theorems in multi-step BGCSE geometry problems.",
     ],
   },
 ];
