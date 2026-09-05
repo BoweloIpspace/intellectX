@@ -8,7 +8,9 @@ import {
   BGCSE_MATHS_TOPIC_13_ID,
   BGCSE_MATHS_TOPIC_14_ID,
   BGCSE_MATHS_TOPIC_15_ID,
+  BGCSE_MATHS_TOPIC_16_ID,
 } from "./bgcse-maths-course";
+import { bgcseMathsTopic16To18Lessons } from "./bgcse-maths-topic16-18-lessons";
 
 export const bgcseMathsTopic9To11Lessons: Lesson[] = [
   {
@@ -107,5 +109,7 @@ export const bgcseMathsTopic9To11Lessons: Lesson[] = [
       "Use radius-tangent perpendicularity, equal tangents from an external point and the alternate segment theorem.",
       "Give clear reasons when applying circle theorems in multi-step BGCSE geometry problems.",
     ],
+    nextLessonId: BGCSE_MATHS_TOPIC_16_ID,
   },
+  ...bgcseMathsTopic16To18Lessons,
 ];
