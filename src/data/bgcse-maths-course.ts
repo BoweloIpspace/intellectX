@@ -10,16 +10,19 @@ export const BGCSE_MATHS_TOPIC_5_ID = "bgcse-maths-t05";
 export const BGCSE_MATHS_TOPIC_6_ID = "bgcse-maths-t06";
 export const BGCSE_MATHS_TOPIC_7_ID = "bgcse-maths-t07";
 export const BGCSE_MATHS_TOPIC_8_ID = "bgcse-maths-t08";
+export const BGCSE_MATHS_TOPIC_9_ID = "bgcse-maths-t09";
+export const BGCSE_MATHS_TOPIC_10_ID = "bgcse-maths-t10";
+export const BGCSE_MATHS_TOPIC_11_ID = "bgcse-maths-t11";
 
 export const bgcseMathsCourse: Course = {
   id: BGCSE_MATHS_COURSE_ID,
   slug: BGCSE_MATHS_COURSE_ID,
   title: "BGCSE Mathematics",
   description:
-    "BGCSE Mathematics practice. Topics 1 to 8 cover number, approximation and bounds, algebra, equations, quadratics, sequences, inequalities and linear programming, graphs, functions and coordinate geometry with twenty-four exam-style quizzes.",
+    "BGCSE Mathematics practice. Topics 1 to 11 cover number, approximation, algebra, equations, sequences, inequalities, graphs, rates and motion, constructions and loci, and transformations and symmetry with thirty-two exam-style quizzes.",
   subject: "Mathematics",
   level: "Beginner",
-  duration: "24 quizzes",
+  duration: "32 quizzes",
   progress: 0,
   lessonIds: [
     BGCSE_MATHS_TOPIC_1_ID,
@@ -30,6 +33,9 @@ export const bgcseMathsCourse: Course = {
     BGCSE_MATHS_TOPIC_6_ID,
     BGCSE_MATHS_TOPIC_7_ID,
     BGCSE_MATHS_TOPIC_8_ID,
+    BGCSE_MATHS_TOPIC_9_ID,
+    BGCSE_MATHS_TOPIC_10_ID,
+    BGCSE_MATHS_TOPIC_11_ID,
   ],
   quizIds: [
     "bgcse-maths-t01-q1",
@@ -56,6 +62,14 @@ export const bgcseMathsCourse: Course = {
     "bgcse-maths-t08-q1",
     "bgcse-maths-t08-q2",
     "bgcse-maths-t08-q3",
+    "bgcse-maths-t09-q1",
+    "bgcse-maths-t09-q2",
+    "bgcse-maths-t09-q3",
+    "bgcse-maths-t10-q1",
+    "bgcse-maths-t10-q2",
+    "bgcse-maths-t11-q1",
+    "bgcse-maths-t11-q2",
+    "bgcse-maths-t11-q3",
   ],
   accent: "from-cyan-500/20 via-white to-blue-400/20",
   reviewStatus: APPROVED,
