@@ -7,6 +7,8 @@ import {
   BGCSE_MATHS_TOPIC_4_ID,
 } from "./bgcse-maths-course";
 import { bgcseMathsTopic4And5Lessons } from "./bgcse-maths-topic4-5-lessons";
+import { bgcseMathsTopic6To8Lessons } from "./bgcse-maths-topic6-8-lessons";
+import { bgcseMathsTopic9To11Lessons } from "./bgcse-maths-topic9-11-lessons";
 
 export type LessonBlock =
   | { type: "text"; body: string }
@@ -45,36 +47,12 @@ export const lessons: Lesson[] = [
       "The goal is not faster answers. The goal is faster feedback, better practice, and a clearer view of what you still need to learn.",
     ],
     blocks: [
-      {
-        type: "text",
-        body: "Before asking AI for help, write down what you already understand. This keeps the session anchored in your thinking.",
-      },
-      {
-        type: "keyTerm",
-        term: "Learning loop",
-        definition: "A prompt pattern that asks AI to explain, question, diagnose, and suggest one next practice step.",
-      },
-      {
-        type: "visualMemoryCard",
-        title: "Tutor, not answer machine",
-        cue: "Explain -> Ask -> Diagnose -> Practice",
-        detail: "Use the loop whenever you catch yourself asking for final answers too quickly.",
-      },
-      {
-        type: "tapReveal",
-        prompt: "Why should the AI ask you questions before giving more explanation?",
-        explanation: "Questions reveal what you can retrieve, which makes feedback more accurate and memorable.",
-      },
-      {
-        type: "checkpoint",
-        prompt: "Write one prompt that asks AI to test your understanding of this lesson.",
-        answer: "A strong answer includes a tutor role, two questions, misconception detection, and one next step.",
-      },
-      {
-        type: "diagram",
-        title: "Prompt flow",
-        description: "Start with the goal, add constraints, request questions, then review the feedback.",
-      },
+      { type: "text", body: "Before asking AI for help, write down what you already understand. This keeps the session anchored in your thinking." },
+      { type: "keyTerm", term: "Learning loop", definition: "A prompt pattern that asks AI to explain, question, diagnose, and suggest one next practice step." },
+      { type: "visualMemoryCard", title: "Tutor, not answer machine", cue: "Explain -> Ask -> Diagnose -> Practice", detail: "Use the loop whenever you catch yourself asking for final answers too quickly." },
+      { type: "tapReveal", prompt: "Why should the AI ask you questions before giving more explanation?", explanation: "Questions reveal what you can retrieve, which makes feedback more accurate and memorable." },
+      { type: "checkpoint", prompt: "Write one prompt that asks AI to test your understanding of this lesson.", answer: "A strong answer includes a tutor role, two questions, misconception detection, and one next step." },
+      { type: "diagram", title: "Prompt flow", description: "Start with the goal, add constraints, request questions, then review the feedback." },
     ],
     nextLessonId: "memory-systems",
     quizId: "ai-study-systems-check",
@@ -239,6 +217,8 @@ export const lessons: Lesson[] = [
     nextLessonId: BGCSE_MATHS_TOPIC_4_ID,
   },
   ...bgcseMathsTopic4And5Lessons,
+  ...bgcseMathsTopic6To8Lessons,
+  ...bgcseMathsTopic9To11Lessons,
 ];
 
 export function getLesson(id: string) {
