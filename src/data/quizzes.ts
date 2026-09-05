@@ -2,6 +2,7 @@ import type { ContentAccessLevel } from "../lib/entitlements";
 import { bgcseMathsQuizzes } from "./bgcse-maths-quizzes";
 import { bgcseMathsTopic3Quizzes } from "./bgcse-maths-topic3-quizzes";
 import { bgcseMathsTopic4Quizzes, bgcseMathsTopic5Quizzes } from "./bgcse-maths-topic4-5-quizzes";
+import { bgcseMathsTopic6To8Quizzes } from "./bgcse-maths-topic6-8-quizzes";
 import { getMat111Quiz, getMat111QuizzesByCourse } from "./mat111-quizzes";
 
 export type QuizQuestion = {
@@ -171,6 +172,7 @@ export const quizzes: Quiz[] = [
   ...bgcseMathsTopic3Quizzes,
   ...bgcseMathsTopic4Quizzes,
   ...bgcseMathsTopic5Quizzes,
+  ...bgcseMathsTopic6To8Quizzes,
 ];
 
 export function getQuiz(id: string) {

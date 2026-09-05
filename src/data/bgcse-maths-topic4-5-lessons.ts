@@ -3,7 +3,9 @@ import {
   BGCSE_MATHS_COURSE_ID,
   BGCSE_MATHS_TOPIC_4_ID,
   BGCSE_MATHS_TOPIC_5_ID,
+  BGCSE_MATHS_TOPIC_6_ID,
 } from "./bgcse-maths-course";
+import { bgcseMathsTopic6To8Lessons } from "./bgcse-maths-topic6-8-lessons";
 
 export const bgcseMathsTopic4And5Lessons: Lesson[] = [
   {
@@ -32,5 +34,7 @@ export const bgcseMathsTopic4And5Lessons: Lesson[] = [
       "Reject roots that are impossible in context, such as negative times, lengths or speeds.",
       "Form quadratic equations from rate-time, area and number problems, then solve and interpret the valid solution.",
     ],
+    nextLessonId: BGCSE_MATHS_TOPIC_6_ID,
   },
+  ...bgcseMathsTopic6To8Lessons,
 ];
