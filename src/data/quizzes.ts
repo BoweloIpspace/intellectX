@@ -3,6 +3,7 @@ import { bgcseMathsQuizzes } from "./bgcse-maths-quizzes";
 import { bgcseMathsTopic3Quizzes } from "./bgcse-maths-topic3-quizzes";
 import { bgcseMathsTopic4Quizzes, bgcseMathsTopic5Quizzes } from "./bgcse-maths-topic4-5-quizzes";
 import { bgcseMathsTopic6To8Quizzes } from "./bgcse-maths-topic6-8-quizzes";
+import { bgcseMathsTopic9To11Quizzes } from "./bgcse-maths-topic9-11-quizzes";
 import { getMat111Quiz, getMat111QuizzesByCourse } from "./mat111-quizzes";
 
 export type QuizQuestion = {
@@ -38,42 +39,9 @@ export const quizzes: Quiz[] = [
     difficulty: "Foundational",
     estimatedTime: "6 min",
     questions: [
-      {
-        id: "q1",
-        prompt: "Which prompt pattern best supports learning?",
-        choices: [
-          "Give me the final answer only.",
-          "Explain, question me, diagnose gaps, then suggest one next step.",
-          "Rewrite my notes in a longer format.",
-          "Summarize every topic with no follow-up.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
-      {
-        id: "q2",
-        prompt: "What should stay central when using AI-generated practice questions?",
-        choices: [
-          "The original source material and your own retrieval attempt.",
-          "The longest possible AI response.",
-          "Avoiding correction until the end of the term.",
-          "Using only summaries instead of questions.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
-      {
-        id: "q3",
-        prompt: "What is the best output of a weekly review?",
-        choices: [
-          "A vague promise to study more.",
-          "A small plan with priority topics, practice format, and protected time.",
-          "A full rewrite of every note.",
-          "Skipping topics that felt difficult.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
+      { id: "q1", prompt: "Which prompt pattern best supports learning?", choices: ["Give me the final answer only.", "Explain, question me, diagnose gaps, then suggest one next step.", "Rewrite my notes in a longer format.", "Summarize every topic with no follow-up."], answerIndex: -1, explanation: "" },
+      { id: "q2", prompt: "What should stay central when using AI-generated practice questions?", choices: ["The original source material and your own retrieval attempt.", "The longest possible AI response.", "Avoiding correction until the end of the term.", "Using only summaries instead of questions."], answerIndex: -1, explanation: "" },
+      { id: "q3", prompt: "What is the best output of a weekly review?", choices: ["A vague promise to study more.", "A small plan with priority topics, practice format, and protected time.", "A full rewrite of every note.", "Skipping topics that felt difficult."], answerIndex: -1, explanation: "" },
     ],
   },
   {
@@ -84,42 +52,9 @@ export const quizzes: Quiz[] = [
     difficulty: "Applied",
     estimatedTime: "7 min",
     questions: [
-      {
-        id: "q1",
-        prompt: "What is the main purpose of an argument map?",
-        choices: [
-          "To make an argument look more complex.",
-          "To separate claims, evidence, assumptions, and objections.",
-          "To remove uncertainty from a topic.",
-          "To replace source checking.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
-      {
-        id: "q2",
-        prompt: "Which source-checking habit matters most for high-stakes claims?",
-        choices: [
-          "Trust whichever summary is shortest.",
-          "Check primary sources and dates.",
-          "Ignore incentives if the writing sounds polished.",
-          "Use only social proof.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
-      {
-        id: "q3",
-        prompt: "Why are counterexamples useful?",
-        choices: [
-          "They reveal where a claim needs boundaries or revision.",
-          "They prove every claim is false.",
-          "They replace evidence.",
-          "They make arguments less precise.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
+      { id: "q1", prompt: "What is the main purpose of an argument map?", choices: ["To make an argument look more complex.", "To separate claims, evidence, assumptions, and objections.", "To remove uncertainty from a topic.", "To replace source checking."], answerIndex: -1, explanation: "" },
+      { id: "q2", prompt: "Which source-checking habit matters most for high-stakes claims?", choices: ["Trust whichever summary is shortest.", "Check primary sources and dates.", "Ignore incentives if the writing sounds polished.", "Use only social proof."], answerIndex: -1, explanation: "" },
+      { id: "q3", prompt: "Why are counterexamples useful?", choices: ["They reveal where a claim needs boundaries or revision.", "They prove every claim is false.", "They replace evidence.", "They make arguments less precise."], answerIndex: -1, explanation: "" },
     ],
   },
   {
@@ -130,42 +65,9 @@ export const quizzes: Quiz[] = [
     difficulty: "Challenge",
     estimatedTime: "8 min",
     questions: [
-      {
-        id: "q1",
-        prompt: "Why start with a diagnostic before building an exam plan?",
-        choices: [
-          "It finds the highest-value gaps under realistic conditions.",
-          "It removes the need for revision.",
-          "It guarantees a perfect score.",
-          "It makes spaced repetition unnecessary.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
-      {
-        id: "q2",
-        prompt: "What does active recall force you to do?",
-        choices: [
-          "Recognize familiar wording.",
-          "Produce an answer before reviewing the explanation.",
-          "Avoid mistakes entirely.",
-          "Study only when confidence is high.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
-      {
-        id: "q3",
-        prompt: "What should you review after a timed practice set?",
-        choices: [
-          "Only the final score.",
-          "Decisions, pacing, accuracy, and alternate paths.",
-          "Nothing until exam day.",
-          "Only questions you answered correctly.",
-        ],
-        answerIndex: -1,
-        explanation: "",
-      },
+      { id: "q1", prompt: "Why start with a diagnostic before building an exam plan?", choices: ["It finds the highest-value gaps under realistic conditions.", "It removes the need for revision.", "It guarantees a perfect score.", "It makes spaced repetition unnecessary."], answerIndex: -1, explanation: "" },
+      { id: "q2", prompt: "What does active recall force you to do?", choices: ["Recognize familiar wording.", "Produce an answer before reviewing the explanation.", "Avoid mistakes entirely.", "Study only when confidence is high."], answerIndex: -1, explanation: "" },
+      { id: "q3", prompt: "What should you review after a timed practice set?", choices: ["Only the final score.", "Decisions, pacing, accuracy, and alternate paths.", "Nothing until exam day.", "Only questions you answered correctly."], answerIndex: -1, explanation: "" },
     ],
   },
   ...bgcseMathsQuizzes,
@@ -173,6 +75,7 @@ export const quizzes: Quiz[] = [
   ...bgcseMathsTopic4Quizzes,
   ...bgcseMathsTopic5Quizzes,
   ...bgcseMathsTopic6To8Quizzes,
+  ...bgcseMathsTopic9To11Quizzes,
 ];
 
 export function getQuiz(id: string) {
