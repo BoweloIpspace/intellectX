@@ -4,6 +4,7 @@ import {
   BGCSE_MATHS_TOPIC_6_ID,
   BGCSE_MATHS_TOPIC_7_ID,
   BGCSE_MATHS_TOPIC_8_ID,
+  BGCSE_MATHS_TOPIC_9_ID,
 } from "./bgcse-maths-course";
 
 export const bgcseMathsTopic6To8Lessons: Lesson[] = [
@@ -47,5 +48,6 @@ export const bgcseMathsTopic6To8Lessons: Lesson[] = [
       "Find intersections by equating two expressions for y, and interpret the resulting coordinates as points common to both graphs.",
       "Use tangent gradients and the relationship between parallel and perpendicular lines to solve coordinate-geometry problems.",
     ],
+    nextLessonId: BGCSE_MATHS_TOPIC_9_ID,
   },
 ];
