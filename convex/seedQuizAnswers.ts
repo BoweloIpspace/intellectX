@@ -3,6 +3,7 @@ import { bgcseMathsTopic3SeedQuizAnswers } from "./bgcseMathsTopic3SeedQuizAnswe
 import { bgcseMathsTopic4And5SeedQuizAnswers } from "./bgcseMathsTopic4And5SeedQuizAnswers";
 import { bgcseMathsTopic6To8SeedQuizAnswers } from "./bgcseMathsTopic6To8SeedQuizAnswers";
 import { bgcseMathsTopic9To11SeedQuizAnswers } from "./bgcseMathsTopic9To11SeedQuizAnswers";
+import { bgcseMathsTopic12To15SeedQuizAnswers } from "./bgcseMathsTopic12To15SeedQuizAnswers";
 import { mat111SeedQuizAnswers } from "./mat111SeedQuizAnswers";
 
 export type SeedQuizAnswer = {
@@ -33,6 +34,7 @@ export const seedQuizAnswers: SeedQuizAnswer[] = [
   ...bgcseMathsTopic4And5SeedQuizAnswers,
   ...bgcseMathsTopic6To8SeedQuizAnswers,
   ...bgcseMathsTopic9To11SeedQuizAnswers,
+  ...bgcseMathsTopic12To15SeedQuizAnswers,
   ...mat111SeedQuizAnswers,
 ];
 
