@@ -4,6 +4,7 @@ import { bgcseMathsTopic3Quizzes } from "./bgcse-maths-topic3-quizzes";
 import { bgcseMathsTopic4Quizzes, bgcseMathsTopic5Quizzes } from "./bgcse-maths-topic4-5-quizzes";
 import { bgcseMathsTopic6To8Quizzes } from "./bgcse-maths-topic6-8-quizzes";
 import { bgcseMathsTopic9To11Quizzes } from "./bgcse-maths-topic9-11-quizzes";
+import { bgcseMathsTopic12To15Quizzes } from "./bgcse-maths-topic12-15-quizzes";
 import { getMat111Quiz, getMat111QuizzesByCourse } from "./mat111-quizzes";
 
 export type QuizQuestion = {
@@ -76,6 +77,7 @@ export const quizzes: Quiz[] = [
   ...bgcseMathsTopic5Quizzes,
   ...bgcseMathsTopic6To8Quizzes,
   ...bgcseMathsTopic9To11Quizzes,
+  ...bgcseMathsTopic12To15Quizzes,
 ];
 
 export function getQuiz(id: string) {
