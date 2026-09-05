@@ -17,16 +17,19 @@ export const BGCSE_MATHS_TOPIC_12_ID = "bgcse-maths-t12";
 export const BGCSE_MATHS_TOPIC_13_ID = "bgcse-maths-t13";
 export const BGCSE_MATHS_TOPIC_14_ID = "bgcse-maths-t14";
 export const BGCSE_MATHS_TOPIC_15_ID = "bgcse-maths-t15";
+export const BGCSE_MATHS_TOPIC_16_ID = "bgcse-maths-t16";
+export const BGCSE_MATHS_TOPIC_17_ID = "bgcse-maths-t17";
+export const BGCSE_MATHS_TOPIC_18_ID = "bgcse-maths-t18";
 
 export const bgcseMathsCourse: Course = {
   id: BGCSE_MATHS_COURSE_ID,
   slug: BGCSE_MATHS_COURSE_ID,
   title: "BGCSE Mathematics",
   description:
-    "BGCSE Mathematics practice. Topics 1 to 15 cover number, approximation, algebra, equations, sequences, inequalities, graphs, rates and motion, constructions and loci, transformations, vectors, similarity and scale, trigonometry and bearings, and circle geometry with forty-four exam-style quizzes.",
+    "BGCSE Mathematics practice. Topics 1 to 18 cover number, approximation, algebra, equations, sequences, inequalities, graphs, rates and motion, constructions and loci, transformations, vectors, similarity and scale, trigonometry and bearings, circle geometry, mensuration, statistics and probability with fifty-five exam-style quizzes.",
   subject: "Mathematics",
   level: "Beginner",
-  duration: "44 quizzes",
+  duration: "55 quizzes",
   progress: 0,
   lessonIds: [
     BGCSE_MATHS_TOPIC_1_ID,
@@ -44,6 +47,9 @@ export const bgcseMathsCourse: Course = {
     BGCSE_MATHS_TOPIC_13_ID,
     BGCSE_MATHS_TOPIC_14_ID,
     BGCSE_MATHS_TOPIC_15_ID,
+    BGCSE_MATHS_TOPIC_16_ID,
+    BGCSE_MATHS_TOPIC_17_ID,
+    BGCSE_MATHS_TOPIC_18_ID,
   ],
   quizIds: [
     "bgcse-maths-t01-q1",
@@ -90,6 +96,17 @@ export const bgcseMathsCourse: Course = {
     "bgcse-maths-t15-q1",
     "bgcse-maths-t15-q2",
     "bgcse-maths-t15-q3",
+    "bgcse-maths-t16-q1",
+    "bgcse-maths-t16-q2",
+    "bgcse-maths-t16-q3",
+    "bgcse-maths-t16-q4",
+    "bgcse-maths-t17-q1",
+    "bgcse-maths-t17-q2",
+    "bgcse-maths-t17-q3",
+    "bgcse-maths-t17-q4",
+    "bgcse-maths-t18-q1",
+    "bgcse-maths-t18-q2",
+    "bgcse-maths-t18-q3",
   ],
   accent: "from-cyan-500/20 via-white to-blue-400/20",
   reviewStatus: APPROVED,
