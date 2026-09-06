@@ -27,7 +27,7 @@ if (process.env.CONVEX_DEPLOY_KEY?.trim()) {
     "--cmd-url-env-var-name",
     "NEXT_PUBLIC_CONVEX_URL",
     "--cmd",
-    "npm run build",
+    "npm run build:web",
   ]);
 
   run("npx", ["convex", "run", "seed:seedEducationCatalog", '{"reset":false}', "--prod"]);
@@ -37,4 +37,4 @@ if (process.env.CONVEX_DEPLOY_KEY?.trim()) {
 }
 
 console.log("Vercel build mode: frontend-only; CONVEX_DEPLOY_KEY is not configured for this deployment.");
-run("npm", ["run", "build"]);
+run("npm", ["run", "build:web"]);

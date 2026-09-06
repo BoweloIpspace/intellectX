@@ -13,14 +13,18 @@ export type AuthEnvironmentStatus = {
   awaitingConvexAuthConfig: boolean;
 };
 
+function hasEnvironmentValue(value: string | undefined): boolean {
+  return Boolean(value?.trim());
+}
+
 export function getAuthEnvironmentStatus(
   env: PublicAuthEnv = {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
   },
 ): AuthEnvironmentStatus {
-  const clerkPublishableKeyPresent = Boolean(env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-  const convexUrlPresent = Boolean(env.NEXT_PUBLIC_CONVEX_URL);
+  const clerkPublishableKeyPresent = hasEnvironmentValue(env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const convexUrlPresent = hasEnvironmentValue(env.NEXT_PUBLIC_CONVEX_URL);
   const mode: AuthEnvironmentMode = clerkPublishableKeyPresent
     ? convexUrlPresent
       ? "clerk-convex-ready"

@@ -21,7 +21,9 @@ export function isServerRouteGuardEnabled(
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   },
 ) {
-  return Boolean(env.CLERK_SECRET_KEY && env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  return Boolean(
+    env.CLERK_SECRET_KEY?.trim() && env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim(),
+  );
 }
 
 export type RouteGuardDecision = "allow" | "redirect-login" | "redirect-courses";
