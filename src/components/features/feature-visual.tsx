@@ -1,5 +1,6 @@
 import type { FeatureVisualType } from "@/components/features/features";
 import { Badge } from "@/components/ui/badge";
+import { MarketingSurface } from "@/components/ui/marketing-section";
 import { CheckCircle2Icon, FileTextIcon, PlayCircleIcon, Rows3Icon } from "lucide-react";
 import type React from "react";
 
@@ -121,8 +122,8 @@ export function FeatureVisual({ type }: FeatureVisualProps) {
 
 function VisualFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-card flex min-h-[360px] w-full items-center justify-center rounded-lg border p-5 shadow-sm md:p-8">
-      <div className="w-full max-w-4xl">{children}</div>
-    </div>
+    <MarketingSurface className="flex min-h-[280px] items-center justify-center p-4 sm:min-h-[340px] sm:p-6 md:min-h-[360px] md:p-8">
+      <div className="w-full min-w-0 max-w-4xl">{children}</div>
+    </MarketingSurface>
   );
 }
