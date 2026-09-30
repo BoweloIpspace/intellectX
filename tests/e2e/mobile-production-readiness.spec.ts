@@ -315,13 +315,15 @@ test("native progress and profile routes remain inside the learner product", asy
   const shortcuts = page.locator('[aria-label="Learner shortcuts"]');
   await expect(shortcuts.getByRole("link", { name: "Progress", exact: true })).toBeVisible();
   const mobileNav = page.getByRole("navigation", { name: "Mobile study navigation" });
-  for (const tab of ["Home", "Infographies", "Quizzes", "Exams"]) {
+  for (const tab of ["Home", "Quizzes", "Exams", "Progress"]) {
     await expect(mobileNav.getByRole("link", { name: tab, exact: true })).toBeVisible();
   }
-  await expect(mobileNav.getByRole("link", { name: "Progress" })).toHaveCount(0);
+  await expect(mobileNav.getByRole("link", { name: "Progress", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(mobileNav.getByRole("link", { name: "Infographies" })).toHaveCount(0);
 
   await page.goto("/mobile-profile");
   await expect(page.getByRole("heading", { name: "Learner profile" })).toBeVisible();
   await expect(shortcuts.getByRole("link", { name: "Profile", exact: true })).toBeVisible();
   await expect(mobileNav.getByRole("link", { name: "Profile" })).toHaveCount(0);
+  await expect(mobileNav.getByRole("link", { name: "Progress", exact: true })).toBeVisible();
 });
