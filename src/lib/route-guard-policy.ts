@@ -5,23 +5,29 @@ import {
 } from "@/lib/staff-route-runtime-access";
 
 type ServerRouteGuardEnv = Partial<
-  Record<"CLERK_SECRET_KEY" | "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", string>
+  Record<"CLERK_SECRET_KEY" | "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" | "NODE_ENV", string>
 >;
 
 /**
  * Server-side route enforcement is only safe when Clerk can actually verify
  * sessions: both the publishable key and the server secret key must be present.
- * When they are missing (local-fallback mode), the middleware must stay a
- * complete no-op so the client-side PageShell guard remains authoritative and
- * the app keeps working without a ConvexProvider or Clerk configuration.
+ * Local fallback is development/test only. Production fails closed when either
+ * Clerk key is missing so a deployment cannot silently downgrade to browser-only auth.
  */
 export function isServerRouteGuardEnabled(
   env: ServerRouteGuardEnv = {
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    NODE_ENV: process.env.NODE_ENV,
   },
 ) {
-  return Boolean(env.CLERK_SECRET_KEY && env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const clerkConfigured = Boolean(env.CLERK_SECRET_KEY && env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
+  if (env.NODE_ENV === "production" && !clerkConfigured) {
+    throw new Error("Production authentication is not configured: Clerk server and publishable keys are required.");
+  }
+
+  return clerkConfigured;
 }
 
 export type RouteGuardDecision = "allow" | "redirect-login" | "redirect-courses";
