@@ -50,9 +50,19 @@ function isTabActive(pathname: string, href: string) {
 export function MobileAppShell({ children }: MobileAppShellProps) {
   const pathname = usePathname();
   const [nativeAppSurface, setNativeAppSurface] = useState(true);
+  const [online, setOnline] = useState(true);
 
   useEffect(() => {
     setNativeAppSurface(isMobileAppRuntime());
+    const syncOnlineState = () => setOnline(navigator.onLine);
+    syncOnlineState();
+    window.addEventListener("online", syncOnlineState);
+    window.addEventListener("offline", syncOnlineState);
+
+    return () => {
+      window.removeEventListener("online", syncOnlineState);
+      window.removeEventListener("offline", syncOnlineState);
+    };
   }, []);
 
   const tabs = nativeAppSurface ? nativeTabs : webPreviewTabs;
@@ -82,6 +92,16 @@ export function MobileAppShell({ children }: MobileAppShellProps) {
           </Link>
         </div>
       </div>
+
+      {!online ? (
+        <div
+          role="status"
+          data-testid="mobile-offline-banner"
+          className="relative z-20 mx-auto mb-4 w-full max-w-md rounded-lg border border-border/70 bg-secondary/90 px-4 py-3 text-center text-sm font-medium"
+        >
+          You’re offline. Saved progress stays on this device; online content may be unavailable.
+        </div>
+      ) : null}
 
       <main className="relative z-10 mx-auto w-full max-w-md [&_[data-slot=card]]:gap-4 [&_[data-slot=card]]:py-4 [&_[data-slot=card-content]]:px-4 [&_[data-slot=card-header]]:px-4">
         {children}
