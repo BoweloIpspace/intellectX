@@ -77,7 +77,7 @@ function MobilePastPaperUnavailable() {
         This build is not connected to the IntellectX learning database.
       </p>
       <Button asChild className="mt-5 w-full">
-        <Link href="/mobile-study">Back to Home</Link>
+        <Link href="/mobile-past-papers">Back to Exams</Link>
       </Button>
     </section>
   );
@@ -149,9 +149,9 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
   return (
     <section className="space-y-4">
       <Button asChild size="sm" variant="ghost" className="-ml-2">
-        <Link href={`/mobile-quizzes?course=${encodeURIComponent(courseId)}`}>
+        <Link href="/mobile-past-papers">
           <ArrowLeftIcon className="size-4" />
-          Course
+          Exams
         </Link>
       </Button>
 
@@ -295,7 +295,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
       <section className="rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
         <h1 className="text-xl font-semibold tracking-tight">Paper unavailable</h1>
         <Button asChild className="mt-5 w-full">
-          <Link href="/mobile-study">Back to Home</Link>
+          <Link href="/mobile-past-papers">Back to Exams</Link>
         </Button>
       </section>
     );
