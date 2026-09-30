@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
 import { useLearnerAccessState } from "@/lib/use-learner-access-state";
 import Link from "next/link";
+import { MarketingSection } from "@/components/ui/marketing-section";
 
 export function Hero() {
   const { isLoaded, isSignedIn } = useLearnerAccessState();
@@ -14,10 +15,10 @@ export function Hero() {
   const authenticated = isLoaded && isSignedIn;
 
   return (
-    <div className="z-1 grid w-full place-items-center px-8 pt-28 pb-8">
+    <MarketingSection className="relative z-1 pt-28 pb-8 sm:pt-32" innerClassName="grid place-items-center">
       <BackgroundBlur className="-top-40 md:-top-0" />
       <Nav />
-      <div className="flex flex-col items-center gap-6" aria-busy={authPending || undefined}>
+      <div className="flex w-full min-w-0 flex-col items-center gap-6" aria-busy={authPending || undefined}>
         <Pill>
           <p className="text-muted-foreground px-2 text-xs font-medium sm:text-sm" aria-live="polite">
             {authPending
@@ -28,14 +29,14 @@ export function Hero() {
           </p>
         </Pill>
 
-        <h1 className="text-center text-4xl leading-[1.1] font-medium tracking-tight sm:text-7xl">
+        <h1 className="max-w-5xl text-balance text-center text-[2.65rem] leading-[1.02] font-semibold tracking-[-0.05em] sm:text-6xl md:text-7xl">
           {authenticated ? "Welcome back." : "IntellectX"}
           <span className="text-muted-foreground block">
             {authPending ? "Preparing Your Workspace." : authenticated ? "Keep Your Momentum." : "Learns With You."}
           </span>
         </h1>
 
-        <p className="max-w-lg text-center leading-6 tracking-tight sm:text-xl">
+        <p className="max-w-xl text-balance text-center text-sm leading-6 tracking-tight sm:text-lg md:text-xl">
           {authPending
             ? "Checking your session before showing the correct learning state."
             : authenticated
@@ -43,7 +44,7 @@ export function Hero() {
               : "AI-guided courses, adaptive quizzes, and focused study workflows for students who want momentum without the noise."}
         </p>
 
-        <div className="mb-10 flex flex-col gap-3 sm:flex-row">
+        <div className="mb-6 flex w-full max-w-sm flex-col gap-3 sm:mb-10 sm:w-auto sm:max-w-none sm:flex-row">
           {authPending ? (
             <Button size="lg" disabled aria-disabled="true">
               Checking session…
@@ -66,7 +67,7 @@ export function Hero() {
 
         <HeroInsightChart />
       </div>
-    </div>
+    </MarketingSection>
   );
 }
 
