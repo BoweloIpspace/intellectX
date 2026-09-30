@@ -6,6 +6,7 @@ import {
   BookOpenCheckIcon,
   FileTextIcon,
    HomeIcon,
+  SparklesIcon,
   TrophyIcon,
   UserCircleIcon,
 } from "lucide-react";
@@ -69,7 +70,10 @@ export function MobileAppShell({ children }: MobileAppShellProps) {
       <BackgroundBlur className="-top-48" />
 
       <div className="relative z-20 mx-auto mb-5 flex w-full max-w-lg items-center justify-between gap-3 px-1">
-        <Link href="/mobile-study" className="flex min-h-11 touch-manipulation items-center text-xl font-bold tracking-[-0.045em]">
+        <Link href="/mobile-study" className="flex min-h-11 touch-manipulation items-center gap-2.5 text-xl font-bold tracking-[-0.045em]">
+          <span className="grid size-9 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/15">
+            <SparklesIcon className="size-4.5" />
+          </span>
           intellectX
         </Link>
 
