@@ -1,7 +1,6 @@
 "use client";
 
 import { BackgroundBlur } from "@/components/ui/background-blur";
-import { isMobileAppRuntime } from "@/lib/feature-scope";
 import { cn } from "@/lib/utils";
 import {
   BookOpenCheckIcon,
@@ -20,8 +19,6 @@ const nativeTabs = [
   { href: "/mobile-past-papers", label: "Exams", icon: FileTextIcon },
   { href: "/mobile-progress", label: "Progress", icon: TrophyIcon },
 ];
-
-const webPreviewTabs = nativeTabs;
 
 type MobileAppShellProps = {
   children: React.ReactNode;
@@ -49,11 +46,9 @@ function isTabActive(pathname: string, href: string) {
 
 export function MobileAppShell({ children }: MobileAppShellProps) {
   const pathname = usePathname();
-  const [nativeAppSurface, setNativeAppSurface] = useState(true);
   const [online, setOnline] = useState(true);
 
   useEffect(() => {
-    setNativeAppSurface(isMobileAppRuntime());
     const syncOnlineState = () => setOnline(navigator.onLine);
     syncOnlineState();
     window.addEventListener("online", syncOnlineState);
@@ -65,7 +60,6 @@ export function MobileAppShell({ children }: MobileAppShellProps) {
     };
   }, []);
 
-  const tabs = nativeAppSurface ? nativeTabs : webPreviewTabs;
 
   return (
     <div
@@ -112,7 +106,7 @@ export function MobileAppShell({ children }: MobileAppShellProps) {
         className="fixed inset-x-0 bottom-0 z-30 border-t border-white/70 bg-background/92 px-3 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-18px_40px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10"
       >
         <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
-          {tabs.map((tab) => {
+          {nativeTabs.map((tab) => {
             const Icon = tab.icon;
             const active = isTabActive(pathname, tab.href);
 
