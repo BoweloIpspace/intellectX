@@ -34,18 +34,18 @@ export function AuthPageShell({ mode, demoEntry }: AuthPageShellProps) {
 
   return (
     <>
-      <div className="relative isolate min-h-dvh overflow-hidden px-4 pt-24 pb-6 sm:px-6 lg:px-10 lg:pt-28 lg:pb-10">
+      <div className="intellectx-auth-surface relative isolate min-h-dvh overflow-hidden px-4 pt-[calc(5.75rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-10 lg:pt-28 lg:pb-10">
         <BackgroundBlur className="-top-40 md:-top-0" />
         <Nav />
-        <main className="mx-auto grid min-h-[calc(100dvh-7.5rem)] w-full max-w-md items-center gap-6 lg:max-w-6xl lg:grid-cols-[1fr_440px] lg:gap-10">
-          <section className="hidden max-w-2xl lg:block">
+        <main className="mx-auto grid min-h-[calc(100dvh-7.5rem)] w-full max-w-lg content-center gap-5 lg:max-w-6xl lg:grid-cols-[1fr_440px] lg:items-center lg:gap-10">
+          <section className="max-w-2xl px-1 lg:block">
             <p className="text-muted-foreground mb-4 text-xs font-semibold tracking-[0.18em] uppercase">
               IntellectX learner access
             </p>
-            <h1 className="text-4xl leading-[1.08] font-medium tracking-tight md:text-6xl">
+            <h1 className="text-[2.15rem] leading-[1.02] font-semibold tracking-[-0.045em] sm:text-5xl md:text-6xl">
               {shellCopy.title}
             </h1>
-            <p className="text-muted-foreground mt-5 max-w-xl leading-7">
+            <p className="text-muted-foreground mt-3 max-w-xl text-sm leading-6 sm:mt-5 sm:text-base sm:leading-7">
               {shellCopy.description}
             </p>
           </section>
