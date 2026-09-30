@@ -8,14 +8,14 @@ const authPanelSource = readFileSync(
 );
 
 describe("Clerk auth card visual restoration contract", () => {
-  it("restores the original IntellectX card treatment without the later security callout or spacing overrides", () => {
+  it("keeps the IntellectX auth card branded, responsive, and free of security-noise callouts", () => {
     expect(authPanelSource).not.toContain("ShieldCheckIcon");
     expect(authPanelSource).not.toContain("Clerk securely verifies the account");
     expect(authPanelSource).not.toContain('borderRadius: "0.5rem"');
-    expect(authPanelSource).not.toContain('main: "gap-4"');
-    expect(authPanelSource).not.toContain('form: "gap-4"');
-    expect(authPanelSource).not.toContain('footer: "mt-5 border-t border-border/60 pt-5"');
-    expect(authPanelSource).toContain('<CardContent>');
+    expect(authPanelSource).toContain("rounded-[1.75rem]");
+    expect(authPanelSource).toContain("min-h-12");
+    expect(authPanelSource).toContain("backdrop-blur-xl");
+    expect(authPanelSource).toContain('<CardContent className="px-5 pb-6 sm:px-7 sm:pb-7">');
   });
 
   it("preserves current Clerk authentication and trusted post-login routing behavior", () => {
@@ -24,5 +24,6 @@ describe("Clerk auth card visual restoration contract", () => {
     expect(authPanelSource).toContain("CLERK_LOGIN_REDIRECT_URL");
     expect(authPanelSource).toContain("CLERK_SIGNUP_REDIRECT_URL");
     expect(authPanelSource).toContain('label="Checking your IntellectX session"');
+    expect(authPanelSource).toContain('oauthFlow="redirect"');
   });
 });
