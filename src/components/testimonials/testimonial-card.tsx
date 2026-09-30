@@ -7,7 +7,7 @@ type Props = {
 
 export function TestimonialCard({ testimonial }: Props) {
   return (
-    <div className="bg-card flex h-auto w-xs flex-col gap-2 rounded-xl p-7 shadow-md md:w-[24rem] md:p-8">
+    <div className="bg-card flex h-auto w-[min(20rem,calc(100vw-2rem))] min-w-0 flex-col gap-2 rounded-xl p-5 shadow-md sm:p-7 md:w-[24rem] md:p-8">
       <div className="mb-1 text-lg font-semibold">{testimonial.title}</div>
       <div className="mb-2 flex items-center gap-px">
         {[...Array(testimonial.rating)].map((_, i) => (
