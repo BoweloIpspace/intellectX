@@ -6,8 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   BookOpenCheckIcon,
   FileTextIcon,
-  GalleryVerticalEndIcon,
-  HomeIcon,
+   HomeIcon,
   TrophyIcon,
   UserCircleIcon,
 } from "lucide-react";
@@ -17,9 +16,9 @@ import { useEffect, useState } from "react";
 
 const nativeTabs = [
   { href: "/mobile-study", label: "Home", icon: HomeIcon },
-  { href: "/mobile-infographies", label: "Infographies", icon: GalleryVerticalEndIcon },
   { href: "/mobile-quizzes", label: "Quizzes", icon: BookOpenCheckIcon },
   { href: "/mobile-past-papers", label: "Exams", icon: FileTextIcon },
+  { href: "/mobile-progress", label: "Progress", icon: TrophyIcon },
 ];
 
 const webPreviewTabs = nativeTabs;
@@ -39,6 +38,10 @@ function isTabActive(pathname: string, href: string) {
 
   if (href === "/mobile-past-papers") {
     return pathname === href || pathname.startsWith("/mobile-past-papers/") || pathname.startsWith("/mobile-mat111-exams");
+  }
+
+  if (href === "/mobile-progress") {
+    return pathname === href;
   }
 
   return pathname === href;
@@ -67,17 +70,7 @@ export function MobileAppShell({ children }: MobileAppShellProps) {
         </Link>
 
         <div className="relative flex items-center gap-1" aria-label="Learner shortcuts">
-          <Link
-            href="/mobile-progress"
-            aria-label="Progress"
-            className={cn(
-              "grid size-10 place-items-center rounded-full text-foreground transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              pathname === "/mobile-progress" && "bg-secondary",
-            )}
-          >
-            <TrophyIcon className="size-5" />
-          </Link>
-          <Link
+           <Link
             href="/mobile-profile"
             aria-label="Profile"
             className={cn(
