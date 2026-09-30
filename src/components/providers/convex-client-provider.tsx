@@ -66,13 +66,13 @@ export function ConvexClientProvider({ children }: ConvexClientProviderProps) {
 
   return (
     <ClerkProvider
-        publishableKey={clerkPublishableKey}
-        signInUrl="/login"
-        signUpUrl="/signup"
-        signInFallbackRedirectUrl="/auth/continue"
-        signUpFallbackRedirectUrl="/onboarding"
-        afterSignOutUrl="/"
-      >
+      publishableKey={clerkPublishableKey}
+      signInUrl="/login"
+      signUpUrl="/signup"
+      signInFallbackRedirectUrl="/auth/continue"
+      signUpFallbackRedirectUrl="/onboarding"
+      afterSignOutUrl="/"
+    >
       <ClerkLearnerAuthRuntimeProvider>
         <ConvexProviderWithClerk client={client} useAuth={useAuth}>
           {children}
