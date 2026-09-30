@@ -2,6 +2,7 @@ import { FeaturesCarousel } from "@/components/features/features-carousel";
 import { FeaturesTabs } from "@/components/features/features-tabs";
 import { Badge } from "@/components/ui/badge";
 import { FileQuestionIcon, FileTextIcon, PlaySquareIcon } from "lucide-react";
+import { MarketingSection } from "@/components/ui/marketing-section";
 
 export type FeatureVisualType = "notes" | "quizzes" | "videos";
 
@@ -35,7 +36,7 @@ const features = [
 
 export function Features() {
   return (
-    <div id="features" className="flex w-full flex-col items-center gap-6 px-6 py-14 md:px-10 md:py-25">
+    <MarketingSection id="features" className="py-14 md:py-24" innerClassName="flex flex-col items-center gap-6">
       <Badge variant="secondary" className="uppercase">
         Features
       </Badge>
@@ -48,6 +49,6 @@ export function Features() {
       </p>
       <FeaturesCarousel features={features} className="block lg:hidden" />
       <FeaturesTabs features={features} className="hidden lg:block" />
-    </div>
+    </MarketingSection>
   );
 }
