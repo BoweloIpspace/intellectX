@@ -1,6 +1,8 @@
 const SAFE_MOBILE_RETURN_PREFIXES = [
   "/mobile-study",
   "/mobile-quizzes",
+  "/mobile-infographies",
+  "/mobile-past-papers",
   "/mobile-progress",
   "/mobile-profile",
   "/quiz/",
