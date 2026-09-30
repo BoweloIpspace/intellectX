@@ -20,12 +20,12 @@ describe("mobile learner UX checklist", () => {
     const shell = source("src/components/education/mobile-app-shell.tsx");
     expect(shell).toContain("intellectX");
     expect(shell).toContain('label: "Home"');
-    expect(shell).toContain('label: "Infographies"');
     expect(shell).toContain('label: "Quizzes"');
     expect(shell).toContain('label: "Exams"');
+    expect(shell).toContain('label: "Progress"');
+    expect(shell).not.toContain('label: "Infographies"');
     expect(shell).not.toContain('aria-label="Notifications"');
     expect(shell).not.toContain("No new notifications.");
-    expect(shell).toContain('aria-label="Progress"');
     expect(shell).toContain('aria-label="Profile"');
     expect(shell).toContain("grid-cols-4");
     expect(shell).toContain('pathname.startsWith("/mobile-study/")');
@@ -116,6 +116,14 @@ describe("mobile learner UX checklist", () => {
     expect(learnerForm).not.toContain('window.location.replace("/mobile-quizzes?setup=1")');
     expect(errorPage).toContain("You're offline.");
     expect(errorPage).toContain("intellectX");
+  });
+
+  it("surfaces native network loss without discarding device-saved study state", () => {
+    const shell = source("src/components/education/mobile-app-shell.tsx");
+    expect(shell).toContain('window.addEventListener("offline", syncOnlineState)');
+    expect(shell).toContain('window.addEventListener("online", syncOnlineState)');
+    expect(shell).toContain('data-testid="mobile-offline-banner"');
+    expect(shell).toContain("Saved progress stays on this device");
   });
 
   it("centers the global navigation spinner in the viewport", () => {
