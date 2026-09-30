@@ -319,6 +319,16 @@ test("native app redirects flashcards and other web-only routes back through mob
   await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
 });
 
+test("exam empty and recovery navigation stays inside the Exams flow", async ({ page }) => {
+  await simulateNativeAndroid(page, true);
+  await seedLocalLearner(page);
+  await seedCourseSelection(page);
+
+  await page.goto("/mobile-past-papers?course=ai-study-systems");
+  const backToExams = page.getByRole("link", { name: "Exams", exact: true }).first();
+  await expect(backToExams).toHaveAttribute("href", "/mobile-past-papers");
+});
+
 test("native progress and profile routes remain inside the learner product", async ({ page }) => {
   await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
