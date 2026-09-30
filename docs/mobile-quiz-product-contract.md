@@ -12,12 +12,14 @@ Monetization and the broader course-authoring platform remain outside the native
 
 ## Native navigation
 
-The native bottom navigation is fixed to four destinations:
+The native bottom navigation is fixed to four task-oriented destinations:
 
 1. **Home** — `/mobile-study`
-2. **Quizzes** — `/mobile-quizzes`, `/quiz/...`, `/mobile-past-papers`, and `/mobile-past-papers/...`
-3. **Progress** — `/mobile-progress`
-4. **Profile** — `/mobile-profile`
+2. **Quizzes** — `/mobile-quizzes` and `/quiz/...`
+3. **Exams** — `/mobile-past-papers` and `/mobile-past-papers/...`
+4. **Progress** — `/mobile-progress`
+
+**Profile** remains globally available from the account shortcut in the app header. **Infographies** are contextual study content reached from course/topic flows rather than a permanent global destination.
 
 The Capacitor app starts on `/mobile-study`.
 
@@ -61,7 +63,7 @@ Those capabilities may continue to exist in the web application. They are not pa
 
 - `src/lib/feature-scope.ts` is the authoritative native feature/route allowlist.
 - `NativeMobileSurfaceBoundary` redirects web-only native navigation back to mobile Home.
-- `MobileAppShell` exposes only Home, Quizzes, Progress, and Profile in Capacitor.
+- `MobileAppShell` exposes Home, Quizzes, Exams, and Progress as persistent task navigation in Capacitor, with Profile available from the header account shortcut.
 - `src/lib/mobile-study-state.ts` owns resumable quiz/past-paper practice state.
 - `src/lib/local-learner-profile-data.ts` keeps learner-local study data isolated across local profiles.
 - Unit, Playwright, Android build, and emulator lifecycle coverage enforce the native contract.
