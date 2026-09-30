@@ -24,7 +24,7 @@ export function AuthPageShell({ mode, demoEntry }: AuthPageShellProps) {
         description:
           mode === "login"
             ? "Sign in once. Trusted Clerk claims route learners, instructors, and admins without exposing a client-side role switch."
-            : "Sign in to load your IntellectX courses, progress, quizzes, and study profile through your account-backed learner session.",
+            : "Create your account to sync IntellectX courses, progress, quizzes, and your study profile across supported devices.",
       }
     : {
         title: "Learner access for this browser.",
