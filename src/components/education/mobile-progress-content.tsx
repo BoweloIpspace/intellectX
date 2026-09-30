@@ -126,7 +126,7 @@ export function MobileProgressContent() {
             <div className="text-muted-foreground grid gap-3 text-sm leading-6">
               <p>Past papers you start will appear here with their saved question position and completion state.</p>
               <Button asChild variant="outline" className="w-fit">
-                <Link href="/mobile-study">Choose a course</Link>
+                <Link href="/mobile-past-papers">Browse exams</Link>
               </Button>
             </div>
           )}
