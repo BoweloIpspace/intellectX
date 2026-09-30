@@ -15,11 +15,21 @@ describe("server route guard policy", () => {
       ).toBe(false);
     });
 
+    it("fails closed in production when Clerk is incomplete", () => {
+      expect(() => isServerRouteGuardEnabled({ NODE_ENV: "production" })).toThrow(
+        "Production authentication is not configured",
+      );
+      expect(() =>
+        isServerRouteGuardEnabled({ NODE_ENV: "production", CLERK_SECRET_KEY: "sk_live_1" }),
+      ).toThrow("Production authentication is not configured");
+    });
+
     it("is enabled only when both Clerk keys are present", () => {
       expect(
         isServerRouteGuardEnabled({
           CLERK_SECRET_KEY: "sk_test_1",
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_1",
+          NODE_ENV: "production",
         }),
       ).toBe(true);
     });
