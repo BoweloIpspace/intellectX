@@ -1,9 +1,9 @@
 "use client";
 
-import { elevatedGlassCardClassName } from "@/components/education/glass-card";
 import { ProgressBar } from "@/components/education/progress-bar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { CardContent, CardHeader } from "@/components/ui/card";
+import { MobileSurface } from "@/components/ui/mobile-app-primitives";
 import type { Quiz } from "@/data/quizzes";
 import {
   clearMobileQuizProgress,
@@ -302,16 +302,16 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
 
   if (!question) {
     return (
-      <Card className={`rounded-lg ${elevatedGlassCardClassName}`}>
+      <MobileSurface>
         <CardContent className="py-6 text-sm text-muted-foreground">No questions are published for this quiz yet.</CardContent>
-      </Card>
+      </MobileSurface>
     );
   }
 
   if (results) {
     const hasMcq = results.totalQuestions > 0;
     return (
-      <Card className={`rounded-lg ${elevatedGlassCardClassName}`}>
+      <MobileSurface>
         <CardHeader>
           <p className="text-sm text-muted-foreground">Final results</p>
           <h2 className="text-3xl font-semibold tracking-tight">
@@ -354,12 +354,12 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
             Try again
           </Button>
         </CardContent>
-      </Card>
+      </MobileSurface>
     );
   }
 
   return (
-    <Card className={`rounded-lg ${elevatedGlassCardClassName}`}>
+    <MobileSurface>
       <CardHeader>
         <div className="mb-2 space-y-2">
           <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
@@ -412,7 +412,7 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
                   disabled={Boolean(feedback) || busy}
                   onClick={() => setSelectedIndex(index)}
                   className={cn(
-                    "flex min-h-14 w-full items-center gap-3 rounded-lg border bg-white/70 px-4 py-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 dark:bg-card/70",
+                    "flex min-h-14 w-full touch-manipulation items-center gap-3 rounded-xl border bg-white/72 px-4 py-3 text-left text-base leading-5 transition-all active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 dark:bg-card/72",
                     selected && "border-primary bg-secondary/70",
                     correct && "border-success bg-success/10",
                     incorrect && "border-destructive bg-destructive/10",
@@ -463,6 +463,6 @@ export function MixedQuizPlayer({ quiz }: { quiz: Quiz }) {
           ) : null}
         </div>
       </CardContent>
-    </Card>
+    </MobileSurface>
   );
 }
