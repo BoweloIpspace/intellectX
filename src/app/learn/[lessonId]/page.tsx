@@ -6,6 +6,7 @@ import { SubjectMark } from "@/components/education/subject-mark";
 import { VideoPlayer } from "@/components/education/video-player";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AppPageHeader, AppPageStack, AppSurface } from "@/components/ui/app-page-primitives";
 import { getLearnerLessonPageDetail } from "@/lib/learner-detail";
 import { ArrowRightIcon, ClockIcon, FileQuestionIcon } from "lucide-react";
 import type { Metadata } from "next";
@@ -40,8 +41,15 @@ export default async function LessonPage({ params }: LessonPageProps) {
   return (
     <PageShell>
       <LessonProgressSync lessonId={lesson.id} />
-      <article>
-        <section className="mb-8 max-w-4xl">
+      <AppPageStack>
+        <AppPageHeader
+          eyebrow={course.title}
+          title={lesson.title}
+          description={lesson.summary}
+          meta={<p className="text-muted-foreground inline-flex items-center gap-2 text-sm"><ClockIcon className="size-4" />{lesson.duration}</p>}
+        />
+        <article>
+          <div className="sr-only">
           <Badge variant="secondary" className="mb-5 gap-2">
             {course && (
               <SubjectMark
@@ -51,13 +59,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
             )}
             {course?.title}
           </Badge>
-          <h1 className="text-4xl leading-[1.1] font-medium tracking-tight md:text-6xl">{lesson.title}</h1>
-          <p className="text-muted-foreground mt-4 leading-6">{lesson.summary}</p>
-          <p className="text-muted-foreground mt-4 inline-flex items-center gap-2 text-sm">
-            <ClockIcon className="size-4" />
-            {lesson.duration}
-          </p>
-        </section>
+          </Badge>
+          </div>
         <section className="space-y-6">
           <div className="space-y-6">
             <div>
@@ -69,14 +72,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 playlist={detail.lessons}
               />
             </div>
-            <section id="lesson-flashcards" aria-label="Lesson notes" className="scroll-mt-28 py-2">
+            <AppSurface id="lesson-flashcards" aria-label="Lesson notes" className="scroll-mt-28 p-5 sm:p-6 md:p-8">
               <div className="space-y-6 text-base leading-8 md:text-lg">
                 {lesson.content.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
                 {lesson.blocks && <LessonBlockRenderer blocks={lesson.blocks} />}
               </div>
-            </section>
+            </AppSurface>
           </div>
         </section>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -101,7 +104,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
             <Link href={`/courses/${course.id}`}>Back to course</Link>
           </Button>
         </div>
-      </article>
+        </article>
+      </AppPageStack>
     </PageShell>
   );
 }
