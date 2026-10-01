@@ -1,9 +1,9 @@
 import { CourseContinueAction } from "@/components/education/course-continue-action";
 import { CourseProgressSummary } from "@/components/education/course-progress-summary";
-import { clickableGlassCardClassName, glassCardClassName } from "@/components/education/glass-card";
 import { PageShell } from "@/components/education/page-shell";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppListRow, AppPageStack, AppSurface } from "@/components/ui/app-page-primitives";
 import { getLearnerCourseDetail } from "@/lib/learner-catalog";
 import { BookOpenIcon, ClockIcon, FileQuestionIcon } from "lucide-react";
 import type { Metadata } from "next";
@@ -38,9 +38,8 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
   return (
     <PageShell>
-      <section
-        className={`mb-8 rounded-lg border border-white/70 bg-gradient-to-br p-8 shadow-3xl dark:border-white/10 dark:via-card/50 ${course.accent}`}
-      >
+      <AppPageStack>
+      <AppSurface className={`bg-gradient-to-br p-5 sm:p-7 md:p-8 ${course.accent}`}>
         <div className="max-w-3xl">
           <Badge variant="secondary" className="mb-4">
             {course.level}
@@ -65,28 +64,22 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
           <CourseProgressSummary lessonIds={lessons.map((lesson) => lesson.id)} />
           <CourseContinueAction lessons={lessons} />
         </div>
-      </section>
+      </AppSurface>
       <section className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <Card className={`rounded-lg ${glassCardClassName}`}>
+        <AppSurface>
           <CardHeader>
             <CardTitle>Lessons</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
             {lessons.length > 0 ? (
               lessons.map((lesson, index) => (
-                <Link
+                <AppListRow
                   key={lesson.id}
                   href={`/learn/${lesson.id}`}
-                  className={`bg-secondary/40 hover:bg-secondary flex flex-col gap-3 rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between ${clickableGlassCardClassName}`}
-                >
-                  <div>
-                    <p className="font-medium">
-                      {index + 1}. {lesson.title}
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-sm">{lesson.summary}</p>
-                  </div>
-                  <span className="text-muted-foreground shrink-0 text-sm sm:pl-4">{lesson.duration}</span>
-                </Link>
+                  title={`${index + 1}. ${lesson.title}`}
+                  subtitle={lesson.summary}
+                  trailing={<span className="text-muted-foreground text-sm">{lesson.duration}</span>}
+                />
               ))
             ) : (
               <div className="bg-secondary/40 rounded-lg p-4 text-sm text-muted-foreground">
@@ -94,22 +87,20 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               </div>
             )}
           </CardContent>
-        </Card>
-        <Card className={`rounded-lg ${glassCardClassName}`}>
+        </AppSurface>
+        <AppSurface>
           <CardHeader>
             <CardTitle>Knowledge checks</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
             {quizzes.length > 0 ? (
               quizzes.map((quiz) => (
-                <Link
+                <AppListRow
                   key={quiz.id}
                   href={`/quiz/${quiz.id}`}
-                  className={`bg-secondary/40 hover:bg-secondary rounded-lg p-4 ${clickableGlassCardClassName}`}
-                >
-                  <p className="font-medium">{quiz.title}</p>
-                  <p className="text-muted-foreground mt-1 text-sm">{quiz.estimatedTime}</p>
-                </Link>
+                  title={quiz.title}
+                  subtitle={quiz.estimatedTime}
+                />
               ))
             ) : (
               <div className="bg-secondary/40 rounded-lg p-4 text-sm text-muted-foreground">
@@ -117,8 +108,9 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               </div>
             )}
           </CardContent>
-        </Card>
+        </AppSurface>
       </section>
+      </AppPageStack>
     </PageShell>
   );
 }
