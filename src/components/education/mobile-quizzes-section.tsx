@@ -4,7 +4,7 @@ import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runti
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MobileEmptyState, MobileListRow, MobilePageHeader, MobilePageStack } from "@/components/ui/mobile-app-primitives";
+import { MobileEmptyState, MobileListRow, MobilePageHeader, MobilePageStack, MobileSurface } from "@/components/ui/mobile-app-primitives";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
 import {
   COURSE_SELECTION_CHANGE_EVENT,
@@ -198,20 +198,16 @@ function TopicQuizList({ catalog, courseId, topicId }: { catalog: LearnerCatalog
   }
 
   return (
-    <section className="space-y-4">
+    <MobilePageStack>
       <Button asChild size="sm" variant="ghost" className="-ml-2">
         <Link href={`/mobile-infographies?course=${encodeURIComponent(courseId)}&topic=${encodeURIComponent(topicId)}`}>
           <ArrowLeftIcon className="size-4" />
           Infographic
         </Link>
       </Button>
-      <div>
-        <Badge variant="secondary">Topic</Badge>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">{topic.title}</h1>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">{topic.summary}</p>
-      </div>
+      <MobilePageHeader eyebrow="Topic" title={topic.title} description={topic.summary} />
       <QuizCards catalog={catalog} quizzes={quizzes} mobileContext={{ courseId, topicId }} />
-    </section>
+    </MobilePageStack>
   );
 }
 
@@ -253,7 +249,7 @@ function QuizCards({
           : `/quiz/${quiz.id}?from=mobile`;
 
         return (
-          <article key={quiz.id} className="rounded-2xl border border-border/70 bg-background/70 p-5">
+          <MobileSurface key={quiz.id} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <span className="bg-primary text-primary-foreground grid size-10 place-items-center rounded-full">
                 <BookOpenCheckIcon className="size-5" />
@@ -282,7 +278,7 @@ function QuizCards({
                 <ArrowRightIcon className="size-4" />
               </Link>
             </Button>
-          </article>
+          </MobileSurface>
         );
       })}
     </div>
