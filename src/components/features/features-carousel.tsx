@@ -34,7 +34,7 @@ export function FeaturesCarousel({ features, className }: Props) {
           {features.map((feature, index) => (
             <CarouselItem
               key={feature.title}
-              className="basis-[88%] pl-3 sm:basis-[72%] md:basis-[58%]"
+              className="basis-full pl-3 sm:basis-[82%] md:basis-[64%]"
               onClick={() => {
                 carouselApi?.scrollTo(index);
                 setCurrent(index + 1);
