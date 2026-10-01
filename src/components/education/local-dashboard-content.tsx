@@ -2,12 +2,12 @@
 
 import { CourseCard } from "@/components/education/course-card";
 import { EmptyState } from "@/components/education/empty-state";
-import { clickableGlassCardClassName, glassCardClassName } from "@/components/education/glass-card";
 import { LocalQuizPerformance } from "@/components/education/local-quiz-performance";
 import { RecentQuizAttempts } from "@/components/education/recent-quiz-attempts";
 import { StatCard } from "@/components/education/stat-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppListRow, AppSurface } from "@/components/ui/app-page-primitives";
 import type { Course } from "@/data/courses";
 import {
   COURSE_SELECTION_CHANGE_EVENT,
@@ -172,36 +172,28 @@ export function LocalDashboardContent() {
           )}
         </div>
         <div className="grid gap-5">
-          <Card className={`rounded-lg ${glassCardClassName}`}>
+          <AppSurface>
             <CardHeader>
               <CardTitle>Study shortcuts</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
-              <Link
+              <AppListRow
                 href="/quizzes"
                 aria-label="Open quizzes"
-                className={`bg-secondary/40 hover:bg-secondary flex items-center gap-3 rounded-lg p-4 ${clickableGlassCardClassName}`}
-              >
-                <BookOpenCheckIcon className="size-5" />
-                <div>
-                  <p className="font-medium">Quizzes</p>
-                  <p className="text-muted-foreground mt-1 text-sm">Start your next knowledge check.</p>
-                </div>
-              </Link>
-              <Link
+                icon={BookOpenCheckIcon}
+                title="Quizzes"
+                subtitle="Start your next knowledge check."
+              />
+              <AppListRow
                 href="/flashcards"
                 aria-label="Open flashcards"
-                className={`bg-secondary/40 hover:bg-secondary flex items-center gap-3 rounded-lg p-4 ${clickableGlassCardClassName}`}
-              >
-                <Layers3Icon className="size-5" />
-                <div>
-                  <p className="font-medium">Flashcards</p>
-                  <p className="text-muted-foreground mt-1 text-sm">Review flashcard-style lesson cards.</p>
-                </div>
-              </Link>
+                icon={Layers3Icon}
+                title="Flashcards"
+                subtitle="Review flashcard-style lesson cards."
+              />
             </CardContent>
-          </Card>
-          <Card className={`rounded-lg ${glassCardClassName}`}>
+          </AppSurface>
+          <AppSurface>
             <CardHeader>
               <CardTitle>Recent lessons</CardTitle>
             </CardHeader>
@@ -209,16 +201,12 @@ export function LocalDashboardContent() {
               {recentLessons.length > 0 ? (
                 <div className="grid gap-3">
                   {recentLessons.map(({ lesson, lessonTitle, progress }) => (
-                    <Link
+                    <AppListRow
                       key={progress.lessonId}
                       href={`/learn/${lesson?.id ?? progress.lessonId}`}
-                      className={`bg-secondary/40 rounded-lg p-4 text-sm ${clickableGlassCardClassName}`}
-                    >
-                      <p className="font-medium">{lessonTitle}</p>
-                      <p className="text-muted-foreground mt-1">
-                        {progress.progress}% {progress.status.replace("_", " ")}
-                      </p>
-                    </Link>
+                      title={lessonTitle}
+                      subtitle={`${progress.progress}% ${progress.status.replace("_", " ")}`}
+                    />
                   ))}
                 </div>
               ) : (
@@ -227,10 +215,10 @@ export function LocalDashboardContent() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </AppSurface>
           <LocalQuizPerformance />
           <RecentQuizAttempts />
-          <Card className={`rounded-lg ${glassCardClassName}`}>
+          <AppSurface>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TargetIcon className="size-5" />
@@ -254,7 +242,7 @@ export function LocalDashboardContent() {
                 </Button>
               </div>
             </CardContent>
-          </Card>
+          </AppSurface>
         </div>
       </section>
     </>
