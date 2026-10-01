@@ -3,6 +3,7 @@
 import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runtime-provider";
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
+import { MobileEmptyState, MobileListRow, MobilePageHeader, MobilePageStack, MobileSurface } from "@/components/ui/mobile-app-primitives";
 import { Button } from "@/components/ui/button";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
@@ -186,33 +187,25 @@ function MobileStudyHomeContent({
 
   if (selectedCourses.length === 0) {
     return (
-      <section className="rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-        <BookOpenIcon className="mx-auto size-6" />
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Choose your courses</h1>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Home only shows courses you selected in Profile. Choose from the currently published learner catalog to continue.
-        </p>
-        <Button asChild className="mt-5 w-full">
-          <Link href="/mobile-profile#course-selection">Choose courses in Profile</Link>
-        </Button>
-      </section>
+      <MobileEmptyState
+        icon={BookOpenIcon}
+        title="Choose your courses"
+        description="Home only shows courses you selected in Profile. Choose from the currently published learner catalog to continue."
+        action={<Button asChild><Link href="/mobile-profile#course-selection">Choose courses in Profile</Link></Button>}
+      />
     );
   }
 
   return (
-    <>
-      <section className="mb-6 flex flex-col items-start gap-4">
-        <Badge variant="secondary" className="uppercase">
-          My courses
-        </Badge>
-        <h1 className="text-3xl leading-[1.08] font-medium tracking-tight">Your courses</h1>
-        <p className="text-muted-foreground text-base leading-7">
-          These are the courses you chose in Profile. Open one to continue with its published study content.
-        </p>
-      </section>
+    <MobilePageStack>
+      <MobilePageHeader
+        eyebrow="My courses"
+        title="Your courses"
+        description="These are the courses you chose in Profile. Open one to continue with its published study content."
+      />
 
       {resumableActivity ? (
-        <section className="mb-5 rounded-lg border border-primary/25 bg-primary/5 p-5 shadow-sm" aria-label="Resume study">
+        <MobileSurface className="border-primary/20 bg-primary/5 p-5" aria-label="Resume study">
           <div className="flex items-start gap-3">
             <span className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-full">
               <PlayCircleIcon className="size-5" />
@@ -228,7 +221,7 @@ function MobileStudyHomeContent({
           <Button asChild className="mt-4 min-h-11 w-full">
             <Link href={resumableActivity.href}>Continue</Link>
           </Button>
-        </section>
+        </MobileSurface>
       ) : null}
 
       <section className="grid gap-3">
@@ -253,24 +246,15 @@ function MobileStudyHomeContent({
           const Icon = paperCount > 0 && quizCount === 0 ? FileTextIcon : quizCount > 0 ? BookOpenCheckIcon : BookOpenIcon;
 
           return (
-            <Link
+            <MobileListRow
               key={course.id}
               href={`/mobile-study/${encodeURIComponent(course.id)}`}
-              className="animate-widget flex min-h-36 items-center gap-4 rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-card/60"
-            >
-              <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-full">
-                <Icon className="size-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-lg font-semibold tracking-tight text-foreground">{course.title}</span>
-                <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
-                <span className="text-muted-foreground mt-2 block text-xs">
-                  {contentSummary || "No published study content"}
-                  {topicIds.size > 0 ? ` · ${topicIds.size} ${topicIds.size === 1 ? "topic" : "topics"}` : ""}
-                </span>
-              </span>
-              <ArrowRightIcon className="size-5 shrink-0" />
-            </Link>
+              icon={Icon}
+              title={course.title}
+              subtitle={course.subject}
+              meta={`${contentSummary || "No published study content"}${topicIds.size > 0 ? ` · ${topicIds.size} ${topicIds.size === 1 ? "topic" : "topics"}` : ""}`}
+              trailing={<ArrowRightIcon className="size-5" />}
+            />
           );
         })}
 
@@ -278,7 +262,7 @@ function MobileStudyHomeContent({
           <Link href="/mobile-profile#course-selection">Change courses in Profile</Link>
         </Button>
       </section>
-    </>
+    </MobilePageStack>
   );
 }
 
