@@ -2,7 +2,6 @@
 
 import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runtime-provider";
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MobileEmptyState, MobileListRow, MobilePageHeader, MobilePageStack } from "@/components/ui/mobile-app-primitives";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
