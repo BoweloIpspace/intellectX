@@ -39,7 +39,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   return (
     <PageShell>
       <AppPageStack>
-      <AppSurface className={`bg-gradient-to-br p-5 sm:p-7 md:p-8 ${course.accent}`}>
+        <AppSurface className={`bg-gradient-to-br p-5 sm:p-7 md:p-8 ${course.accent}`}>
         <div className="max-w-3xl">
           <Badge variant="secondary" className="mb-4">
             {course.level}
@@ -64,8 +64,8 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
           <CourseProgressSummary lessonIds={lessons.map((lesson) => lesson.id)} />
           <CourseContinueAction lessons={lessons} />
         </div>
-      </AppSurface>
-      <section className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
+        </AppSurface>
+        <section className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
         <AppSurface>
           <CardHeader>
             <CardTitle>Lessons</CardTitle>
@@ -109,7 +109,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
             )}
           </CardContent>
         </AppSurface>
-      </section>
+        </section>
       </AppPageStack>
     </PageShell>
   );
