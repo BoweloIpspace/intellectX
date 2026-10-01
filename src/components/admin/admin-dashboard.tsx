@@ -114,7 +114,7 @@ function ConvexAdminDashboard() {
 
   if (error) {
     return (
-      <Card className="rounded-lg border-rose-500/20 bg-rose-500/5">
+      <AppSurface className="border-rose-500/20 bg-rose-500/5">
         <CardContent className="flex items-start gap-3 py-8 text-sm">
           <AlertCircleIcon className="mt-0.5 size-5 shrink-0 text-rose-600" />
           <p>{error}</p>
