@@ -4,6 +4,7 @@ import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runti
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MobileEmptyState, MobileListRow, MobilePageHeader, MobilePageStack } from "@/components/ui/mobile-app-primitives";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
 import {
   COURSE_SELECTION_CHANGE_EVENT,
@@ -142,19 +143,13 @@ function SelectedCourseList({
   selection: CourseSelection;
 }) {
   return (
-    <section className="space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <Badge variant="secondary">Quizzes</Badge>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight">Choose a course</h1>
-          <p className="text-muted-foreground mt-2 text-sm">Only courses chosen in Profile appear here.</p>
-        </div>
-        {!selection.locked ? (
-          <Button asChild size="sm" variant="outline">
-            <Link href="/mobile-profile#course-selection">Change</Link>
-          </Button>
-        ) : null}
-      </div>
+    <MobilePageStack>
+      <MobilePageHeader
+        eyebrow="Quizzes"
+        title="Choose a course"
+        description="Only courses chosen in Profile appear here."
+        action={!selection.locked ? <Button asChild size="sm" variant="outline"><Link href="/mobile-profile#course-selection">Change</Link></Button> : null}
+      />
 
       <div className="grid gap-3">
         {courses.map((course) => {
@@ -164,27 +159,19 @@ function SelectedCourseList({
           const quizCount = catalog.quizzes.filter((quiz) => quiz.courseId === course.id).length;
 
           return (
-            <Link
+            <MobileListRow
               key={course.id}
               href={`/mobile-study/${encodeURIComponent(course.id)}`}
-              className="flex min-h-28 items-center gap-4 rounded-2xl border border-border/70 bg-background/70 p-5 transition hover:bg-secondary/50"
-            >
-              <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-full">
-                <BookOpenIcon className="size-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-lg font-semibold tracking-tight">{course.title}</span>
-                <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
-                <span className="text-muted-foreground mt-2 block text-xs">
-                  {topicCount} {topicCount === 1 ? "topic" : "topics"} · {quizCount} {quizCount === 1 ? "quiz" : "quizzes"}
-                </span>
-              </span>
-              <ArrowRightIcon className="size-5" />
-            </Link>
+              icon={BookOpenIcon}
+              title={course.title}
+              subtitle={course.subject}
+              meta={`${topicCount} ${topicCount === 1 ? "topic" : "topics"} · ${quizCount} ${quizCount === 1 ? "quiz" : "quizzes"}`}
+              trailing={<ArrowRightIcon className="size-5" />}
+            />
           );
         })}
       </div>
-    </section>
+    </MobilePageStack>
   );
 }
 
@@ -309,11 +296,5 @@ function MessageState({
   title: string;
   description?: string;
 }) {
-  return (
-    <section className="rounded-2xl border border-border/70 bg-background/70 p-6 text-center">
-      <BookOpenCheckIcon className="mx-auto size-6" />
-      <h2 className="mt-4 text-xl font-semibold tracking-tight">{title}</h2>
-      <p className="text-muted-foreground mt-2 text-sm leading-6">{description}</p>
-    </section>
-  );
+  return <MobileEmptyState icon={BookOpenCheckIcon} title={title} description={description} />;
 }
