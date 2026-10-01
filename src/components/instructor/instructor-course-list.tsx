@@ -188,7 +188,7 @@ function ConvexInstructorCourseList() {
           })}
         </section>
       ) : (
-        <section className={`rounded-lg border border-dashed p-8 text-center ${glassCardClassName}`}>
+        <AppSurface className="border-dashed p-8 text-center">
           <h2 className="text-xl font-semibold tracking-tight">No courses match this view</h2>
           <p className="text-muted-foreground mt-2 text-sm leading-6">
             {courses.length === 0
@@ -215,7 +215,7 @@ function ConvexInstructorCourseList() {
               </Link>
             </Button>
           </div>
-        </section>
+        </AppSurface>
       )}
     </div>
   );
