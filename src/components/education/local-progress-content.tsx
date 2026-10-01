@@ -3,11 +3,11 @@
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { CourseCard } from "@/components/education/course-card";
 import { EmptyState } from "@/components/education/empty-state";
-import { glassCardClassName } from "@/components/education/glass-card";
 import { LocalQuizAverageStat } from "@/components/education/local-quiz-average-stat";
 import { RecentQuizAttempts } from "@/components/education/recent-quiz-attempts";
 import { StreakCard } from "@/components/education/streak-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppMetricCard, AppSurface } from "@/components/ui/app-page-primitives";
 import type { Course } from "@/data/courses";
 import {
   COURSE_SELECTION_CHANGE_EVENT,
@@ -119,29 +119,24 @@ export function LocalProgressContent() {
   return (
     <>
       <section className="mb-8 grid gap-4 md:grid-cols-3">
-        <Card className={`rounded-lg ${glassCardClassName}`}>
-          <CardContent className="space-y-3">
-            <BookOpenCheckIcon className="size-5" />
-            <p className="text-3xl font-semibold tracking-tight">
-              {lessonSummary.lessonCount > 0 ? `${lessonSummary.lessonCount} lesson activity` : "No progress recorded yet"}
-            </p>
-            <p className="text-muted-foreground text-sm">
-              {lessonSummary.lessonCount > 0
-                ? `${lessonSummary.inProgressCount} in progress, ${lessonSummary.completedCount} completed.`
-                : "Complete lessons or quizzes to build progress in this browser."}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className={`rounded-lg ${glassCardClassName}`}>
-          <CardContent>
-            <TrophyIcon className="mb-3 size-5" />
-            <LocalQuizAverageStat />
-          </CardContent>
-        </Card>
+        <AppMetricCard
+          icon={BookOpenCheckIcon}
+          label="Lesson activity"
+          value={lessonSummary.lessonCount > 0 ? lessonSummary.lessonCount : "—"}
+          helper={
+            lessonSummary.lessonCount > 0
+              ? `${lessonSummary.inProgressCount} in progress, ${lessonSummary.completedCount} completed.`
+              : "Complete lessons or quizzes to build progress in this browser."
+          }
+        />
+        <AppSurface className="p-5">
+          <TrophyIcon className="mb-3 size-5" />
+          <LocalQuizAverageStat />
+        </AppSurface>
         <StreakCard compact summary={studyActivity} />
       </section>
       <section className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
-        <Card className={`rounded-lg ${glassCardClassName}`}>
+        <AppSurface>
           <CardHeader>
             <CardTitle>Selected courses</CardTitle>
           </CardHeader>
@@ -182,17 +177,17 @@ export function LocalProgressContent() {
               />
             )}
           </CardContent>
-        </Card>
+        </AppSurface>
         <div className="grid gap-5">
           <RecentQuizAttempts />
-          <Card className={`rounded-lg ${glassCardClassName}`}>
+          <AppSurface>
             <CardHeader>
               <CardTitle>Progress notes</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground text-sm leading-6">
               Account-backed quiz history, study profile, course selection, and lesson activity hydrate here when available.
             </CardContent>
-          </Card>
+          </AppSurface>
         </div>
       </section>
     </>
