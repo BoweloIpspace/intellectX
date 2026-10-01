@@ -4,6 +4,7 @@ import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runti
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MobileEmptyState, MobileListRow, MobilePageHeader, MobilePageStack, MobileSurface } from "@/components/ui/mobile-app-primitives";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
@@ -70,16 +71,12 @@ type PastPaperAnswer = {
 
 function MobilePastPaperUnavailable() {
   return (
-    <section className="rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-      <FileTextIcon className="mx-auto size-6" />
-      <h1 className="mt-4 text-xl font-semibold tracking-tight">Past papers are unavailable</h1>
-      <p className="text-muted-foreground mt-2 text-sm leading-6">
-        This build is not connected to the IntellectX learning database.
-      </p>
-      <Button asChild className="mt-5 w-full">
-        <Link href="/mobile-past-papers">Back to Exams</Link>
-      </Button>
-    </section>
+    <MobileEmptyState
+      icon={FileTextIcon}
+      title="Past papers are unavailable"
+      description="This build is not connected to the IntellectX learning database."
+      action={<Button asChild><Link href="/mobile-past-papers">Back to Exams</Link></Button>}
+    />
   );
 }
 
@@ -147,7 +144,7 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
   const progressByPaperId = new Map(readMobilePastPaperProgresses().map((progress) => [progress.paperId, progress]));
 
   return (
-    <section className="space-y-4">
+    <MobilePageStack>
       <Button asChild size="sm" variant="ghost" className="-ml-2">
         <Link href="/mobile-past-papers">
           <ArrowLeftIcon className="size-4" />
@@ -155,19 +152,18 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
         </Link>
       </Button>
 
-      <div className="rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-        <Badge variant="secondary">Past Papers</Badge>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Exam practice</h1>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Work through a paper one question at a time, use the supplied source material, then reveal the model answer when
-          you are ready. Unfinished papers resume on this device.
-        </p>
-      </div>
+      <MobilePageHeader
+        eyebrow="Past papers"
+        title="Exam practice"
+        description="Work through a paper one question at a time, use the supplied source material, then reveal the model answer when you are ready. Unfinished papers resume on this device."
+      />
 
       {papers.length === 0 ? (
-        <div className="rounded-lg border border-white/70 bg-white/60 p-5 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-          <p className="font-medium">No past papers are published for this course yet.</p>
-        </div>
+        <MobileEmptyState
+          icon={FileTextIcon}
+          title="No past papers published yet"
+          description="No past papers are published for this course yet."
+        />
       ) : (
         <div className="grid gap-3">
           {papers.map((paper) => {
@@ -187,27 +183,21 @@ function ConfiguredMobilePastPaperList({ courseId }: { courseId: string }) {
               .join(" · ");
 
             return (
-              <Link
+              <MobileListRow
                 key={paper.stableId}
                 href={`/mobile-past-papers/${paper.stableId}`}
-                className="animate-widget flex min-h-32 items-center gap-4 rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-white/10 dark:bg-card/60"
-              >
-                <span className="bg-primary text-primary-foreground grid size-11 shrink-0 place-items-center rounded-full">
-                  <FileTextIcon className="size-5" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-lg font-semibold tracking-tight">{paper.title}</span>
-                  <span className="text-muted-foreground mt-1 block text-sm">{paper.paperCode}</span>
-                  <span className="text-muted-foreground mt-2 block text-xs">{paperFacts}</span>
-                  {progressLabel ? <span className="mt-2 block text-xs font-medium text-primary">{progressLabel}</span> : null}
-                </span>
-                <ArrowRightIcon className="size-5 shrink-0" />
-              </Link>
+                icon={FileTextIcon}
+                title={paper.title}
+                subtitle={paper.paperCode}
+                meta={`${paperFacts}${progressLabel ? ` · ${progressLabel}` : ""}`}
+                trailing={<ArrowRightIcon className="size-5" />}
+                className="animate-widget"
+              />
             );
           })}
         </div>
       )}
-    </section>
+    </MobilePageStack>
   );
 }
 
@@ -292,23 +282,21 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
 
   if (!paper) {
     return (
-      <section className="rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-        <h1 className="text-xl font-semibold tracking-tight">Paper unavailable</h1>
-        <Button asChild className="mt-5 w-full">
-          <Link href="/mobile-past-papers">Back to Exams</Link>
-        </Button>
-      </section>
+      <MobileEmptyState
+        icon={FileTextIcon}
+        title="Paper unavailable"
+        action={<Button asChild><Link href="/mobile-past-papers">Back to Exams</Link></Button>}
+      />
     );
   }
 
   if (!current) {
     return (
-      <section className="rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-        <h1 className="text-xl font-semibold tracking-tight">No questions published yet</h1>
-        <Button asChild className="mt-5 w-full">
-          <Link href={`/mobile-past-papers?course=${encodeURIComponent(paper.courseStableId)}`}>Back to Past Papers</Link>
-        </Button>
-      </section>
+      <MobileEmptyState
+        icon={FileTextIcon}
+        title="No questions published yet"
+        action={<Button asChild><Link href={`/mobile-past-papers?course=${encodeURIComponent(paper.courseStableId)}`}>Back to Past Papers</Link></Button>}
+      />
     );
   }
 
@@ -322,8 +310,8 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
 
   if (finished) {
     return (
-      <section className="space-y-5">
-        <div className="rounded-lg border border-white/70 bg-white/60 p-6 text-center shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
+      <MobilePageStack>
+        <MobileSurface className="p-6 text-center">
           <CheckCircle2Icon className="mx-auto size-10" />
           <h1 className="mt-4 text-2xl font-semibold tracking-tight">Paper complete</h1>
           <p className="text-muted-foreground mt-2 text-sm leading-6">
@@ -333,7 +321,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
           {typeof paper.totalMarks === "number" ? (
             <p className="text-muted-foreground mt-2 text-xs">Paper total: {paper.totalMarks} marks</p>
           ) : null}
-        </div>
+        </MobileSurface>
         <Button className="min-h-12 w-full" onClick={restart}>
           <RotateCcwIcon className="size-4" />
           Try again
@@ -341,7 +329,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
         <Button asChild variant="outline" className="min-h-12 w-full">
           <Link href={`/mobile-past-papers?course=${encodeURIComponent(paper.courseStableId)}`}>Back to Past Papers</Link>
         </Button>
-      </section>
+      </MobilePageStack>
     );
   }
 
@@ -349,7 +337,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
   const hasStimulus = Boolean(current.stimulusTitle || current.stimulusText || current.stimulusAssetPath);
 
   return (
-    <section className="space-y-4">
+    <MobilePageStack>
       <Button asChild size="sm" variant="ghost" className="-ml-2">
         <Link href={`/mobile-past-papers?course=${encodeURIComponent(paper.courseStableId)}`}>
           <ArrowLeftIcon className="size-4" />
@@ -357,7 +345,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
         </Link>
       </Button>
 
-      <div className="rounded-lg border border-white/70 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
+      <MobileSurface className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -451,7 +439,7 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
             The model answer could not be loaded.
           </p>
         )}
-      </div>
+      </MobileSurface>
 
       <div className="grid grid-cols-2 gap-3">
         <Button
@@ -479,6 +467,6 @@ function ConfiguredMobilePastPaperRunner({ paperId }: { paperId: string }) {
           </Button>
         )}
       </div>
-    </section>
+    </MobilePageStack>
   );
 }
