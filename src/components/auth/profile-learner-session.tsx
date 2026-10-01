@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MobileSurface } from "@/components/ui/mobile-app-primitives";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { getClerkDisplayName } from "@/lib/auth-identity";
 import { isClerkAuthEnabled } from "@/lib/auth-mode";
@@ -33,7 +34,7 @@ function ClerkProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
   const { isLoaded, isSignedIn, user } = useUser();
 
   return (
-    <Card className={className}>
+    <MobileSurface className={className}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MonitorCheckIcon className="size-5" />
@@ -63,7 +64,7 @@ function ClerkProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
           </>
         )}
       </CardContent>
-    </Card>
+    </MobileSurface>
   );
 }
 
@@ -106,7 +107,7 @@ function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
   }
 
   return (
-    <Card className={className}>
+    <MobileSurface className={className}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MonitorCheckIcon className="size-5" />
@@ -134,7 +135,7 @@ function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
               </Button>
 
               {confirmingDelete ? (
-                <div className="border-destructive/30 bg-destructive/5 grid gap-3 rounded-lg border p-4">
+                <div className="border-destructive/30 bg-destructive/5 grid gap-3 rounded-xl border p-4">
                   <p className="text-destructive font-medium">Delete this local profile and its study data?</p>
                   <p>
                     This removes this profile&apos;s course selection, study profile, quiz history, unfinished quiz state,
@@ -172,6 +173,6 @@ function LocalProfileLearnerSession({ className }: ProfileLearnerSessionProps) {
           </>
         )}
       </CardContent>
-    </Card>
+    </MobileSurface>
   );
 }
