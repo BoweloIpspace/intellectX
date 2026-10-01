@@ -94,34 +94,10 @@ function ConvexInstructorDashboard() {
   return (
     <div className="space-y-8">
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <AppSurface>
-          <CardContent className="space-y-3">
-            <BookOpenIcon className="size-5" />
-            <p className="text-3xl font-semibold tracking-tight">{courses.length}</p>
-            <p className="text-muted-foreground text-sm">Total courses</p>
-          </CardContent>
-        </AppSurface>
-        <AppSurface>
-          <CardContent className="space-y-3">
-            <CircleDashedIcon className="size-5" />
-            <p className="text-3xl font-semibold tracking-tight">{draftCount}</p>
-            <p className="text-muted-foreground text-sm">Editable drafts</p>
-          </CardContent>
-        </AppSurface>
-        <AppSurface>
-          <CardContent className="space-y-3">
-            <Clock3Icon className="size-5" />
-            <p className="text-3xl font-semibold tracking-tight">{reviewCount}</p>
-            <p className="text-muted-foreground text-sm">Under review</p>
-          </CardContent>
-        </AppSurface>
-        <AppSurface>
-          <CardContent className="space-y-3">
-            <BookOpenCheckIcon className="size-5" />
-            <p className="text-3xl font-semibold tracking-tight">{publishedCount}</p>
-            <p className="text-muted-foreground text-sm">Published</p>
-          </CardContent>
-        </AppSurface>
+        <AppMetricCard icon={BookOpenIcon} label="Total courses" value={courses.length} />
+        <AppMetricCard icon={CircleDashedIcon} label="Editable drafts" value={draftCount} />
+        <AppMetricCard icon={Clock3Icon} label="Under review" value={reviewCount} />
+        <AppMetricCard icon={BookOpenCheckIcon} label="Published" value={publishedCount} />
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
