@@ -1,9 +1,9 @@
 "use client";
 
-import { glassCardClassName } from "@/components/education/glass-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppMetricCard, AppSurface } from "@/components/ui/app-page-primitives";
 import { convexApi } from "@/lib/convex-api";
 import { convexEnv } from "@/lib/education-data";
 import { useConvex, useConvexAuth } from "convex/react";
@@ -40,11 +40,11 @@ function formatDate(value: number) {
 export function AdminDashboard() {
   if (!convexEnv.isConfigured) {
     return (
-      <Card className={`rounded-lg ${glassCardClassName}`}>
+      <AppSurface>
         <CardContent className="py-12 text-center text-sm text-muted-foreground">
           Configure NEXT_PUBLIC_CONVEX_URL before using the production admin workspace.
         </CardContent>
-      </Card>
+      </AppSurface>
     );
   }
 
@@ -95,43 +95,43 @@ function ConvexAdminDashboard() {
 
   if (isLoading || loading) {
     return (
-      <Card className={`rounded-lg ${glassCardClassName}`}>
+      <AppSurface>
         <CardContent className="py-12 text-center text-sm text-muted-foreground">Loading admin workflow data…</CardContent>
-      </Card>
+      </AppSurface>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <Card className="rounded-lg border-rose-500/20 bg-rose-500/5">
+      <AppSurface className="border-rose-500/20 bg-rose-500/5">
         <CardContent className="flex items-start gap-3 py-8 text-sm">
           <AlertCircleIcon className="mt-0.5 size-5 shrink-0 text-rose-600" />
           <p>Convex did not authenticate this admin session. Verify Clerk JWT role claim propagation before using staff mutations.</p>
         </CardContent>
-      </Card>
+      </AppSurface>
     );
   }
 
   if (error) {
     return (
-      <Card className="rounded-lg border-rose-500/20 bg-rose-500/5">
+      <AppSurface className="border-rose-500/20 bg-rose-500/5">
         <CardContent className="flex items-start gap-3 py-8 text-sm">
           <AlertCircleIcon className="mt-0.5 size-5 shrink-0 text-rose-600" />
           <p>{error}</p>
         </CardContent>
-      </Card>
+      </AppSurface>
     );
   }
 
   return (
     <div className="space-y-6">
       <section className="grid gap-4 md:grid-cols-3">
-        <MetricCard label="Awaiting review" value={metrics.reviewQueue} icon={<BookOpenCheckIcon className="size-5" />} />
-        <MetricCard label="Changes requested" value={metrics.changesRequested} icon={<Clock3Icon className="size-5" />} />
-        <MetricCard label="Published courses" value={metrics.published} icon={<GraduationCapIcon className="size-5" />} />
+        <AppMetricCard label="Awaiting review" value={metrics.reviewQueue} icon={BookOpenCheckIcon} />
+        <AppMetricCard label="Changes requested" value={metrics.changesRequested} icon={Clock3Icon} />
+        <AppMetricCard label="Published courses" value={metrics.published} icon={GraduationCapIcon} />
       </section>
 
-      <Card className={`rounded-lg ${glassCardClassName}`}>
+      <AppSurface>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <div>
             <CardTitle>Recent course workflow</CardTitle>
@@ -168,21 +168,7 @@ function ConvexAdminDashboard() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </AppSurface>
     </div>
-  );
-}
-
-function MetricCard({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
-  return (
-    <Card className={`rounded-lg ${glassCardClassName}`}>
-      <CardContent className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-muted-foreground text-sm">{label}</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">{value}</p>
-        </div>
-        <div className="bg-secondary/60 rounded-lg p-3">{icon}</div>
-      </CardContent>
-    </Card>
   );
 }

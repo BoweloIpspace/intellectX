@@ -1,10 +1,10 @@
 "use client";
 
-import { clickableGlassCardClassName, glassCardClassName } from "@/components/education/glass-card";
 import { useInstructorCourses } from "@/components/instructor/use-instructor-courses";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppListRow, AppMetricCard, AppSurface } from "@/components/ui/app-page-primitives";
 import { convexEnv } from "@/lib/education-data";
 import {
   CHANGES_REQUESTED,
@@ -30,7 +30,7 @@ import Link from "next/link";
 
 function WorkspaceUnavailable() {
   return (
-    <Card className={`rounded-lg ${glassCardClassName}`}>
+    <AppSurface>
       <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
         <AlertCircleIcon className="text-muted-foreground size-8" />
         <div>
@@ -40,7 +40,7 @@ function WorkspaceUnavailable() {
           </p>
         </div>
       </CardContent>
-    </Card>
+    </AppSurface>
   );
 }
 
@@ -57,15 +57,15 @@ function ConvexInstructorDashboard() {
 
   if (loading) {
     return (
-      <Card className={`rounded-lg ${glassCardClassName}`}>
+      <AppSurface>
         <CardContent className="py-12 text-center text-sm text-muted-foreground">Loading instructor workspace…</CardContent>
-      </Card>
+      </AppSurface>
     );
   }
 
   if (error) {
     return (
-      <Card className="rounded-lg border-rose-500/20 bg-rose-500/5">
+      <AppSurface className="border-rose-500/20 bg-rose-500/5">
         <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
           <AlertCircleIcon className="size-7 text-rose-600" />
           <div>
@@ -79,7 +79,7 @@ function ConvexInstructorDashboard() {
             Retry
           </Button>
         </CardContent>
-      </Card>
+      </AppSurface>
     );
   }
 
@@ -94,38 +94,14 @@ function ConvexInstructorDashboard() {
   return (
     <div className="space-y-8">
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className={`rounded-lg ${glassCardClassName}`}>
-          <CardContent className="space-y-3">
-            <BookOpenIcon className="size-5" />
-            <p className="text-3xl font-semibold tracking-tight">{courses.length}</p>
-            <p className="text-muted-foreground text-sm">Total courses</p>
-          </CardContent>
-        </Card>
-        <Card className={`rounded-lg ${glassCardClassName}`}>
-          <CardContent className="space-y-3">
-            <CircleDashedIcon className="size-5" />
-            <p className="text-3xl font-semibold tracking-tight">{draftCount}</p>
-            <p className="text-muted-foreground text-sm">Editable drafts</p>
-          </CardContent>
-        </Card>
-        <Card className={`rounded-lg ${glassCardClassName}`}>
-          <CardContent className="space-y-3">
-            <Clock3Icon className="size-5" />
-            <p className="text-3xl font-semibold tracking-tight">{reviewCount}</p>
-            <p className="text-muted-foreground text-sm">Under review</p>
-          </CardContent>
-        </Card>
-        <Card className={`rounded-lg ${glassCardClassName}`}>
-          <CardContent className="space-y-3">
-            <BookOpenCheckIcon className="size-5" />
-            <p className="text-3xl font-semibold tracking-tight">{publishedCount}</p>
-            <p className="text-muted-foreground text-sm">Published</p>
-          </CardContent>
-        </Card>
+        <AppMetricCard icon={BookOpenIcon} label="Total courses" value={courses.length} />
+        <AppMetricCard icon={CircleDashedIcon} label="Editable drafts" value={draftCount} />
+        <AppMetricCard icon={Clock3Icon} label="Under review" value={reviewCount} />
+        <AppMetricCard icon={BookOpenCheckIcon} label="Published" value={publishedCount} />
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <Card className={`rounded-lg ${glassCardClassName}`}>
+        <AppSurface>
           <CardHeader className="flex flex-row items-center justify-between gap-4">
             <div>
               <CardTitle>Recent course activity</CardTitle>
@@ -141,26 +117,20 @@ function ConvexInstructorDashboard() {
                 const status = resolveInstructorCourseStatus(course);
 
                 return (
-                  <Link
+                  <AppListRow
                     key={course.stableId}
                     href={`/instructor/courses/new?edit=${encodeURIComponent(course.stableId)}`}
-                    className={`bg-secondary/40 hover:bg-secondary flex flex-col gap-3 rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between ${clickableGlassCardClassName}`}
-                  >
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-medium">{course.title}</p>
+                    title={
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span>{course.title}</span>
                         <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${instructorCourseStatusTone[status]}`}>
                           {instructorCourseStatusLabels[status]}
                         </span>
-                      </div>
-                      <p className="text-muted-foreground mt-1 text-sm">
-                        {course.subject} · {course.lessonCount} lessons · {course.quizCount} quizzes
-                      </p>
-                    </div>
-                    <p className="text-muted-foreground shrink-0 text-sm">
-                      Updated {formatInstructorWorkspaceDate(course.updatedAt)}
-                    </p>
-                  </Link>
+                      </span>
+                    }
+                    subtitle={`${course.subject} · ${course.lessonCount} lessons · ${course.quizCount} quizzes`}
+                    trailing={<span className="text-muted-foreground text-sm">Updated {formatInstructorWorkspaceDate(course.updatedAt)}</span>}
+                  />
                 );
               })
             ) : (
@@ -170,10 +140,10 @@ function ConvexInstructorDashboard() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </AppSurface>
 
         <div className="grid gap-5">
-          <Card className={`rounded-lg ${glassCardClassName}`}>
+          <AppSurface>
             <CardHeader>
               <CardTitle>Quick actions</CardTitle>
             </CardHeader>
@@ -191,9 +161,9 @@ function ConvexInstructorDashboard() {
                 </Link>
               </Button>
             </CardContent>
-          </Card>
+          </AppSurface>
 
-          <Card className={`rounded-lg ${glassCardClassName}`}>
+          <AppSurface>
             <CardHeader>
               <CardTitle>Workspace status</CardTitle>
             </CardHeader>
@@ -203,7 +173,7 @@ function ConvexInstructorDashboard() {
                 Course drafts, lessons, quizzes, questions, workflow state, and review submission are stored in Convex and authorized by trusted staff identity.
               </p>
             </CardContent>
-          </Card>
+          </AppSurface>
         </div>
       </section>
     </div>

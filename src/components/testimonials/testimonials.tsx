@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { MarketingSection, MarketingSurface } from "@/components/ui/marketing-section";
 
 export type Testimonial = {
   name: string;
@@ -30,7 +31,7 @@ const productPrinciples = [
 
 export function Testimonials() {
   return (
-    <section className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-6 py-14 md:py-25">
+    <MarketingSection className="py-14 md:py-24" innerClassName="flex flex-col items-center gap-6">
       <Badge variant="secondary" className="mb-2 uppercase">
         Study experience
       </Badge>
@@ -43,12 +44,12 @@ export function Testimonials() {
       </p>
       <div className="grid w-full gap-4 md:grid-cols-2">
         {productPrinciples.map((principle) => (
-          <article key={principle.title} className="bg-card rounded-xl border p-7 shadow-sm md:p-8">
+          <MarketingSurface key={principle.title} className="p-5 sm:p-6 md:p-8">
             <h3 className="text-lg font-semibold">{principle.title}</h3>
             <p className="text-muted-foreground mt-3 text-sm leading-6 md:text-base">{principle.content}</p>
-          </article>
+          </MarketingSurface>
         ))}
       </div>
-    </section>
+    </MarketingSection>
   );
 }

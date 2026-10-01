@@ -1,8 +1,9 @@
 import { Wreath } from "@/components/showcase/wreath";
+import { MarketingSection } from "@/components/ui/marketing-section";
 
 export function Showcase() {
   return (
-    <div className="relative mx-auto mt-12 mb-8 grid w-fit grid-cols-3 gap-8 md:my-24 md:gap-20">
+    <MarketingSection className="py-8 md:py-20" innerClassName="grid grid-cols-3 items-start gap-1.5 sm:gap-4 md:gap-12">
       <Wreath>
         <p className="text-[0.625rem] md:text-base">Learning loop</p>
         <p className="mt-1.5 text-center text-xs font-bold md:text-2xl">
@@ -30,6 +31,6 @@ export function Showcase() {
           by design
         </p>
       </Wreath>
-    </div>
+    </MarketingSection>
   );
 }

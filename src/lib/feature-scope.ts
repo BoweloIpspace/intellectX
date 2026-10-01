@@ -2,8 +2,9 @@ export type AppSurface = "web" | "mobile";
 
 export type StudyFeature = "quizzes" | "flashcards" | "notes" | "infographies";
 
-// Native learner navigation is intentionally limited to Home, Infographies,
-// Quizzes and Exams, with Progress/Profile available from the top shortcuts.
+// Native learner navigation is intentionally task-first: Home, Quizzes,
+// Exams and Progress, with Profile available from the header account shortcut.
+// Infographies remain contextual study content rather than global navigation.
 const mobileStudyFeatures = ["quizzes", "infographies"] as const satisfies readonly StudyFeature[];
 
 const mobileCommerceEnabled = false as const;

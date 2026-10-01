@@ -11,8 +11,8 @@ const webItems = [
 const nativeItems = [
   { label: "Home", href: "/mobile-study" },
   { label: "Quizzes", href: "/mobile-quizzes" },
+  { label: "Exams", href: "/mobile-past-papers" },
   { label: "Progress", href: "/mobile-progress" },
-  { label: "Profile", href: "/mobile-profile" },
 ];
 
 describe("mobile navigation surface routing", () => {
@@ -31,7 +31,7 @@ describe("mobile navigation surface routing", () => {
     });
   });
 
-  it("uses the quiz-only four-tab navigation on a native Capacitor surface", () => {
+  it("uses the task-first four-tab navigation on a native Capacitor surface", () => {
     expect(
       resolveMobileNavigationSurface({
         nativeAppSurface: true,

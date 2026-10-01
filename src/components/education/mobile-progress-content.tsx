@@ -3,7 +3,8 @@
 import { LocalQuizPerformance } from "@/components/education/local-quiz-performance";
 import { RecentQuizAttempts } from "@/components/education/recent-quiz-attempts";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MobileMetricCard, MobilePageHeader, MobilePageStack, MobileSurface } from "@/components/ui/mobile-app-primitives";
 import {
   MOBILE_STUDY_STATE_CHANGE_EVENT,
   readMobilePastPaperProgresses,
@@ -56,34 +57,28 @@ export function MobileProgressContent() {
   const summary = useMemo(() => summarizeMobilePractice(quizAttempts, pastPapers), [pastPapers, quizAttempts]);
 
   return (
-    <div className="grid gap-4">
+    <MobilePageStack>
+      <MobilePageHeader
+        eyebrow="Progress"
+        title="Your study momentum"
+        description="See quiz performance, paper progress, and the practice you can resume on this device."
+      />
       <section className="grid grid-cols-2 gap-3" aria-label="Practice overview">
-        <Card className="rounded-lg border-white/70 bg-white/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-          <CardContent className="pt-5">
-            <TrophyIcon className="mb-3 size-5" />
-            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Quiz average</p>
-            <p className="mt-1 text-2xl font-semibold tracking-tight">
-              {hydrated && summary.quizAttemptCount > 0 ? `${summary.quizAveragePercentage}%` : "—"}
-            </p>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {summary.quizAttemptCount} {summary.quizAttemptCount === 1 ? "attempt" : "attempts"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-lg border-white/70 bg-white/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-          <CardContent className="pt-5">
-            <CheckCircle2Icon className="mb-3 size-5" />
-            <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Past papers</p>
-            <p className="mt-1 text-2xl font-semibold tracking-tight">{hydrated ? summary.completedPastPaperCount : "—"}</p>
-            <p className="text-muted-foreground mt-1 text-xs">
-              completed · {summary.inProgressPastPaperCount} in progress
-            </p>
-          </CardContent>
-        </Card>
+        <MobileMetricCard
+          icon={TrophyIcon}
+          label="Quiz average"
+          value={hydrated && summary.quizAttemptCount > 0 ? `${summary.quizAveragePercentage}%` : "—"}
+          helper={`${summary.quizAttemptCount} ${summary.quizAttemptCount === 1 ? "attempt" : "attempts"}`}
+        />
+        <MobileMetricCard
+          icon={CheckCircle2Icon}
+          label="Past papers"
+          value={hydrated ? summary.completedPastPaperCount : "—"}
+          helper={`completed · ${summary.inProgressPastPaperCount} in progress`}
+        />
       </section>
 
-      <Card className="rounded-lg border-white/70 bg-white/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
+      <MobileSurface>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileTextIcon className="size-5" />
@@ -126,24 +121,24 @@ export function MobileProgressContent() {
             <div className="text-muted-foreground grid gap-3 text-sm leading-6">
               <p>Past papers you start will appear here with their saved question position and completion state.</p>
               <Button asChild variant="outline" className="w-fit">
-                <Link href="/mobile-study">Choose a course</Link>
+                <Link href="/mobile-past-papers">Browse exams</Link>
               </Button>
             </div>
           )}
         </CardContent>
-      </Card>
+      </MobileSurface>
 
       <RecentQuizAttempts />
       <LocalQuizPerformance />
 
-      <Card className="rounded-lg border-white/70 bg-white/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
-        <CardContent className="flex items-start gap-3 pt-5 text-sm leading-6">
+      <MobileSurface className="p-4">
+        <div className="flex items-start gap-3 text-sm leading-6">
           <ListChecksIcon className="mt-0.5 size-5 shrink-0" />
           <p className="text-muted-foreground">
             Progress is based only on practice completed by this learner profile. Unfinished quizzes and papers remain resumable and are not counted as completed practice.
           </p>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </MobileSurface>
+    </MobilePageStack>
   );
 }

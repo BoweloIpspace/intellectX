@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MobileMetricCard, MobileSurface } from "@/components/ui/mobile-app-primitives";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
 import { summarizeMobilePractice } from "@/lib/mobile-practice-summary";
 import { MOBILE_STUDY_STATE_CHANGE_EVENT, readMobilePastPaperProgresses } from "@/lib/mobile-study-state";
@@ -63,7 +64,7 @@ export function MobileProfileStudySummary() {
   const data = snapshot ?? emptySnapshot;
 
   return (
-    <Card className="rounded-lg border-white/70 bg-white/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
+    <MobileSurface>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <SmartphoneIcon className="size-5" />
@@ -72,28 +73,15 @@ export function MobileProfileStudySummary() {
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-lg border bg-secondary/30 p-3">
-            <BookOpenCheckIcon className="size-4" />
-            <p className="mt-2 text-xl font-semibold">{snapshot ? data.selectedCourseCount : "—"}</p>
-            <p className="text-muted-foreground text-xs">Selected courses</p>
-          </div>
-          <div className="rounded-lg border bg-secondary/30 p-3">
-            <ListChecksIcon className="size-4" />
-            <p className="mt-2 text-xl font-semibold">{snapshot ? data.quizAttemptCount : "—"}</p>
-            <p className="text-muted-foreground text-xs">
-              Quiz attempts{data.quizAttemptCount > 0 ? ` · ${data.quizAveragePercentage}% avg` : ""}
-            </p>
-          </div>
-          <div className="rounded-lg border bg-secondary/30 p-3">
-            <FileTextIcon className="size-4" />
-            <p className="mt-2 text-xl font-semibold">{snapshot ? data.completedPastPaperCount : "—"}</p>
-            <p className="text-muted-foreground text-xs">Past papers completed</p>
-          </div>
-          <div className="rounded-lg border bg-secondary/30 p-3">
-            <FileTextIcon className="size-4" />
-            <p className="mt-2 text-xl font-semibold">{snapshot ? data.inProgressPastPaperCount : "—"}</p>
-            <p className="text-muted-foreground text-xs">Past papers in progress</p>
-          </div>
+          <MobileMetricCard icon={BookOpenCheckIcon} label="Selected courses" value={snapshot ? data.selectedCourseCount : "—"} />
+          <MobileMetricCard
+            icon={ListChecksIcon}
+            label="Quiz attempts"
+            value={snapshot ? data.quizAttemptCount : "—"}
+            helper={data.quizAttemptCount > 0 ? `${data.quizAveragePercentage}% average` : undefined}
+          />
+          <MobileMetricCard icon={FileTextIcon} label="Papers complete" value={snapshot ? data.completedPastPaperCount : "—"} />
+          <MobileMetricCard icon={FileTextIcon} label="In progress" value={snapshot ? data.inProgressPastPaperCount : "—"} />
         </div>
         <p className="text-muted-foreground text-xs leading-5">
           {data.revealedPastPaperAnswerCount > 0
@@ -102,6 +90,6 @@ export function MobileProfileStudySummary() {
           Logging out keeps this profile&apos;s saved study data isolated on this device. Deleting the local profile removes its selected courses, quiz history, unfinished quiz state, and past-paper progress.
         </p>
       </CardContent>
-    </Card>
+    </MobileSurface>
   );
 }

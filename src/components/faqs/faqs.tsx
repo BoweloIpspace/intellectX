@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { LearnerEntryLink } from "@/components/auth/learner-entry-link";
+import { MarketingSection } from "@/components/ui/marketing-section";
 
 function AccordionItemFAQs(props: React.ComponentProps<typeof AccordionItem>) {
   return (
@@ -31,7 +32,7 @@ function AccordionContentFAQs(props: React.ComponentProps<typeof AccordionConten
 
 export function FAQs() {
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 px-6 py-14 md:grid-cols-2 md:gap-14 md:px-10 md:py-25">
+    <MarketingSection className="py-14 md:py-24" innerClassName="grid gap-8 md:grid-cols-2 md:gap-14">
       <div className="flex w-full flex-col gap-6">
         <Badge variant="secondary" className="mb-2 uppercase">
           FAQ
@@ -76,6 +77,6 @@ export function FAQs() {
           </AccordionContentFAQs>
         </AccordionItemFAQs>
       </Accordion>
-    </div>
+    </MarketingSection>
   );
 }

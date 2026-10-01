@@ -29,8 +29,8 @@ const appNavItems = [
 const mobileFreeNavItems = [
   { label: "Home", href: "/mobile-study" },
   { label: "Quizzes", href: "/mobile-quizzes" },
+  { label: "Exams", href: "/mobile-past-papers" },
   { label: "Progress", href: "/mobile-progress" },
-  { label: "Profile", href: "/mobile-profile" },
 ];
 
 type SessionState = LearnerSession | null | undefined;

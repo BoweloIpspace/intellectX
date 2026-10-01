@@ -1,9 +1,9 @@
 import { ProgressBar } from "@/components/education/progress-bar";
-import { clickableGlassCardClassName, elevatedGlassCardClassName } from "@/components/education/glass-card";
 import { getSubjectMark } from "@/components/education/subject-mark";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppSurface } from "@/components/ui/app-page-primitives";
 import type { Course } from "@/data/courses";
 import { BookOpenIcon, ClockIcon, FileQuestionIcon } from "lucide-react";
 import Link from "next/link";
@@ -17,7 +17,7 @@ export function CourseCard({ course, showProgress = true }: CourseCardProps) {
   const subjectMark = getSubjectMark(course.subject);
 
   return (
-    <Card className={`animate-widget overflow-hidden rounded-lg ${elevatedGlassCardClassName} ${clickableGlassCardClassName}`}>
+    <AppSurface className="animate-widget flex h-full flex-col transition hover:-translate-y-0.5 hover:shadow-md">
       <div className={`relative h-24 bg-gradient-to-br ${course.accent} dark:via-card/50`}>
         <div className="border-foreground/10 text-foreground/70 absolute right-5 bottom-4 grid size-12 place-items-center rounded-full border bg-white/45 text-2xl font-medium shadow-sm grayscale backdrop-blur dark:bg-black/20 dark:text-white/70">
           <span aria-hidden="true">{subjectMark}</span>
@@ -57,6 +57,6 @@ export function CourseCard({ course, showProgress = true }: CourseCardProps) {
           <Link href={`/courses/${course.id}`}>View course</Link>
         </Button>
       </CardFooter>
-    </Card>
+    </AppSurface>
   );
 }

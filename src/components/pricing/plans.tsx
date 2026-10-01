@@ -27,7 +27,7 @@ const plans = [
 
 export function Plans() {
   return (
-    <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center">
+    <div className="relative z-10 mx-auto flex w-full min-w-0 max-w-4xl flex-col items-center px-1">
       <h1 className="mt-12 mb-4 text-center text-3xl font-bold tracking-tight md:text-5xl">
         Learning plans for focused growth
       </h1>
@@ -84,7 +84,7 @@ export function Plans() {
           </Card>
         ))}
       </div>
-      <div className="text-muted-foreground mt-8 flex justify-center gap-8 text-sm underline">
+      <div className="text-muted-foreground mt-8 flex flex-wrap justify-center gap-x-5 gap-y-3 text-center text-sm underline">
         <Link href="/privacy-policy">Privacy Policy</Link>
         <Link href="/terms-and-conditions">Terms and Conditions</Link>
         <Link href="/refund-policy">Refund Policy</Link>

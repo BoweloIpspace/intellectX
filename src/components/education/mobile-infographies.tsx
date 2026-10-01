@@ -3,6 +3,7 @@
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MobileEmptyState, MobilePageStack, MobileSurface } from "@/components/ui/mobile-app-primitives";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
 import { useLearnerCatalog } from "@/lib/learner-catalog-client";
 import {
@@ -109,18 +110,12 @@ export function MobileInfographies() {
 
   if (selectedCourseIds.length === 0) {
     return (
-      <section className="grid min-h-[60dvh] place-items-center text-center">
-        <div>
-          <GalleryVerticalEndIcon className="mx-auto size-8" />
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight">Choose courses first</h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Infographies are built from the published topics in the courses you keep on Home.
-          </p>
-          <Button asChild className="mt-5">
-            <Link href="/mobile-profile#course-selection">Choose courses in Profile</Link>
-          </Button>
-        </div>
-      </section>
+      <MobileEmptyState
+        icon={GalleryVerticalEndIcon}
+        title="Choose courses first"
+        description="Infographies are built from the published topics in the courses you keep on Home."
+        action={<Button asChild><Link href="/mobile-profile#course-selection">Choose courses in Profile</Link></Button>}
+      />
     );
   }
 
@@ -136,16 +131,12 @@ export function MobileInfographies() {
         : "/mobile-study";
 
       return (
-        <section className="rounded-2xl border border-border/70 bg-background/70 p-6 text-center">
-          <GalleryVerticalEndIcon className="mx-auto size-6" />
-          <h1 className="mt-4 text-xl font-semibold tracking-tight">Topic infographic unavailable</h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            This topic is not available inside one of your selected courses.
-          </p>
-          <Button asChild className="mt-5 w-full">
-            <Link href={returnHref}>Back to course</Link>
-          </Button>
-        </section>
+        <MobileEmptyState
+          icon={GalleryVerticalEndIcon}
+          title="Topic infographic unavailable"
+          description="This topic is not available inside one of your selected courses."
+          action={<Button asChild><Link href={returnHref}>Back to course</Link></Button>}
+        />
       );
     }
 
@@ -154,15 +145,11 @@ export function MobileInfographies() {
 
   if (cards.length === 0) {
     return (
-      <section className="grid min-h-[60dvh] place-items-center text-center">
-        <div>
-          <GalleryVerticalEndIcon className="mx-auto size-8" />
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight">No infographies published yet</h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            This feed only uses real published course and topic content; it does not fill gaps with mock study facts.
-          </p>
-        </div>
-      </section>
+      <MobileEmptyState
+        icon={GalleryVerticalEndIcon}
+        title="No infographies published yet"
+        description="This feed only uses real published course and topic content; it does not fill gaps with mock study facts."
+      />
     );
   }
 
@@ -176,9 +163,9 @@ export function MobileInfographies() {
         const practiceLabel = getTopicPracticeLabel(card);
 
         return (
-          <article
+          <MobileSurface
             key={card.id}
-            className="flex min-h-full snap-start snap-always flex-col justify-between overflow-hidden rounded-3xl border border-border/70 bg-background/80 p-6 shadow-sm"
+            className="flex min-h-full snap-start snap-always flex-col justify-between rounded-3xl p-5 sm:p-6"
           >
             <InfographyContent card={card} counter={`${index + 1}/${cards.length}`} />
 
@@ -200,7 +187,7 @@ export function MobileInfographies() {
                 </span>
               ) : null}
             </div>
-          </article>
+          </MobileSurface>
         );
       })}
     </section>
@@ -212,7 +199,7 @@ function FocusedInfography({ card }: { card: InfographyCard }) {
   const practiceLabel = getTopicPracticeLabel(card);
 
   return (
-    <section className="space-y-4" aria-label="Topic infographic">
+    <MobilePageStack aria-label="Topic infographic">
       <Button asChild size="sm" variant="ghost" className="-ml-2">
         <Link href={`/mobile-study/${encodeURIComponent(card.courseId)}`}>
           <ArrowLeftIcon className="size-4" />
@@ -220,7 +207,7 @@ function FocusedInfography({ card }: { card: InfographyCard }) {
         </Link>
       </Button>
 
-      <article className="overflow-hidden rounded-3xl border border-border/70 bg-background/80 p-6 shadow-sm">
+      <MobileSurface className="rounded-3xl p-5 sm:p-6">
         <InfographyContent card={card} />
 
         <div className="mt-6 border-t border-border/60 pt-5">
@@ -235,8 +222,8 @@ function FocusedInfography({ card }: { card: InfographyCard }) {
             <p className="text-muted-foreground text-sm">No quiz is published for this topic yet.</p>
           )}
         </div>
-      </article>
-    </section>
+      </MobileSurface>
+    </MobilePageStack>
   );
 }
 

@@ -9,7 +9,7 @@ type FeatureCardProps = {
 
 export function FeatureCard({ feature, isActive }: FeatureCardProps) {
   return (
-    <div className="flex w-[var(--carousel-item-width)] flex-col items-center gap-5 px-2 py-6">
+    <div className="flex w-full min-w-0 flex-col items-center gap-5 py-5">
       <FeatureDetails feature={feature} isActive={isActive} />
       <FeatureVisual type={feature.visual} />
     </div>

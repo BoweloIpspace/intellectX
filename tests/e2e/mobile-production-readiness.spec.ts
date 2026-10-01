@@ -237,6 +237,19 @@ test("unfinished native quiz restores checked state after reload and resumes fro
   await expect(page.getByRole("button", { name: "Next question" })).toBeVisible();
 });
 
+test("signed-out native exam deep link returns to the same exam after login", async ({ page }) => {
+  await simulateNativeAndroid(page);
+  await seedLocalLearner(page);
+  await seedCourseSelection(page);
+
+  await page.goto("/mobile-past-papers");
+  await expect(page).toHaveURL(/\/login\?native=1&returnTo=%2Fmobile-past-papers$/);
+
+  await page.getByRole("button", { name: "Log in", exact: true }).click();
+  await expect(page).toHaveURL(/\/mobile-past-papers$/);
+  await expect(page.getByRole("heading", { name: "Long-form exam practice" })).toBeVisible();
+});
+
 test("signed-out native course access returns to launch login before course selection", async ({ page }) => {
   await simulateNativeAndroid(page);
   await page.goto("/mobile-quizzes");
@@ -306,6 +319,16 @@ test("native app redirects flashcards and other web-only routes back through mob
   await expect(page.getByRole("heading", { name: "Your courses" })).toBeVisible();
 });
 
+test("exam empty and recovery navigation stays inside the Exams flow", async ({ page }) => {
+  await simulateNativeAndroid(page, true);
+  await seedLocalLearner(page);
+  await seedCourseSelection(page);
+
+  await page.goto("/mobile-past-papers?course=ai-study-systems");
+  const backToExams = page.getByRole("link", { name: "Exams", exact: true }).first();
+  await expect(backToExams).toHaveAttribute("href", "/mobile-past-papers");
+});
+
 test("native progress and profile routes remain inside the learner product", async ({ page }) => {
   await simulateNativeAndroid(page, true);
   await seedLocalLearner(page);
@@ -315,13 +338,15 @@ test("native progress and profile routes remain inside the learner product", asy
   const shortcuts = page.locator('[aria-label="Learner shortcuts"]');
   await expect(shortcuts.getByRole("link", { name: "Progress", exact: true })).toBeVisible();
   const mobileNav = page.getByRole("navigation", { name: "Mobile study navigation" });
-  for (const tab of ["Home", "Infographies", "Quizzes", "Exams"]) {
+  for (const tab of ["Home", "Quizzes", "Exams", "Progress"]) {
     await expect(mobileNav.getByRole("link", { name: tab, exact: true })).toBeVisible();
   }
-  await expect(mobileNav.getByRole("link", { name: "Progress" })).toHaveCount(0);
+  await expect(mobileNav.getByRole("link", { name: "Progress", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(mobileNav.getByRole("link", { name: "Infographies" })).toHaveCount(0);
 
   await page.goto("/mobile-profile");
   await expect(page.getByRole("heading", { name: "Learner profile" })).toBeVisible();
   await expect(shortcuts.getByRole("link", { name: "Profile", exact: true })).toBeVisible();
   await expect(mobileNav.getByRole("link", { name: "Profile" })).toHaveCount(0);
+  await expect(mobileNav.getByRole("link", { name: "Progress", exact: true })).toBeVisible();
 });

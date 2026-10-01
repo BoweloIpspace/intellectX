@@ -18,6 +18,11 @@ function run(command, args) {
   }
 }
 
+if (process.env.VERCEL_ENV === "production") {
+  console.log("Vercel production build: enforcing Clerk + Convex production configuration.");
+  run("npm", ["run", "check:prod-env:strict"]);
+}
+
 if (process.env.CONVEX_DEPLOY_KEY?.trim()) {
   console.log("Vercel build mode: build frontend against the production Convex URL, deploy Convex, then reconcile production catalog data.");
 

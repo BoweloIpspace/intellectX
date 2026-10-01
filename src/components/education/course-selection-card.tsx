@@ -4,6 +4,7 @@ import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { MobileSurface } from "@/components/ui/mobile-app-primitives";
 import {
   COURSE_SELECTION_CHANGE_EVENT,
   COURSE_SELECTION_LIMIT,
@@ -72,7 +73,7 @@ export function CourseSelectionCard({
   }
 
   return (
-    <Card id="course-selection" className="rounded-lg border-white/70 bg-white/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
+    <MobileSurface id="course-selection">
       <CardHeader className="gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -148,6 +149,6 @@ export function CourseSelectionCard({
         ) : null}
         {error ? <p className="text-destructive text-sm" role="alert">{error}</p> : null}
       </CardContent>
-    </Card>
+    </MobileSurface>
   );
 }

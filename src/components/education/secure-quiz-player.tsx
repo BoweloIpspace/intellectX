@@ -1,10 +1,10 @@
 "use client";
 
-import { elevatedGlassCardClassName } from "@/components/education/glass-card";
 import { ProgressBar } from "@/components/education/progress-bar";
 import { useLearnerAuthRuntime } from "@/components/providers/learner-auth-runtime-provider";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MobileSurface } from "@/components/ui/mobile-app-primitives";
 import type { Quiz } from "@/data/quizzes";
 import { convexApi } from "@/lib/convex-api";
 import { getCurrentConvexLearnerArgs } from "@/lib/convex-learner-identity";
@@ -458,7 +458,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
 
   if (!question) {
     return (
-      <Card className={`rounded-lg ${elevatedGlassCardClassName}`}>
+      <MobileSurface>
         <CardHeader>
           <CardTitle className="text-2xl tracking-tight">No questions available yet</CardTitle>
         </CardHeader>
@@ -467,7 +467,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
             This quiz is not ready for practice. Choose another quiz and try again later.
           </p>
         </CardContent>
-      </Card>
+      </MobileSurface>
     );
   }
 
@@ -475,7 +475,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
     const nextStep = surface === "mobile" ? "choosing your next quiz" : "returning to your course";
 
     return (
-      <Card className={`rounded-lg ${elevatedGlassCardClassName}`}>
+      <MobileSurface>
         <CardHeader>
           <p className="text-muted-foreground text-sm">Final results</p>
           <h2 ref={resultsHeadingRef} tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none">
@@ -525,7 +525,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
             Try again
           </Button>
         </CardContent>
-      </Card>
+      </MobileSurface>
     );
   }
 
@@ -533,7 +533,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
   const retryingFinalSave = Boolean(errorMessage && submitted && currentIndex === quiz.questions.length - 1);
 
   return (
-    <Card className={`rounded-lg ${elevatedGlassCardClassName}`}>
+    <MobileSurface>
       <CardHeader>
         <div className="mb-2 space-y-2">
           <div className="text-muted-foreground flex items-center justify-between gap-3 text-sm">
@@ -579,7 +579,7 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
                 onClick={() => selectChoice(index)}
                 onKeyDown={(event) => handleChoiceKeyDown(event, index)}
                 className={cn(
-                  "flex min-h-14 w-full touch-manipulation items-center gap-3 rounded-lg border bg-white/70 px-4 py-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 dark:bg-card/70",
+                  "flex min-h-14 w-full touch-manipulation items-center gap-3 rounded-xl border bg-white/72 px-4 py-3 text-left text-base leading-5 transition-all active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 dark:bg-card/72",
                   selected && "border-primary bg-secondary/70",
                   correct && "border-success bg-success/10",
                   incorrect && "border-destructive bg-destructive/10",
@@ -633,6 +633,6 @@ function SecureQuizPlayerCore({ quiz, surface, onCheckAnswer, onComplete }: Secu
           )}
         </div>
       </CardContent>
-    </Card>
+    </MobileSurface>
   );
 }

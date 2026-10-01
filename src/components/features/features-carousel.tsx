@@ -28,13 +28,13 @@ export function FeaturesCarousel({ features, className }: Props) {
   }, [carouselApi]);
 
   return (
-    <div className={cn("w-[calc(100%+3rem)] md:w-[calc(100%+5rem)]", className)}>
-      <Carousel setApi={setCarouselApi}>
-        <CarouselContent>
+    <div className={cn("w-full min-w-0 overflow-hidden", className)}>
+      <Carousel setApi={setCarouselApi} opts={{ align: "start", containScroll: "trimSnaps" }}>
+        <CarouselContent className="-ml-3">
           {features.map((feature, index) => (
             <CarouselItem
               key={feature.title}
-              className="basis-[var(--carousel-item-width)] [--carousel-item-width:240px]"
+              className="basis-full pl-3 sm:basis-[82%] md:basis-[64%]"
               onClick={() => {
                 carouselApi?.scrollTo(index);
                 setCurrent(index + 1);

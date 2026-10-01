@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MobileSurface } from "@/components/ui/mobile-app-primitives";
 import {
   MOBILE_MIN_SUPPORTED_SHELL_VERSION,
   mobileFrontendBuildInfo,
@@ -21,7 +22,7 @@ export function MobileBuildInfoCard() {
   }, []);
 
   return (
-    <Card>
+    <MobileSurface>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <SmartphoneIcon className="size-5" />
@@ -50,6 +51,6 @@ export function MobileBuildInfoCard() {
           shell that loads the production mobile frontend.
         </p>
       </CardContent>
-    </Card>
+    </MobileSurface>
   );
 }
