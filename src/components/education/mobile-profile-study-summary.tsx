@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MobileMetricCard, MobileSurface } from "@/components/ui/mobile-app-primitives";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
 import { summarizeMobilePractice } from "@/lib/mobile-practice-summary";
 import { MOBILE_STUDY_STATE_CHANGE_EVENT, readMobilePastPaperProgresses } from "@/lib/mobile-study-state";
@@ -63,7 +64,7 @@ export function MobileProfileStudySummary() {
   const data = snapshot ?? emptySnapshot;
 
   return (
-    <Card className="rounded-lg border-white/70 bg-white/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/60">
+    <MobileSurface>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <SmartphoneIcon className="size-5" />
@@ -102,6 +103,6 @@ export function MobileProfileStudySummary() {
           Logging out keeps this profile&apos;s saved study data isolated on this device. Deleting the local profile removes its selected courses, quiz history, unfinished quiz state, and past-paper progress.
         </p>
       </CardContent>
-    </Card>
+    </MobileSurface>
   );
 }
