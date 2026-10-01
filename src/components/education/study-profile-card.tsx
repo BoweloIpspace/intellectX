@@ -214,7 +214,7 @@ export function StudyProfileCard({
   }
 
   return (
-    <Card id="study-profile" className={`rounded-lg ${elevatedGlassCardClassName}`}>
+    <MobileSurface id="study-profile">
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle className="flex items-center gap-2">
