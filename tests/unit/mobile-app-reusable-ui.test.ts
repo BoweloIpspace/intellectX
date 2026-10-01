@@ -36,6 +36,26 @@ describe("mobile app reusable UI contract", () => {
 
     expect(source("src/components/education/course-selection-card.tsx")).toContain("MobileSurface");
     expect(source("src/components/education/mobile-profile-study-summary.tsx")).toContain("MobileMetricCard");
+    expect(source("src/components/education/study-profile-card.tsx")).toContain("MobileSurface");
+    expect(source("src/components/auth/profile-learner-session.tsx")).toContain("MobileSurface");
+    expect(source("src/components/education/mobile-build-info-card.tsx")).toContain("MobileSurface");
+    expect(source("src/components/education/mobile-infographies.tsx")).toContain("MobileEmptyState");
+    expect(source("src/components/education/mobile-past-papers.tsx")).toContain("MobileListRow");
+    expect(source("src/components/education/secure-quiz-player.tsx")).toContain("MobileSurface");
+    expect(source("src/components/education/mixed-quiz-player.tsx")).toContain("MobileSurface");
+  });
+
+  it("keeps quiz and exam interaction surfaces touch-friendly", () => {
+    const secureQuiz = source("src/components/education/secure-quiz-player.tsx");
+    const mixedQuiz = source("src/components/education/mixed-quiz-player.tsx");
+    const pastPapers = source("src/components/education/mobile-past-papers.tsx");
+
+    expect(secureQuiz).toContain("touch-manipulation");
+    expect(mixedQuiz).toContain("touch-manipulation");
+    expect(secureQuiz).toContain("text-base");
+    expect(mixedQuiz).toContain("text-base");
+    expect(pastPapers).toContain("MobilePageStack");
+    expect(pastPapers).toContain("MobileEmptyState");
   });
 
   it("renders one complete feature slide on phone widths", () => {
