@@ -2,9 +2,7 @@ import { LessonBlockRenderer } from "@/components/education/lesson-block-rendere
 import { LessonCompletionAction } from "@/components/education/lesson-completion-action";
 import { LessonProgressSync } from "@/components/education/lesson-progress-sync";
 import { PageShell } from "@/components/education/page-shell";
-import { SubjectMark } from "@/components/education/subject-mark";
 import { VideoPlayer } from "@/components/education/video-player";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AppPageHeader, AppPageStack, AppSurface } from "@/components/ui/app-page-primitives";
 import { getLearnerLessonPageDetail } from "@/lib/learner-detail";
@@ -49,19 +47,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
           meta={<p className="text-muted-foreground inline-flex items-center gap-2 text-sm"><ClockIcon className="size-4" />{lesson.duration}</p>}
         />
         <article>
-          <div className="sr-only">
-          <Badge variant="secondary" className="mb-5 gap-2">
-            {course && (
-              <SubjectMark
-                subject={course.subject}
-                className="border-foreground/5 bg-background/60 -ml-1 size-5 text-[10px]"
-              />
-            )}
-            {course?.title}
-          </Badge>
-          </Badge>
-          </div>
-        <section className="space-y-6">
+          <section className="space-y-6">
           <div className="space-y-6">
             <div>
               <VideoPlayer
@@ -81,8 +67,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
               </div>
             </AppSurface>
           </div>
-        </section>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          </section>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <LessonCompletionAction lessonId={lesson.id} />
           {lesson.nextLessonId && (
             <Button size="lg" asChild>
@@ -103,7 +89,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <Button variant="ghost" size="lg" asChild>
             <Link href={`/courses/${course.id}`}>Back to course</Link>
           </Button>
-        </div>
+          </div>
         </article>
       </AppPageStack>
     </PageShell>
