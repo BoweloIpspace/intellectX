@@ -1,7 +1,7 @@
 "use client";
 
 import { AppLoadingSpinner } from "@/components/ui/app-loading-spinner";
-import { Badge } from "@/components/ui/badge";
+import { MobileEmptyState, MobileListRow, MobilePageHeader, MobilePageStack } from "@/components/ui/mobile-app-primitives";
 import { Button } from "@/components/ui/button";
 import { COURSE_SELECTION_CHANGE_EVENT, loadCourseSelection } from "@/lib/course-selection";
 import { convexApi } from "@/lib/convex-api";
@@ -72,62 +72,44 @@ function MobileExamsHomeContent({ summaries }: { summaries: PastPaperCourseSumma
 
   if (selectedCourseIds.length === 0) {
     return (
-      <section className="grid min-h-[55dvh] place-items-center text-center">
-        <div>
-          <FileTextIcon className="mx-auto size-8" />
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight">Choose courses first</h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Exams only appear for courses you selected in Profile.
-          </p>
-          <Button asChild className="mt-5">
-            <Link href="/mobile-profile#course-selection">Choose courses in Profile</Link>
-          </Button>
-        </div>
-      </section>
+      <MobileEmptyState
+        icon={FileTextIcon}
+        title="Choose courses first"
+        description="Exams only appear for courses you selected in Profile."
+        action={<Button asChild><Link href="/mobile-profile#course-selection">Choose courses in Profile</Link></Button>}
+      />
     );
   }
 
   return (
-    <section className="space-y-5">
-      <div>
-        <Badge variant="secondary">Exams</Badge>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">Long-form exam practice</h1>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Choose one of your Profile courses, then work through its published exam papers question by question.
-        </p>
-      </div>
+    <MobilePageStack>
+      <MobilePageHeader
+        eyebrow="Exams"
+        title="Long-form exam practice"
+        description="Choose one of your Profile courses, then work through its published exam papers question by question."
+      />
 
       {available.length === 0 ? (
-        <div className="rounded-2xl border border-border/70 bg-background/70 p-6 text-center">
-          <FileTextIcon className="mx-auto size-7" />
-          <h2 className="mt-4 text-xl font-semibold">No exams for your selected courses yet</h2>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Only published production exam content for your selected courses appears here.
-          </p>
-        </div>
+        <MobileEmptyState
+          icon={FileTextIcon}
+          title="No exams for your selected courses yet"
+          description="Only published production exam content for your selected courses appears here."
+        />
       ) : (
         <div className="grid gap-3">
           {available.map(({ course, paperCount }) => (
-            <Link
+            <MobileListRow
               key={course.id}
               href={`/mobile-past-papers?course=${encodeURIComponent(course.id)}`}
-              className="flex min-h-24 items-center gap-4 rounded-2xl border border-border/70 bg-background/70 p-4 transition hover:bg-secondary/50"
-            >
-              <span className="bg-primary text-primary-foreground grid size-10 shrink-0 place-items-center rounded-full">
-                <FileTextIcon className="size-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-semibold">{course.title}</span>
-                <span className="text-muted-foreground mt-1 block text-sm">{course.subject}</span>
-                <span className="text-muted-foreground mt-2 block text-xs">
-                  {paperCount} {paperCount === 1 ? "exam paper" : "exam papers"}
-                </span>
-              </span>
-              <ArrowRightIcon className="size-5" />
-            </Link>
+              icon={FileTextIcon}
+              title={course.title}
+              subtitle={course.subject}
+              meta={`${paperCount} ${paperCount === 1 ? "exam paper" : "exam papers"}`}
+              trailing={<ArrowRightIcon className="size-5" />}
+            />
           ))}
         </div>
       )}
-    </section>
+    </MobilePageStack>
   );
 }
