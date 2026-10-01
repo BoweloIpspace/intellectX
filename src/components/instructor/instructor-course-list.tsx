@@ -1,9 +1,9 @@
 "use client";
 
-import { clickableGlassCardClassName, glassCardClassName } from "@/components/education/glass-card";
 import { useInstructorCourses } from "@/components/instructor/use-instructor-courses";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppSurface } from "@/components/ui/app-page-primitives";
 import { convexEnv } from "@/lib/education-data";
 import {
   type InstructorCourseStatus,
@@ -33,11 +33,11 @@ const filters: { label: string; value: Filter }[] = [
 export function InstructorCourseList() {
   if (!convexEnv.isConfigured) {
     return (
-      <Card className={`rounded-lg ${glassCardClassName}`}>
+      <AppSurface>
         <CardContent className="py-12 text-center text-sm text-muted-foreground">
           Configure NEXT_PUBLIC_CONVEX_URL to load the production instructor course list.
         </CardContent>
-      </Card>
+      </AppSurface>
     );
   }
 
@@ -67,15 +67,15 @@ function ConvexInstructorCourseList() {
 
   if (loading) {
     return (
-      <Card className={`rounded-lg ${glassCardClassName}`}>
+      <AppSurface>
         <CardContent className="py-12 text-center text-sm text-muted-foreground">Loading instructor courses…</CardContent>
-      </Card>
+      </AppSurface>
     );
   }
 
   if (error) {
     return (
-      <Card className="rounded-lg border-rose-500/20 bg-rose-500/5">
+      <AppSurface className="border-rose-500/20 bg-rose-500/5">
         <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
           <AlertCircleIcon className="size-7 text-rose-600" />
           <div>
@@ -89,7 +89,7 @@ function ConvexInstructorCourseList() {
             Retry
           </Button>
         </CardContent>
-      </Card>
+      </AppSurface>
     );
   }
 
@@ -131,7 +131,7 @@ function ConvexInstructorCourseList() {
             const builderHref = `/instructor/courses/new?edit=${encodeURIComponent(course.stableId)}${editable ? "" : "&readonly=1"}`;
 
             return (
-              <Card key={course.stableId} className={`rounded-lg ${glassCardClassName} ${clickableGlassCardClassName}`}>
+              <AppSurface key={course.stableId} className="flex h-full flex-col transition hover:-translate-y-0.5 hover:shadow-md">
                 <CardHeader className="space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${instructorCourseStatusTone[status]}`}>
@@ -183,7 +183,7 @@ function ConvexInstructorCourseList() {
                     </Button>
                   ) : null}
                 </CardFooter>
-              </Card>
+              </AppSurface>
             );
           })}
         </section>
