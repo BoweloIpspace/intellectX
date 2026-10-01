@@ -5,7 +5,7 @@ import { PageShell } from "@/components/education/page-shell";
 import { SecureQuizPlayer } from "@/components/education/secure-quiz-player";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MobilePageHeader, MobilePageStack } from "@/components/ui/mobile-app-primitives";
+import { MobilePageHeader } from "@/components/ui/mobile-app-primitives";
 import type { Quiz } from "@/data/quizzes";
 import { isMobileAppRuntime } from "@/lib/feature-scope";
 import { writeMobileStudyActivity } from "@/lib/mobile-study-state";
