@@ -1,9 +1,9 @@
 "use client";
 
-import { elevatedGlassCardClassName } from "@/components/education/glass-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MobileSurface } from "@/components/ui/mobile-app-primitives";
 import {
   ACADEMIC_PROFILE_SYNC_STATUS_EVENT,
   type AcademicProfile,
@@ -199,7 +199,7 @@ export function StudyProfileCard({
 
   if (!profileReady) {
     return (
-      <Card id="study-profile" className={`rounded-lg ${elevatedGlassCardClassName}`}>
+      <MobileSurface id="study-profile">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <GraduationCapIcon className="size-5" />
@@ -209,7 +209,7 @@ export function StudyProfileCard({
         <CardContent role="status" aria-live="polite" className="text-muted-foreground text-sm">
           Loading study profile…
         </CardContent>
-      </Card>
+      </MobileSurface>
     );
   }
 
@@ -339,7 +339,7 @@ export function StudyProfileCard({
           </div>
         ) : null}
       </CardContent>
-    </Card>
+    </MobileSurface>
   );
 }
 
@@ -359,7 +359,7 @@ function ProfileSelect({ label, value, options, disabled = false, onChange }: Pr
         value={value}
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
-        className="border-input bg-background/80 h-12 rounded-lg border px-3 text-sm outline-none transition-all focus:border-primary/50 focus:ring-ring/40 focus:ring-[3px] disabled:cursor-default disabled:opacity-75"
+        className="border-input bg-background/85 min-h-12 w-full rounded-xl border px-3 text-base outline-none transition-all focus:border-primary/50 focus:ring-ring/40 focus:ring-[3px] disabled:cursor-default disabled:opacity-75"
       >
         {options.map((option) => (
           <option key={option} value={option}>
