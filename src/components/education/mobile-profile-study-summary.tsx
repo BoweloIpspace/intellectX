@@ -73,28 +73,15 @@ export function MobileProfileStudySummary() {
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-lg border bg-secondary/30 p-3">
-            <BookOpenCheckIcon className="size-4" />
-            <p className="mt-2 text-xl font-semibold">{snapshot ? data.selectedCourseCount : "—"}</p>
-            <p className="text-muted-foreground text-xs">Selected courses</p>
-          </div>
-          <div className="rounded-lg border bg-secondary/30 p-3">
-            <ListChecksIcon className="size-4" />
-            <p className="mt-2 text-xl font-semibold">{snapshot ? data.quizAttemptCount : "—"}</p>
-            <p className="text-muted-foreground text-xs">
-              Quiz attempts{data.quizAttemptCount > 0 ? ` · ${data.quizAveragePercentage}% avg` : ""}
-            </p>
-          </div>
-          <div className="rounded-lg border bg-secondary/30 p-3">
-            <FileTextIcon className="size-4" />
-            <p className="mt-2 text-xl font-semibold">{snapshot ? data.completedPastPaperCount : "—"}</p>
-            <p className="text-muted-foreground text-xs">Past papers completed</p>
-          </div>
-          <div className="rounded-lg border bg-secondary/30 p-3">
-            <FileTextIcon className="size-4" />
-            <p className="mt-2 text-xl font-semibold">{snapshot ? data.inProgressPastPaperCount : "—"}</p>
-            <p className="text-muted-foreground text-xs">Past papers in progress</p>
-          </div>
+          <MobileMetricCard icon={BookOpenCheckIcon} label="Selected courses" value={snapshot ? data.selectedCourseCount : "—"} />
+          <MobileMetricCard
+            icon={ListChecksIcon}
+            label="Quiz attempts"
+            value={snapshot ? data.quizAttemptCount : "—"}
+            helper={data.quizAttemptCount > 0 ? `${data.quizAveragePercentage}% average` : undefined}
+          />
+          <MobileMetricCard icon={FileTextIcon} label="Papers complete" value={snapshot ? data.completedPastPaperCount : "—"} />
+          <MobileMetricCard icon={FileTextIcon} label="In progress" value={snapshot ? data.inProgressPastPaperCount : "—"} />
         </div>
         <p className="text-muted-foreground text-xs leading-5">
           {data.revealedPastPaperAnswerCount > 0
