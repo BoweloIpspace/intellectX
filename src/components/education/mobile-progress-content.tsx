@@ -3,7 +3,7 @@
 import { LocalQuizPerformance } from "@/components/education/local-quiz-performance";
 import { RecentQuizAttempts } from "@/components/education/recent-quiz-attempts";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileMetricCard, MobilePageHeader, MobilePageStack, MobileSurface } from "@/components/ui/mobile-app-primitives";
 import {
   MOBILE_STUDY_STATE_CHANGE_EVENT,
