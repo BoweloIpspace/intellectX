@@ -22,10 +22,10 @@ export default function MobileProfilePage() {
           description="Set your academic track and choose the published courses that belong on your Home screen."
         />
         <div className="grid gap-3">
-        <ProfileLearnerSession />
-        <StudyProfileCard showSubjectPreferences={false} requireSubjectPreferences={false} />
-        <CourseSelectionCard />
-        <MobileProfileStudySummary />
+          <ProfileLearnerSession />
+          <StudyProfileCard showSubjectPreferences={false} requireSubjectPreferences={false} />
+          <CourseSelectionCard />
+          <MobileProfileStudySummary />
           <MobileBuildInfoCard />
         </div>
       </MobilePageStack>
